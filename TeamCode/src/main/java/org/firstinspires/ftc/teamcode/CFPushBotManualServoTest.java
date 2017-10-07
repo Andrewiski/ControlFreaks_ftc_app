@@ -79,10 +79,10 @@ public class CFPushBotManualServoTest extends LinearOpMode {
                     }else{
                         buttonRightBumperReleased = true;
                     }
-                    if(gamepad2.dpad_up) {
+                    if(gamepad1.dpad_up) {
                         robot.elbow_step(.05);
                     }
-                    if(gamepad2.dpad_down){
+                    if(gamepad1.dpad_down){
                         robot.elbow_step(-.05);
                     }
 
