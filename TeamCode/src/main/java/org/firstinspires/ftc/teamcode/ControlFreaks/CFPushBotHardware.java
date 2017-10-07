@@ -169,7 +169,10 @@ public class CFPushBotHardware {
     private static final double v_servo_elbow_MinPosition = 0.00;
     private static final double v_servo_elbow_MaxPosition = 0.50;
     private double v_servo_elbow_position = 0.00D;  //init arm elbow Position
-    boolean v_servo_elbow_is_extended = false;
+    private Servo.Direction v_servo_elbow_direction = Servo.Direction.FORWARD;
+    boolean v_servo_elbow_is_extending = false;
+
+
 
     private Servo v_servo_shoulder;
     private static final double v_servo_shoulder_MinPosition = 0.00;
@@ -466,6 +469,11 @@ public class CFPushBotHardware {
         try
         {
             v_servo_elbow = opMode.hardwareMap.servo.get(config_servo_elbow);
+            //set the Server Direction
+            v_servo_elbow.setDirection(v_servo_elbow_direction);
+            //set the Servo ranage
+            v_servo_elbow.scaleRange(v_servo_elbow_MinPosition, v_servo_elbow_MaxPosition );
+            //move the Servo to its init position
             v_servo_elbow.setPosition (v_servo_elbow_position);
         }
         catch (Exception p_exeception)
@@ -2495,7 +2503,7 @@ public class CFPushBotHardware {
     public void elbow_toggle ()
     {
         try {
-            if (v_servo_elbow_is_extended == true){
+            if (v_servo_elbow_is_extending == true){
                 elbow_retract();
             }else{
                 elbow_extend();
@@ -2509,8 +2517,8 @@ public class CFPushBotHardware {
     {
         try {
             if (v_servo_elbow != null) {
-                v_servo_elbow.setPosition(v_servo_elbow_MinPosition);
-                v_servo_elbow_is_extended = true;
+                v_servo_elbow.setPosition(v_servo_elbow_MaxPosition);
+                v_servo_elbow_is_extending = true;
             }
         }catch (Exception p_exeception)
         {
@@ -2522,8 +2530,8 @@ public class CFPushBotHardware {
     {
         try {
             if (v_servo_elbow != null) {
-                v_servo_elbow_is_extended = false;
-                v_servo_elbow.setPosition(v_servo_elbow_MaxPosition);
+                v_servo_elbow.setPosition(v_servo_elbow_MinPosition);
+                v_servo_elbow_is_extending = false;
             }
         }catch (Exception p_exeception)
         {
@@ -2531,6 +2539,30 @@ public class CFPushBotHardware {
         }
     }
 
+    //Warning there is no way to read the servos current position ie there is no feed back
+    // to the electronics So calling this function a hundred times while a button is down will make it hard to control
+    public void elbow_step(double stepAmount)
+    {
+        try {
+            if (v_servo_elbow != null) {
+                v_servo_elbow.setPosition(v_servo_elbow.getPosition() + stepAmount);
+            }
+        }catch (Exception p_exeception)
+        {
+            debugLogException("elbow_step", "error", p_exeception);
+        }
+    }
+    public void elbow_setposition (double position)
+    {
+        try {
+            if (v_servo_elbow != null) {
+                v_servo_elbow.setPosition(position);
+            }
+        }catch (Exception p_exeception)
+        {
+            debugLogException("elbow_setposition", "error", p_exeception);
+        }
+    }
 
 
     public void shoulder_toggle ()
