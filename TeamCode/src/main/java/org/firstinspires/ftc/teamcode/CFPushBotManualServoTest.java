@@ -34,6 +34,8 @@ public class CFPushBotManualServoTest extends LinearOpMode {
     boolean buttonAReleased = true;
     boolean buttonDpadUpReleased = true;
     boolean buttonDpadDownReleased = true;
+    boolean buttonDpadRightReleased = true;
+    boolean buttonDpadLeftReleased = true;
     boolean buttonLeftBumperReleased = true;
     boolean buttonRightBumperReleased = true;
     boolean buttonG2XReleased = true;
@@ -84,6 +86,23 @@ public class CFPushBotManualServoTest extends LinearOpMode {
                     }
                     if(gamepad1.dpad_down){
                         robot.elbow_step(-.05);
+                    }
+
+                    if(gamepad1.dpad_right){
+                        if(buttonDpadRightReleased == true) {
+                            robot.elbow_step(-.05);
+                            buttonDpadRightReleased = false;
+                        }
+                    }else{
+                        buttonDpadRightReleased = true;
+                    }
+                    if(gamepad1.dpad_left){
+                        if(buttonDpadLeftReleased == true) {
+                            robot.elbow_step(.05);
+                            buttonDpadLeftReleased = false;
+                        }
+                    }else{
+                        buttonDpadLeftReleased = true;
                     }
 
                     //robot.waitForTick(2);
