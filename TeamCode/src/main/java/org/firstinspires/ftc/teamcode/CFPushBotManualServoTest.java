@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.ControlFreaks.CFPushBotHardware;
 
 /**
- * Created by adevries on 11/6/2015.
+ * Created by adevries on 10/7/2017.
  */
 @TeleOp(name="Servo Test", group="Manual")  // @Autonomous(...) is the other common choice
 //@Disabled
