@@ -47,6 +47,7 @@ public class CFPushBotHardware {
     private String config_servo_hand = "hand";
     private String config_servo_wrist = "wrist";
     private String config_servo_blockgrabber = "blockgrabber";
+    private String config_servo_blockslide = "blockslide";
     private String config_servo_elbow = "elbow";
     private String config_servo_shoulder = "shoulder";
     private String config_dim = "dim";
@@ -135,7 +136,12 @@ public class CFPushBotHardware {
     private static final double ServoErrorResultPosition = -0.0000000001;
 
     private DcMotor v_motor_lifter;
-    private static final double v_motor_lifter_power = 0.7;
+    private static final double v_motor_lifter_power = 0.5;
+    private static final DcMotor.Direction v_motor_lifter_direction = DcMotor.Direction.FORWARD;
+    private static final int v_motor_lifter_encoder_min = 0;
+    private static final int v_motor_lifter_encoder_max = 4000;
+    private static final int v_motor_lifter_encoder_blockHeight = 1000;
+    private static final int v_motor_lifter_encoder_target = 0;
 
     //4.66666  ticks per degree on 1680 per 360
     private DcMotor v_motor_rackpinion;
@@ -146,24 +152,20 @@ public class CFPushBotHardware {
     private int v_motor_rackpinion_Position = 0;
 
 
-
-    private Servo v_servo_pushbutton_left;
-    private static final double v_servo_pushbutton_left_MinPosition = 0.00;
-    private static final double v_servo_pushbutton_left_MaxPosition = 1.00;
-    private double v_servo_pushbutton_left_position = 1.0D;  //init arm elbow Position
-
-
-    private Servo v_servo_pushbutton_right;
-    private static final double v_servo_pushbutton_right_MinPosition = 0.00;
-    private static final double v_servo_pushbutton_right_MaxPosition = 1.00;
-    private double v_servo_pushbutton_right_position = 0.0D;  //init arm elbow Position
-
     private Servo v_servo_blockgrabber;
     private static final double v_servo_blockgrabber_MinPosition = 0.00;
     private static final double v_servo_blockgrabber_MaxPosition = 0.45;
-    private static final double v_servo_blockgrabber_MiddlePosition = 0.23;
-    private double v_servo_blockgrabber_position = 0.23D;  //init arm elbow Position
+    private double v_servo_blockgrabber_position = 0.0D;  //init arm elbow Position
     boolean v_servo_blockgrabber_is_extended = false;
+    private Servo.Direction v_servo_blockgrabber_direction = Servo.Direction.FORWARD;
+
+    private Servo v_servo_blockslide;
+    private static final double v_servo_blockslide_MinPosition = 0.00;
+    private static final double v_servo_blockslide_MaxPosition = 0.55;
+    private static final double v_servo_blockslide_MiddlePosition = 0.25;
+    private double v_servo_blockslide_position = 0.25D;  //init arm elbow Position
+    boolean v_servo_blockslide_is_extended = false;
+    private Servo.Direction v_servo_blickslide_direction = Servo.Direction.FORWARD;
 
     private Servo v_servo_elbow;
     private static final double v_servo_elbow_MinPosition = 0.00;
@@ -419,39 +421,14 @@ public class CFPushBotHardware {
         }
 
         //
-        // Connect the left_push servo.
-        //
-        try
-        {
-            v_servo_pushbutton_left = opMode.hardwareMap.servo.get(config_servo_hand);
-            v_servo_pushbutton_left.setPosition (v_servo_pushbutton_left_position);
-        }
-        catch (Exception p_exeception)
-        {
-            debugLogException(config_servo_hand, "missing", p_exeception);
-            v_servo_pushbutton_left = null;
-        }
-        //
-        // Connect the right_push servo.
-        //
-        try
-        {
-            v_servo_pushbutton_right = opMode.hardwareMap.servo.get(config_servo_wrist);
-            v_servo_pushbutton_right.setPosition (v_servo_pushbutton_right_position);
-        }
-        catch (Exception p_exeception)
-        {
-            debugLogException(config_servo_wrist, "missing", p_exeception);
-            v_servo_pushbutton_right = null;
-        }
-
-        //
         // Connect the blockgrabber servo.
         //
         try
         {
             v_servo_blockgrabber = opMode.hardwareMap.servo.get(config_servo_blockgrabber);
+            v_servo_blockgrabber.setDirection(v_servo_blockgrabber_direction);
             v_servo_blockgrabber.setPosition (v_servo_blockgrabber_position);
+
             //v_server_blockgrabber_is_extended = false;
         }
         catch (Exception p_exeception)
@@ -532,8 +509,8 @@ public class CFPushBotHardware {
         try
         {
             v_motor_lifter = opMode.hardwareMap.dcMotor.get (config_motor_lifter);
-            v_motor_lifter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            //  v_motor_winch.setDirection(DcMotor.Direction.REVERSE);
+            v_motor_lifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            v_motor_lifter.setDirection(v_motor_lifter_direction);
         }
         catch (Exception p_exeception)
         {
@@ -1127,22 +1104,6 @@ public class CFPushBotHardware {
         set_second_message("lifter_on" + v_motor_lifter_power);
     }
 
-    //--------------------------------------------------------------------------
-    //
-    // lifter_off
-    //
-    /**
-     * Turn off the lifter motor
-     */
-    public void lifter_toggle ()
-    {
-        if (v_motor_lifter_is_on == false) {
-            lifter_on();
-        }else {
-            lifter_off();
-        }
-    }
-
     public void lifter_off ()
     {
         if (v_motor_lifter != null)
@@ -1151,36 +1112,41 @@ public class CFPushBotHardware {
             v_motor_lifter_is_on = false;
         }
         set_second_message("lifter_off" );
-
     }
 
-    public void lifter_on_reverse ()
+    public void lifter_down ()
     {
 
         if (v_motor_lifter != null)
         {
-            v_motor_lifter.setPower(0-v_motor_lifter_power);
-            v_motor_lifter_is_on = true;
+            if(v_motor_lifter.getCurrentPosition() < v_motor_lifter_encoder_min) {
+
+                v_motor_lifter.setPower(0 - v_motor_lifter_power);
+                v_motor_lifter_is_on = true;
+                set_second_message("lifter_down" + (0-v_motor_lifter_power));
+            }else{
+                lifter_off();
+                set_second_message("lifter_down min reached" );
+            }
         }
-        set_second_message("lifter_on" + (0-v_motor_lifter_power));
+
     }
 
-
-
-    //--------------------------------------------------------------------------
-    //
-    // lifter_off
-    //
-    /**
-     * Turn off the lifter motor
-     */
-    public void lifter_toggle_reverse ()
+    public void lifter_up ()
     {
-        if (v_motor_lifter_is_on == false) {
-            lifter_on_reverse();
-        }else {
-            lifter_off();
+
+        if (v_motor_lifter != null)
+        {
+            if(v_motor_lifter.getCurrentPosition() < v_motor_lifter_encoder_max) {
+                v_motor_lifter.setPower(v_motor_lifter_power);
+                v_motor_lifter_is_on = true;
+                set_second_message("lifter_up" + (v_motor_lifter_power));
+            }else{
+                lifter_off();
+                set_second_message("lifter_up max reached" );
+            }
         }
+
     }
 
 
@@ -2359,108 +2325,20 @@ public class CFPushBotHardware {
 //    } // m_winch_power
 //
 
-
-
-    boolean v_server_pushbutton_left_is_extended = false;
-
-    //--------------------------------------------------------------------------
-    //
-    // pushbutton_left_toggle
-    //
-    /**
-     * toggle the left push button servo between extended and retracted positions.
-     */
-    public void pushbutton_left_toggle ()
-    {
-        try {
-            if (v_server_pushbutton_left_is_extended == true){
-                pushbutton_left_retract();
-            }else{
-                pushbutton_left_extend();
-            }
-        }catch (Exception p_exeception)
-        {
-            debugLogException("pushbutton_left_toggle", "error", p_exeception);
-        }
-    }
-
-
-    //--------------------------------------------------------------------------
-    //
-    // pushbutton_left_extend
-    //
-    /**
-     * move the left push button servo to its full extention position.
-     */
-    public void pushbutton_left_extend ()
-    {
-        try {
-            if (v_servo_pushbutton_left != null) {
-                v_servo_pushbutton_left.setPosition(v_servo_pushbutton_left_MinPosition);
-                v_server_pushbutton_left_is_extended = true;
-            }
-        }catch (Exception p_exeception)
-        {
-            debugLogException("pushbutton_left_extend", "error", p_exeception);
-        }
-    }
-
-
-    //--------------------------------------------------------------------------
-    //
-    // pushbutton_left_extend
-    //
-    /**
-     * move the left push button servo to its retracted position.
-     */
-    public void pushbutton_left_retract ()
-    {
-        try {
-            if (v_servo_pushbutton_left != null) {
-                v_server_pushbutton_left_is_extended = false;
-                v_servo_pushbutton_left.setPosition(v_servo_pushbutton_left_MaxPosition);
-            }
-        }catch (Exception p_exeception)
-        {
-            debugLogException("pushbutton_left_retract", "error", p_exeception);
-        }
-    }
-
-    boolean v_server_pushbutton_right_is_extended = false;
-    //--------------------------------------------------------------------------
-    //
-    // pushbutton_right_extend
-    //
-    /**
-     * move the right push button servo to its full extention position.
-     */
-    public void pushbutton_right_extend ()
-    {
-        try {
-            if (v_servo_pushbutton_right != null) {
-                v_servo_pushbutton_right.setPosition(v_servo_pushbutton_right_MaxPosition);
-                v_server_pushbutton_right_is_extended = true;
-            }
-        }catch (Exception p_exeception)
-        {
-            debugLogException("pushbutton_right_extend", "error", p_exeception);
-        }
-    }
-
     public void blockgrabber_toggle ()
     {
         try {
             if (v_servo_blockgrabber_is_extended == true){
-                blockgrabber_retract();
+                blockgrabber_close();
             }else{
-                blockgrabber_extend();
+                blockgrabber_open();
             }
         }catch (Exception p_exeception)
         {
             debugLogException("blockgrabber_toggle", "error", p_exeception);
         }
     }
-    public void blockgrabber_extend ()
+    public void blockgrabber_open ()
     {
         try {
             if (v_servo_blockgrabber != null) {
@@ -2473,7 +2351,7 @@ public class CFPushBotHardware {
         }
     }
 
-    public void blockgrabber_retract ()
+    public void blockgrabber_close ()
     {
         try {
             if (v_servo_blockgrabber != null) {
@@ -2486,16 +2364,44 @@ public class CFPushBotHardware {
         }
     }
 
-    public void blockgrabber_middle ()
+
+
+    public void blockslide_left ()
     {
         try {
-            if (v_servo_blockgrabber != null) {
-                v_servo_blockgrabber_is_extended = false;
-                v_servo_blockgrabber.setPosition(v_servo_blockgrabber_MiddlePosition);
+            if (v_servo_blockslide != null) {
+                v_servo_blockslide.setPosition(v_servo_blockslide_MinPosition);
+                v_servo_blockslide_is_extended = true;
             }
         }catch (Exception p_exeception)
         {
-            debugLogException("blockgrabber_retract", "error", p_exeception);
+            debugLogException("blockslide_left", "error", p_exeception);
+        }
+    }
+
+    public void blockslide_right ()
+    {
+        try {
+            if (v_servo_blockslide != null) {
+                v_servo_blockslide_is_extended = false;
+                v_servo_blockslide.setPosition(v_servo_blockslide_MaxPosition);
+            }
+        }catch (Exception p_exeception)
+        {
+            debugLogException("blockslide_right", "error", p_exeception);
+        }
+    }
+
+    public void blockslide_stop ()
+    {
+        try {
+            if (v_servo_blockslide != null) {
+                v_servo_blockslide_is_extended = false;
+                v_servo_blockslide.setPosition(v_servo_blockslide_MiddlePosition);
+            }
+        }catch (Exception p_exeception)
+        {
+            debugLogException("blockslide_stop", "error", p_exeception);
         }
     }
 
@@ -2610,46 +2516,8 @@ public class CFPushBotHardware {
         update_telemetry();
         opMode.updateTelemetry(opMode.telemetry);
     }
-    //--------------------------------------------------------------------------
-    //
-    // pushbutton_right_retract
-    //
-    /**
-     * move the left push button servo to its retracted position.
-     */
-    public void pushbutton_right_retract ()
-    {
-        try {
-            if (v_servo_pushbutton_right != null) {
-                v_server_pushbutton_right_is_extended = false;
-                v_servo_pushbutton_right.setPosition(v_servo_pushbutton_right_MinPosition);
-            }
-        }catch (Exception p_exeception)
-        {
-            debugLogException("pushbutton_right_retract", "error", p_exeception);
-        }
-    }
 
-    //--------------------------------------------------------------------------
-    //
-    // pushbutton_right_toggle
-    //
-    /**
-     * toggle the right push button servo between extended and retracted positions.
-     */
-    public void pushbutton_right_toggle ()
-    {
-        try {
-            if (v_server_pushbutton_right_is_extended == true){
-                pushbutton_right_retract();
-            }else{
-                pushbutton_right_extend();
-            }
-        }catch (Exception p_exeception)
-        {
-            debugLogException("pushbutton_right_toggle", "error", p_exeception);
-        }
-    }
+
 
     //--------------------------------------------------------------------------
     //
@@ -3274,40 +3142,40 @@ public class CFPushBotHardware {
         }
     }
 
-    public boolean beacon_make_red() throws InterruptedException{
-        //the sensor is on the right side so the logic is  to read the
-        //rgb sensor value if Red is higher then 1000 extend the right side pushing the button to make it
-        //blue  else if Blue is over 1000 then extend the left button
-        if(v_sensor_color_i2c_enabled){
-            int v_detectedColor = sensor_color_GreatestColor();
-            if(v_detectedColor == 0){
-                set_second_message("Red Detected on Right Pushing Right Side");
-                pushbutton_right_extend();
-                ////////pushbutton_left_extend();
-                timewait2Milliseconds(700);
-                while (timewait2Milliseconds_Complete()==false){
-                    hardware_loop();
-                }
-                pushbutton_right_retract();
-                return true;
-            }else if (v_detectedColor == 2){
-                set_second_message("Blue Detected on Right Pushing Left Side");
-                pushbutton_left_extend();
-                /////////////pushbutton_right_extend();
-                timewait2Milliseconds(700);
-                while (timewait2Milliseconds_Complete()==false){
-                    hardware_loop();
-                }
-                pushbutton_left_retract();
-                return true;
-            }else{
-                //
-                set_second_message("No Red or Blue Detected nothing to push");
-            }
-        }
-        return false;
-    }
-
+//    public boolean beacon_make_red() throws InterruptedException{
+//        //the sensor is on the right side so the logic is  to read the
+//        //rgb sensor value if Red is higher then 1000 extend the right side pushing the button to make it
+//        //blue  else if Blue is over 1000 then extend the left button
+//        if(v_sensor_color_i2c_enabled){
+//            int v_detectedColor = sensor_color_GreatestColor();
+//            if(v_detectedColor == 0){
+//                set_second_message("Red Detected on Right Pushing Right Side");
+//                pushbutton_right_extend();
+//                ////////pushbutton_left_extend();
+//                timewait2Milliseconds(700);
+//                while (timewait2Milliseconds_Complete()==false){
+//                    hardware_loop();
+//                }
+//                pushbutton_right_retract();
+//                return true;
+//            }else if (v_detectedColor == 2){
+//                set_second_message("Blue Detected on Right Pushing Left Side");
+//                pushbutton_left_extend();
+//                /////////////pushbutton_right_extend();
+//                timewait2Milliseconds(700);
+//                while (timewait2Milliseconds_Complete()==false){
+//                    hardware_loop();
+//                }
+//                pushbutton_left_retract();
+//                return true;
+//            }else{
+//                //
+//                set_second_message("No Red or Blue Detected nothing to push");
+//            }
+//        }
+//        return false;
+//    }
+//
     private int v_sensor_color_min_value = 500;
 
     //returns -1 if neither detected, 0 if red detected, 2 if blue detected higher
@@ -3345,40 +3213,40 @@ public class CFPushBotHardware {
 
     }
 
-    public boolean beacon_make_blue() throws InterruptedException{
-        //the sensor is on the right side so the logic is  to read the
-        //rgb sensor value if Red is higher then 1000 extend the right side pushing the button to make it
-        //blue  else if Blue is over 1000 then extend the left button
-        if(v_sensor_color_i2c_enabled){
-            int v_detectedColor = sensor_color_GreatestColor();
-            if(v_detectedColor == 0){
-                set_second_message("Red Detected on Right Pushing Left Side");
-                pushbutton_left_extend();
-                //////////pushbutton_right_extend();
-                timewait2Milliseconds(700); //.7f
-                while (timewait2Milliseconds_Complete()==false){
-                    hardware_loop();
-                }
-                pushbutton_left_retract();
-                return true;
-            }else if (v_detectedColor == 2){
-                set_second_message("Blue Detected on Right Pushing Right Side");
-                pushbutton_right_extend();
-                /////////////pushbutton_left_extend();
-                timewait2Milliseconds(700); //.7
-                while (timewait2Milliseconds_Complete()==false){
-                    hardware_loop();
-                }
-                pushbutton_right_retract();
-                return true;
-            }else{
-                //-1 returned so no color of threshold
-                //
-                set_second_message("No Red or Blue Detected nothing to push");
-            }
-        }
-        return false;
-    }
+//    public boolean beacon_make_blue() throws InterruptedException{
+//        //the sensor is on the right side so the logic is  to read the
+//        //rgb sensor value if Red is higher then 1000 extend the right side pushing the button to make it
+//        //blue  else if Blue is over 1000 then extend the left button
+//        if(v_sensor_color_i2c_enabled){
+//            int v_detectedColor = sensor_color_GreatestColor();
+//            if(v_detectedColor == 0){
+//                set_second_message("Red Detected on Right Pushing Left Side");
+//                pushbutton_left_extend();
+//                //////////pushbutton_right_extend();
+//                timewait2Milliseconds(700); //.7f
+//                while (timewait2Milliseconds_Complete()==false){
+//                    hardware_loop();
+//                }
+//                pushbutton_left_retract();
+//                return true;
+//            }else if (v_detectedColor == 2){
+//                set_second_message("Blue Detected on Right Pushing Right Side");
+//                pushbutton_right_extend();
+//                /////////////pushbutton_left_extend();
+//                timewait2Milliseconds(700); //.7
+//                while (timewait2Milliseconds_Complete()==false){
+//                    hardware_loop();
+//                }
+//                pushbutton_right_retract();
+//                return true;
+//            }else{
+//                //-1 returned so no color of threshold
+//                //
+//                set_second_message("No Red or Blue Detected nothing to push");
+//            }
+//        }
+//        return false;
+//    }
 
     /**
      * Enable the Color Sensor Led

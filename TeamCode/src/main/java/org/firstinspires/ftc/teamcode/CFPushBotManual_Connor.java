@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.ControlFreaks.*;
 /**
  * Created by adevries on 11/6/2015.
  */
-@TeleOp(name="Tank 1", group="Manual")  // @Autonomous(...) is the other common choice
+@TeleOp(name="Connor Tank1", group="Manual")  // @Autonomous(...) is the other common choice
 //@Disabled
 public class CFPushBotManual_Connor extends LinearOpMode {
 
