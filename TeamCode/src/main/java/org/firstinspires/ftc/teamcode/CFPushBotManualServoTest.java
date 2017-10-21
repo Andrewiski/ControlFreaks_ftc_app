@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -9,7 +10,7 @@ import org.firstinspires.ftc.teamcode.ControlFreaks.CFPushBotHardware;
 /**
  * Created by adevries on 10/7/2017.
  */
-@TeleOp(name="Servo Test", group="Manual")  // @Autonomous(...) is the other common choice
+@TeleOp(name="Servo Test", group="Manual" )  // @Autonomous(...) is the other common choice
 //@Disabled
 public class CFPushBotManualServoTest extends LinearOpMode {
 

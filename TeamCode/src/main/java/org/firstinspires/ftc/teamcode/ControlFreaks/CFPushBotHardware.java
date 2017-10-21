@@ -46,9 +46,10 @@ public class CFPushBotHardware {
     private String config_motor_lifter = "lifter";
     private String config_servo_hand = "hand";
     private String config_servo_wrist = "wrist";
+    private String config_servo_elbow = "elbow";
     private String config_servo_blockgrabber = "blockgrabber";
     private String config_servo_blockslide = "blockslide";
-    private String config_servo_elbow = "elbow";
+
     private String config_servo_shoulder = "shoulder";
     private String config_dim = "dim";
     private String config_i2c_gyro = "gyro";
@@ -140,8 +141,8 @@ public class CFPushBotHardware {
     private DcMotor v_motor_lifter;
     private static final double v_motor_lifter_power = 0.5;
     private static final DcMotor.Direction v_motor_lifter_direction = DcMotor.Direction.FORWARD;
-    private static final int v_motor_lifter_encoder_min = 0;
-    private static final int v_motor_lifter_encoder_max = 4000;
+    private static final int v_motor_lifter_encoder_min = 10;
+    private static final int v_motor_lifter_encoder_max = 9000;
     private static final int v_motor_lifter_encoder_blockHeight = 1000;
     private static final int v_motor_lifter_encoder_target = 0;
 
@@ -155,11 +156,11 @@ public class CFPushBotHardware {
 
 
     private Servo v_servo_blockgrabber;
-    private static final double v_servo_blockgrabber_MinPosition = 0.00;
-    private static final double v_servo_blockgrabber_MaxPosition = 0.45;
-    private double v_servo_blockgrabber_position = 0.0D;  //init arm elbow Position
+    private static final double v_servo_blockgrabber_MinPosition = 0.1;
+    private static final double v_servo_blockgrabber_MaxPosition = 0.3;
+    private double v_servo_blockgrabber_position = 0.3D;  //init arm elbow Position
     boolean v_servo_blockgrabber_is_extended = false;
-    private Servo.Direction v_servo_blockgrabber_direction = Servo.Direction.FORWARD;
+    private Servo.Direction v_servo_blockgrabber_direction = Servo.Direction.REVERSE;
 
     private Servo v_servo_blockslide;
     private static final double v_servo_blockslide_MinPosition = 0.00;
