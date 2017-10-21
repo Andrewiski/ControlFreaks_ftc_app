@@ -60,11 +60,11 @@ public class CFPushBotManual extends LinearOpMode {
             robot.setupManualDrive();
             //robot.vuforia_Init();
             // Wait for the game to start (driver presses PLAY)
-            robot.led7seg_timer_init(120);
+            //robot.led7seg_timer_init(120);
             robot.run_without_encoders();
             waitForStart();
-            robot.debugOff();
-            robot.led7seg_timer_start(120);
+            //robot.debugOff();
+            //robot.led7seg_timer_start(120);
 
 
             // run until the end of the match (driver presses STOP)
@@ -99,14 +99,12 @@ public class CFPushBotManual extends LinearOpMode {
                         }
                     }else{
                         buttonDpadUpReleased = true;
-                        robot.lifter_up();
+                        robot.lifter_off();
                     }
                     if(gamepad2.dpad_down){
                         if(buttonDpadDownReleased == true) {
                             robot.lifter_down();
                             buttonDpadDownReleased = false;
-
-
                         }
                     }else{
                         buttonDpadDownReleased = true;

@@ -106,6 +106,8 @@ public class CFPushBotHardware {
     private  float v_turn_motorspeed = .5f;
     private  float v_turn_motorspeed_slow = .25f;
 
+    private static final DcMotor.Direction v_drive_leftDirection = DcMotor.Direction.FORWARD;
+    private static final DcMotor.Direction v_drive_rightDirection = DcMotor.Direction.REVERSE;
 
     //old treads
     //private static final double driveInches_ticksPerInch = 182.35;
@@ -161,11 +163,11 @@ public class CFPushBotHardware {
 
     private Servo v_servo_blockslide;
     private static final double v_servo_blockslide_MinPosition = 0.00;
-    private static final double v_servo_blockslide_MaxPosition = 0.55;
-    private static final double v_servo_blockslide_MiddlePosition = 0.25;
-    private double v_servo_blockslide_position = 0.25D;  //init arm elbow Position
+    private static final double v_servo_blockslide_MaxPosition = 1.0;
+    private static final double v_servo_blockslide_MiddlePosition = 0.5;
+    private double v_servo_blockslide_position = 0.5D;  //init arm elbow Position
     boolean v_servo_blockslide_is_extended = false;
-    private Servo.Direction v_servo_blickslide_direction = Servo.Direction.FORWARD;
+    private Servo.Direction v_servo_blockslide_direction = Servo.Direction.FORWARD;
 
     private Servo v_servo_elbow;
     private static final double v_servo_elbow_MinPosition = 0.00;
@@ -337,7 +339,7 @@ public class CFPushBotHardware {
         {
             v_motor_left_drive = opMode.hardwareMap.dcMotor.get (config_motor_leftdrive);
 
-            //v_motor_left_drive.setDirection (DcMotor.Direction.REVERSE);
+            v_motor_left_drive.setDirection (v_drive_leftDirection);
         }
         catch (Exception p_exeception)
         {
@@ -349,7 +351,7 @@ public class CFPushBotHardware {
         {
             v_motor_right_drive = opMode.hardwareMap.dcMotor.get (config_motor_rightdrive);
 
-            v_motor_right_drive.setDirection (DcMotor.Direction.REVERSE);
+            v_motor_right_drive.setDirection (v_drive_rightDirection);
         }
         catch (Exception p_exeception)
         {
@@ -437,7 +439,21 @@ public class CFPushBotHardware {
             v_servo_blockgrabber = null;
         }
 
-
+        //
+        // Connect the blockgrabber servo.
+        //
+        try
+        {
+            v_servo_blockslide = opMode.hardwareMap.servo.get(config_servo_blockslide);
+            v_servo_blockslide.scaleRange(v_servo_blockslide_MinPosition,v_servo_blockslide_MaxPosition);
+            v_servo_blockslide.setDirection(v_servo_blockslide_direction);
+            v_servo_blockslide.setPosition (v_servo_blockslide_position);
+        }
+        catch (Exception p_exeception)
+        {
+            debugLogException(config_servo_blockslide, "missing", p_exeception);
+            v_servo_blockslide = null;
+        }
 
 
         //
@@ -1085,24 +1101,9 @@ public class CFPushBotHardware {
         return false;
     }
 
-    //--------------------------------------------------------------------------
-    //
-    // lifter_on
-    //
-    /**
-     * Turn on the lifter motor
-     */
-    boolean v_motor_lifter_is_on = false;
-    public void lifter_on ()
-    {
 
-        if (v_motor_lifter != null)
-        {
-            v_motor_lifter.setPower(v_motor_lifter_power);
-            v_motor_lifter_is_on = true;
-        }
-        set_second_message("lifter_on" + v_motor_lifter_power);
-    }
+    boolean v_motor_lifter_is_on = false;
+
 
     public void lifter_off ()
     {
@@ -1119,7 +1120,7 @@ public class CFPushBotHardware {
 
         if (v_motor_lifter != null)
         {
-            if(v_motor_lifter.getCurrentPosition() < v_motor_lifter_encoder_min) {
+            if(v_motor_lifter.getCurrentPosition() > v_motor_lifter_encoder_min) {
 
                 v_motor_lifter.setPower(0 - v_motor_lifter_power);
                 v_motor_lifter_is_on = true;
@@ -1134,7 +1135,6 @@ public class CFPushBotHardware {
 
     public void lifter_up ()
     {
-
         if (v_motor_lifter != null)
         {
             if(v_motor_lifter.getCurrentPosition() < v_motor_lifter_encoder_max) {
