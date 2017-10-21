@@ -139,7 +139,7 @@ public class CFPushBotManual extends LinearOpMode {
                     }
                     if(gamepad1.x ){
                         if(buttonXReleased == true) {
-                            robot.blockgrabber_open();
+                            robot.blueled_toggle();
                             buttonXReleased = false;
                         }
                     }else{
@@ -147,7 +147,7 @@ public class CFPushBotManual extends LinearOpMode {
                     }
                     if(gamepad1.b){
                         if(buttonBReleased == true) {
-                            robot.blockgrabber_close();
+                            robot.redled_toggle();
                             buttonBReleased = false;
                         }
                     }else{
@@ -163,7 +163,7 @@ public class CFPushBotManual extends LinearOpMode {
                     }
                     if(gamepad2.x){
                         if(buttonG2XReleased == true) {
-                            robot.blockgrabber_open();
+                            //robot.rackpinion_load();
                             buttonG2XReleased = false;
                         }
                     }else{
@@ -175,7 +175,7 @@ public class CFPushBotManual extends LinearOpMode {
                     }
                     if(gamepad2.b){
                         if(buttonG2BReleased == true) {
-                            robot.blockgrabber_close();
+                            //robot.catapult_fire();
                             buttonG2BReleased = false;
                         }
                     }else{
