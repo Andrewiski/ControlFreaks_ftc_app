@@ -93,22 +93,30 @@ public class CFPushBotManual extends LinearOpMode {
                         buttonRightBumperReleased = true;
                     }
                     if(gamepad2.dpad_up){
+                        robot.lifter_up();
                         if(buttonDpadUpReleased == true) {
-                            robot.lifter_up();
+
                             buttonDpadUpReleased = false;
                         }
                     }else{
+                        if(buttonDpadUpReleased == false){
+                            robot.lifter_off();
+                        }
                         buttonDpadUpReleased = true;
-                        robot.lifter_off();
+
                     }
                     if(gamepad2.dpad_down){
+                        robot.lifter_down();
                         if(buttonDpadDownReleased == true) {
-                            robot.lifter_down();
+
                             buttonDpadDownReleased = false;
                         }
                     }else{
+                        if(buttonDpadDownReleased == false){
+                            robot.lifter_off();
+                        }
                         buttonDpadDownReleased = true;
-                        robot.lifter_off();
+
 
                     }
 

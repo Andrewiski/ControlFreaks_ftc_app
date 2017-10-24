@@ -139,7 +139,7 @@ public class CFPushBotHardware {
     private static final double ServoErrorResultPosition = -0.0000000001;
 
     private DcMotor v_motor_lifter;
-    private static final double v_motor_lifter_power = 0.5;
+    private static final double v_motor_lifter_power = 0.75;
     private static final DcMotor.Direction v_motor_lifter_direction = DcMotor.Direction.FORWARD;
     private static final int v_motor_lifter_encoder_min = 10;
     private static final int v_motor_lifter_encoder_max = 9000;
@@ -157,8 +157,8 @@ public class CFPushBotHardware {
 
     private Servo v_servo_blockgrabber;
     private static final double v_servo_blockgrabber_MinPosition = 0.1;
-    private static final double v_servo_blockgrabber_MaxPosition = 0.3;
-    private double v_servo_blockgrabber_position = 0.3D;  //init arm elbow Position
+    private static final double v_servo_blockgrabber_MaxPosition = 0.5;
+    private double v_servo_blockgrabber_position = 0.5D;  //init arm elbow Position
     boolean v_servo_blockgrabber_is_extended = false;
     private Servo.Direction v_servo_blockgrabber_direction = Servo.Direction.REVERSE;
 
@@ -976,7 +976,7 @@ public class CFPushBotHardware {
         {
             v_motor_right_drive.setPower(l_right_drive_power);
         }
-        set_second_message("set_drive_power l" + p_left_power + ":r" + p_right_power + " cliped:l:" + l_left_drive_power +":r" + l_right_drive_power);
+        //set_second_message("set_drive_power l" + p_left_power + ":r" + p_right_power + " cliped:l:" + l_left_drive_power +":r" + l_right_drive_power);
     } // set_drive_power
 
     //--------------------------------------------------------------------------
@@ -1113,7 +1113,7 @@ public class CFPushBotHardware {
             v_motor_lifter.setPower(0);
             v_motor_lifter_is_on = false;
         }
-        set_second_message("lifter_off" );
+        set_second_message("lifter_off " + v_motor_lifter.getCurrentPosition() );
     }
 
     public void lifter_down ()
@@ -1125,7 +1125,7 @@ public class CFPushBotHardware {
 
                 v_motor_lifter.setPower(0 - v_motor_lifter_power);
                 v_motor_lifter_is_on = true;
-                set_second_message("lifter_down" + (0-v_motor_lifter_power));
+                set_second_message("lifter_down " + v_motor_lifter.getCurrentPosition());
             }else{
                 lifter_off();
                 set_second_message("lifter_down min reached" );
@@ -1141,7 +1141,7 @@ public class CFPushBotHardware {
             if(v_motor_lifter.getCurrentPosition() < v_motor_lifter_encoder_max) {
                 v_motor_lifter.setPower(v_motor_lifter_power);
                 v_motor_lifter_is_on = true;
-                set_second_message("lifter_up" + (v_motor_lifter_power));
+                set_second_message("lifter_up " + v_motor_lifter.getCurrentPosition());
             }else{
                 lifter_off();
                 set_second_message("lifter_up max reached" );
@@ -2364,15 +2364,41 @@ public class CFPushBotHardware {
             debugLogException("blockgrabber_retract", "error", p_exeception);
         }
     }
+    ///Pass in 1 2 3
+    public void blockslide_position( int position)
+    {
+        try {
+            if (v_servo_blockslide != null) {
+                v_servo_blockslide_position = position;
+                switch(position){
+                    case 0:
+                        v_servo_blockslide.setPosition(v_servo_blockslide_MinPosition);
+                        break;
+                    case 1:
+                        v_servo_blockslide.setPosition(v_servo_blockslide_MiddlePosition);
+                        break;
+                    case 2:
+                        v_servo_blockslide.setPosition(v_servo_blockslide_MaxPosition);
+                        break;
 
+                }
 
+                v_servo_blockslide_is_extended = true;
+            }
+        }catch (Exception p_exeception)
+        {
+            debugLogException("blockslide_left", "error", p_exeception);
+        }
+    }
 
     public void blockslide_left ()
     {
         try {
             if (v_servo_blockslide != null) {
-                v_servo_blockslide.setPosition(v_servo_blockslide_MinPosition);
-                v_servo_blockslide_is_extended = true;
+                if(v_servo_blockslide_position > 0){
+                    v_servo_blockslide_position--;
+                }
+                blockslide_position(v_motor_rackpinion_Position);
             }
         }catch (Exception p_exeception)
         {
@@ -2384,8 +2410,10 @@ public class CFPushBotHardware {
     {
         try {
             if (v_servo_blockslide != null) {
-                v_servo_blockslide_is_extended = false;
-                v_servo_blockslide.setPosition(v_servo_blockslide_MaxPosition);
+                if(v_servo_blockslide_position < 2){
+                    v_servo_blockslide_position--;
+                }
+                blockslide_position(v_motor_rackpinion_Position);
             }
         }catch (Exception p_exeception)
         {
