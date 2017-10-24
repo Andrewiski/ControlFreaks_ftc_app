@@ -199,7 +199,7 @@ public class CFPushBotManual extends LinearOpMode {
                                 robot.redled_off();
                                 robot.blueled_off();
                             }
-                        }
+
                             //myFliperRetractElapsedTime = null;
                             buttonG2YReleased = false;
                         }
