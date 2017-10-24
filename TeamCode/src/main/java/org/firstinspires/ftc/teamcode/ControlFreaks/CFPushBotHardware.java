@@ -158,7 +158,7 @@ public class CFPushBotHardware {
     private Servo v_servo_blockgrabber;
     private static final double v_servo_blockgrabber_MinPosition = 0.1;
     private static final double v_servo_blockgrabber_MaxPosition = 0.5;
-    private double v_servo_blockgrabber_position = 0.5D;  //init arm elbow Position
+    private double v_servo_blockgrabber_position = 0.1D;  //init arm elbow Position
     boolean v_servo_blockgrabber_is_extended = false;
     private Servo.Direction v_servo_blockgrabber_direction = Servo.Direction.REVERSE;
 
@@ -2346,6 +2346,7 @@ public class CFPushBotHardware {
                 v_servo_blockgrabber.setPosition(v_servo_blockgrabber_MinPosition);
                 v_servo_blockgrabber_is_extended = true;
             }
+            set_third_message("blockgrabber_open " + v_servo_blockgrabber_MinPosition);
         }catch (Exception p_exeception)
         {
             debugLogException("blockgrabber_extend", "error", p_exeception);
@@ -2359,6 +2360,7 @@ public class CFPushBotHardware {
                 v_servo_blockgrabber_is_extended = false;
                 v_servo_blockgrabber.setPosition(v_servo_blockgrabber_MaxPosition);
             }
+            set_third_message("blockgrabber_close " + v_servo_blockgrabber_MaxPosition);
         }catch (Exception p_exeception)
         {
             debugLogException("blockgrabber_retract", "error", p_exeception);

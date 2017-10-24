@@ -137,12 +137,6 @@ public class CFPushBotManual extends LinearOpMode {
                     }else {
                         buttonDpadrightReleased = true;
                     }
-
-
-
-
-
-
                     if(gamepad1.x ){
                         if(buttonXReleased == true) {
                             robot.blockgrabber_open();
