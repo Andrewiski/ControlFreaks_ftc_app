@@ -187,7 +187,19 @@ public class CFPushBotManual extends LinearOpMode {
                     }
                     if(gamepad2.y){
                         if(buttonG2YReleased == true) {
-                            robot.blockgrabber_toggle();
+                            int myColor = robot.sensor_color_GreatestColor();
+                            if (myColor == 0) {
+                                robot.redled_on();
+                                robot.blueled_off();
+                            } else if (myColor == 2) {
+
+                                robot.redled_off();
+                                robot.blueled_on();
+                            }else {
+                                robot.redled_off();
+                                robot.blueled_off();
+                            }
+                        }
                             //myFliperRetractElapsedTime = null;
                             buttonG2YReleased = false;
                         }
