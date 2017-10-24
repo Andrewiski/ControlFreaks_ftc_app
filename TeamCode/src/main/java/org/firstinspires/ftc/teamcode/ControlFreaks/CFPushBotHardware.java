@@ -139,7 +139,7 @@ public class CFPushBotHardware {
     private static final double ServoErrorResultPosition = -0.0000000001;
 
     private DcMotor v_motor_lifter;
-    private static final double v_motor_lifter_power = 0.75;
+    private static final double v_motor_lifter_power = 1.0;
     private static final DcMotor.Direction v_motor_lifter_direction = DcMotor.Direction.FORWARD;
     private static final int v_motor_lifter_encoder_min = 10;
     private static final int v_motor_lifter_encoder_max = 9000;
