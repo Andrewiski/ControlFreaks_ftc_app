@@ -160,12 +160,12 @@ public class CFPushBotManual extends LinearOpMode {
                         buttonBReleased = true;
                     }
                     if(gamepad2.a){
-                                if(buttonAReleased == true) {
-                                    robot.blockgrabber_open();
-                                    buttonAReleased = false;
-                        }
+                            if(buttonG2AReleased == true) {
+                                robot.blockgrabber_toggle();
+                                buttonG2AReleased = false;
+                            }
                     }else{
-                        buttonAReleased = true;
+                        buttonG2AReleased = true;
                     }
                     if(gamepad2.x){
                         if(buttonG2XReleased == true) {
@@ -200,22 +200,7 @@ public class CFPushBotManual extends LinearOpMode {
                     }else{
                         buttonG2YReleased = true;
                     }
-                    if(gamepad2.a){
-                        if(buttonG2AReleased == true) {
-                            robot.blockgrabber_close();
-                            buttonG2AReleased = false;
-                            //myFliperRetractElapsedTime = new ElapsedTime();
-                        }
-                    }else{
-//                        if(myFliperRetractElapsedTime != null){
-//                            if (myFliperRetractElapsedTime.seconds() > 3){
-//                                robot.flipper_extend();
-//                                myFliperRetractElapsedTime = null;
-//                            }
-//                        }
-                        buttonG2AReleased = true;
 
-                    }
                     //robot.waitForTick(2);
                 }catch(Exception ex){
                     robot.set_error_message("Fatal Error "  + ex.toString());

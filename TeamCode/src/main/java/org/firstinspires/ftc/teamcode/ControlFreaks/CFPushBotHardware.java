@@ -166,7 +166,7 @@ public class CFPushBotHardware {
     private static final double v_servo_blockslide_MinPosition = 0.00;
     private static final double v_servo_blockslide_MaxPosition = 1.0;
     private static final double v_servo_blockslide_MiddlePosition = 0.5;
-    private double v_servo_blockslide_position = 0.5D;  //init arm elbow Position
+    private int v_servo_blockslide_position = 1;  //move to Middle
     boolean v_servo_blockslide_is_extended = false;
     private Servo.Direction v_servo_blockslide_direction = Servo.Direction.FORWARD;
 
@@ -448,7 +448,7 @@ public class CFPushBotHardware {
             v_servo_blockslide = opMode.hardwareMap.servo.get(config_servo_blockslide);
             v_servo_blockslide.scaleRange(v_servo_blockslide_MinPosition,v_servo_blockslide_MaxPosition);
             v_servo_blockslide.setDirection(v_servo_blockslide_direction);
-            v_servo_blockslide.setPosition (v_servo_blockslide_position);
+            v_servo_blockslide.setPosition (v_servo_blockslide_MiddlePosition);  //Middle
         }
         catch (Exception p_exeception)
         {
@@ -2382,7 +2382,7 @@ public class CFPushBotHardware {
                         break;
 
                 }
-
+                set_first_message("block_slide " + v_servo_blockslide_position);
                 v_servo_blockslide_is_extended = true;
             }
         }catch (Exception p_exeception)
@@ -2398,7 +2398,8 @@ public class CFPushBotHardware {
                 if(v_servo_blockslide_position > 0){
                     v_servo_blockslide_position--;
                 }
-                blockslide_position(v_motor_rackpinion_Position);
+                blockslide_position(v_servo_blockslide_position);
+                set_first_message("blockslide_left " + v_servo_blockslide_position);
             }
         }catch (Exception p_exeception)
         {
@@ -2411,9 +2412,11 @@ public class CFPushBotHardware {
         try {
             if (v_servo_blockslide != null) {
                 if(v_servo_blockslide_position < 2){
-                    v_servo_blockslide_position--;
+                    v_servo_blockslide_position++;
+                    blockslide_position(v_servo_blockslide_position);
                 }
-                blockslide_position(v_motor_rackpinion_Position);
+
+                set_first_message("blockslide_right " + v_servo_blockslide_position);
             }
         }catch (Exception p_exeception)
         {
