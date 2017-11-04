@@ -67,7 +67,7 @@ public class CFPushBotAuto_blue1 extends LinearOpMode
                     // drive Forward  inches
                     //
                     //robot.led7seg_timer_start(30);
-                    robot.shoulder_extend();
+                    robot.jewel_extend();
 
                     v_state++;
                     break;
@@ -91,7 +91,12 @@ public class CFPushBotAuto_blue1 extends LinearOpMode
                     }else if(color==2){
                         robot.turn_degrees(-10, true, v_useGyro);
                     }
-                break;
+                    v_state++;
+                    break;
+                case 4:
+                    robot.jewel_retract();
+                    v_state++;
+                    break;
 
                 default:
                     //
