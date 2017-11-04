@@ -316,7 +316,6 @@ public class ConceptVuforiaNavigation extends LinearOpMode {
         ((VuforiaTrackableDefaultListener)lTarget.getListener()).setPhoneInformation(phoneLocationOnRobot, parameters.cameraDirection);
         ((VuforiaTrackableDefaultListener)cTarget.getListener()).setPhoneInformation(phoneLocationOnRobot, parameters.cameraDirection);
         ((VuforiaTrackableDefaultListener)rTarget.getListener()).setPhoneInformation(phoneLocationOnRobot, parameters.cameraDirection);
-        //((VuforiaTrackableDefaultListener)toolsTarget.getListener()).setPhoneInformation(phoneLocationOnRobot, parameters.cameraDirection);
 
         /**
          * A brief tutorial: here's how all the math is going to work:
