@@ -62,13 +62,13 @@ public class CFPushBotManualServoTest extends LinearOpMode {
                 try {
                     robot.hardware_loop();
                     if(gamepad1.left_trigger > .2 || gamepad1.right_trigger > .2 ) {
-                        robot.elbow_setposition(-gamepad1.left_stick_y);
+                        robot.shoulder_setposition(-gamepad1.left_stick_y);
                     }else{
-                        robot.elbow_setposition(-gamepad1.left_stick_y/1.5f);
+                        robot.shoulder_setposition(-gamepad1.left_stick_y/1.5f);
                     }
                     if(gamepad1.left_bumper){
                         if(buttonLeftBumperReleased == true) {
-                            robot.elbow_retract();
+                            robot.shoulder_retract();
                             buttonLeftBumperReleased = false;
                         }
                     }else{
@@ -76,22 +76,22 @@ public class CFPushBotManualServoTest extends LinearOpMode {
                     }
                     if(gamepad1.right_bumper){
                         if(buttonRightBumperReleased == true) {
-                            robot.elbow_extend();
+                            robot.jewel_extend();
                             buttonRightBumperReleased = false;
                         }
                     }else{
                         buttonRightBumperReleased = true;
                     }
                     if(gamepad1.dpad_up) {
-                        robot.elbow_step(.05);
+                        robot.shoulder_step(.05);
                     }
                     if(gamepad1.dpad_down){
-                        robot.elbow_step(-.05);
+                        robot.shoulder_step(-.05);
                     }
 
                     if(gamepad1.dpad_right){
                         if(buttonDpadRightReleased == true) {
-                            robot.elbow_step(-.05);
+                            robot.jewel_step(-.05);
                             buttonDpadRightReleased = false;
                         }
                     }else{
@@ -99,7 +99,7 @@ public class CFPushBotManualServoTest extends LinearOpMode {
                     }
                     if(gamepad1.dpad_left){
                         if(buttonDpadLeftReleased == true) {
-                            robot.elbow_step(.05);
+                            robot.jewel_step(.05);
                             buttonDpadLeftReleased = false;
                         }
                     }else{

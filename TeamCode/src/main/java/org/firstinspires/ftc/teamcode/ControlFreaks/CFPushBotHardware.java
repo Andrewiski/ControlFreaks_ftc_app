@@ -46,7 +46,7 @@ public class CFPushBotHardware {
     private String config_motor_lifter = "lifter";
     private String config_servo_hand = "hand";
     private String config_servo_wrist = "wrist";
-    private String config_servo_elbow = "elbow";
+    private String config_servo_jewel = "jewel";
     private String config_servo_blockgrabber = "blockgrabber";
     private String config_servo_blockslide = "blockslide";
 
@@ -160,7 +160,7 @@ public class CFPushBotHardware {
     private Servo v_servo_blockgrabber;
     private static final double v_servo_blockgrabber_MinPosition = 0.1;
     private static final double v_servo_blockgrabber_MaxPosition = 0.5;
-    private double v_servo_blockgrabber_position = 0.5D;  //init arm elbow Position
+    private double v_servo_blockgrabber_position = 0.5D;  //init arm jewel Position
     boolean v_servo_blockgrabber_is_extended = true;
     private Servo.Direction v_servo_blockgrabber_direction = Servo.Direction.REVERSE;
 
@@ -172,12 +172,12 @@ public class CFPushBotHardware {
     boolean v_servo_blockslide_is_extended = false;
     private Servo.Direction v_servo_blockslide_direction = Servo.Direction.FORWARD;
 
-    private Servo v_servo_elbow;
-    private static final double v_servo_elbow_MinPosition = 0.00;
-    private static final double v_servo_elbow_MaxPosition = 0.50;
-    private double v_servo_elbow_position = 0.00D;  //init arm elbow Position
-    private Servo.Direction v_servo_elbow_direction = Servo.Direction.FORWARD;
-    boolean v_servo_elbow_is_extending = false;
+    private Servo v_servo_jewel;
+    private static final double v_servo_jewel_MinPosition = 0.00;
+    private static final double v_servo_jewel_MaxPosition = 0.50;
+    private double v_servo_jewel_position = 0.00D;  //init arm jewel Position
+    private Servo.Direction v_servo_jewel_direction = Servo.Direction.FORWARD;
+    boolean v_servo_jewel_is_extending = false;
 
 
 
@@ -460,22 +460,22 @@ public class CFPushBotHardware {
 
 
         //
-        // Connect the elbow servo.
+        // Connect the jewel servo.
         //
         try
         {
-            v_servo_elbow = opMode.hardwareMap.servo.get(config_servo_elbow);
+            v_servo_jewel = opMode.hardwareMap.servo.get(config_servo_jewel);
             //set the Server Direction
-            v_servo_elbow.setDirection(v_servo_elbow_direction);
+            v_servo_jewel.setDirection(v_servo_jewel_direction);
             //set the Servo ranage
-            v_servo_elbow.scaleRange(v_servo_elbow_MinPosition, v_servo_elbow_MaxPosition );
+            v_servo_jewel.scaleRange(v_servo_jewel_MinPosition, v_servo_jewel_MaxPosition );
             //move the Servo to its init position
-            v_servo_elbow.setPosition (v_servo_elbow_position);
+            v_servo_jewel.setPosition (v_servo_jewel_position);
         }
         catch (Exception p_exeception)
         {
-            debugLogException(config_servo_elbow, "missing", p_exeception);
-            v_servo_elbow = null;
+            debugLogException(config_servo_jewel, "missing", p_exeception);
+            v_servo_jewel = null;
         }
 
 
@@ -2453,67 +2453,67 @@ public class CFPushBotHardware {
     }
 
 
-    public void elbow_toggle ()
+    public void jewel_toggle ()
     {
         try {
-            if (v_servo_elbow_is_extending == true){
-                elbow_retract();
+            if (v_servo_jewel_is_extending == true){
+                jewel_retract();
             }else{
-                elbow_extend();
+                jewel_extend();
             }
         }catch (Exception p_exeception)
         {
-            debugLogException("elbow_toggle", "error", p_exeception);
+            debugLogException("jewel_toggle", "error", p_exeception);
         }
     }
-    public void elbow_extend ()
+    public void jewel_extend ()
     {
         try {
-            if (v_servo_elbow != null) {
-                v_servo_elbow.setPosition(v_servo_elbow_MaxPosition);
-                v_servo_elbow_is_extending = true;
+            if (v_servo_jewel != null) {
+                v_servo_jewel.setPosition(v_servo_jewel_MaxPosition);
+                v_servo_jewel_is_extending = true;
             }
         }catch (Exception p_exeception)
         {
-            debugLogException("elbow_extend", "error", p_exeception);
+            debugLogException("jewel_extend", "error", p_exeception);
         }
     }
 
-    public void elbow_retract ()
+    public void jewel_retract ()
     {
         try {
-            if (v_servo_elbow != null) {
-                v_servo_elbow.setPosition(v_servo_elbow_MinPosition);
-                v_servo_elbow_is_extending = false;
+            if (v_servo_jewel != null) {
+                v_servo_jewel.setPosition(v_servo_jewel_MinPosition);
+                v_servo_jewel_is_extending = false;
             }
         }catch (Exception p_exeception)
         {
-            debugLogException("elbow_retract", "error", p_exeception);
+            debugLogException("jewel_retract", "error", p_exeception);
         }
     }
 
     //Warning there is no way to read the servos current position ie there is no feed back
     // to the electronics So calling this function a hundred times while a button is down will make it hard to control
-    public void elbow_step(double stepAmount)
+    public void jewel_step(double stepAmount)
     {
         try {
-            if (v_servo_elbow != null) {
-                v_servo_elbow.setPosition(v_servo_elbow.getPosition() + stepAmount);
+            if (v_servo_jewel != null) {
+                v_servo_jewel.setPosition(v_servo_jewel.getPosition() + stepAmount);
             }
         }catch (Exception p_exeception)
         {
-            debugLogException("elbow_step", "error", p_exeception);
+            debugLogException("jewel_step", "error", p_exeception);
         }
     }
-    public void elbow_setposition (double position)
+    public void jewel_setposition (double position)
     {
         try {
-            if (v_servo_elbow != null) {
-                v_servo_elbow.setPosition(position);
+            if (v_servo_jewel != null) {
+                v_servo_jewel.setPosition(position);
             }
         }catch (Exception p_exeception)
         {
-            debugLogException("elbow_setposition", "error", p_exeception);
+            debugLogException("jewel_setposition", "error", p_exeception);
         }
     }
 
@@ -2554,6 +2554,31 @@ public class CFPushBotHardware {
         }catch (Exception p_exeception)
         {
             debugLogException("shoulder_retract", "error", p_exeception);
+        }
+    }
+
+    //Warning there is no way to read the servos current position ie there is no feed back
+    // to the electronics So calling this function a hundred times while a button is down will make it hard to control
+    public void shoulder_step(double stepAmount)
+    {
+        try {
+            if (v_servo_shoulder != null) {
+                v_servo_shoulder.setPosition(v_servo_shoulder.getPosition() + stepAmount);
+            }
+        }catch (Exception p_exeception)
+        {
+            debugLogException("shoulder_step", "error", p_exeception);
+        }
+    }
+    public void shoulder_setposition (double position)
+    {
+        try {
+            if (v_servo_shoulder != null) {
+                v_servo_shoulder.setPosition(position);
+            }
+        }catch (Exception p_exeception)
+        {
+            debugLogException("shoulder_setposition", "error", p_exeception);
         }
     }
 
@@ -2615,7 +2640,7 @@ public class CFPushBotHardware {
         }
 
 
-    } // m_arm_elbow_position
+    } // m_arm_jewel_position
 
 */
 
@@ -3711,7 +3736,7 @@ public class CFPushBotHardware {
                         );
                 opMode.telemetry.addData
                         ("06"
-                                , "Arm Elbow: " + a_arm_elbow_position()
+                                , "Arm jewel: " + a_arm_jewel_position()
                         );
                 opMode.telemetry.addData
                         ("07"
