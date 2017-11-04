@@ -42,7 +42,7 @@ public class CFPushBotHardware {
 
     private String config_motor_leftdrive = "left_drive";
     private String config_motor_rightdrive = "right_drive";
-    private String config_motor_rackpinion = "rackpinion";
+    private String config_motor_slider = "slider";
     private String config_motor_lifter = "lifter";
     private String config_servo_hand = "hand";
     private String config_servo_wrist = "wrist";
@@ -141,25 +141,27 @@ public class CFPushBotHardware {
     private DcMotor v_motor_lifter;
     private static final double v_motor_lifter_power = 1.0;
     private static final DcMotor.Direction v_motor_lifter_direction = DcMotor.Direction.FORWARD;
-    private static final int v_motor_lifter_encoder_min = 10;
-    private static final int v_motor_lifter_encoder_max = 9000;
+    private static final int v_motor_lifter_encoder_min = 30;
+    private static final int v_motor_lifter_encoder_max = 4750;
     private static final int v_motor_lifter_encoder_blockHeight = 1000;
     private static final int v_motor_lifter_encoder_target = 0;
 
-    //4.66666  ticks per degree on 1680 per 360
-    private DcMotor v_motor_rackpinion;
-    private static final double v_motor_rackpinion_Speed = 1.0f;
-    private static final double v_motor_rackpinion_SpeedSlowDown = 0.5f;
-    private static final int v_motor_rackpinion_ExtendTicks = 840;
-    private static final int v_motor_rackpinion_ExtendSlowdownTicks = 300;
-    private int v_motor_rackpinion_Position = 0;
+    //Slider is a AndyMark 40 1120 Pulses per 360 10 rotation to fully extend 11200
+    private DcMotor v_motor_slider;
+    private static final double v_motor_slider_power = 1.0f;
+    private static final DcMotor.Direction v_motor_slider_direction = DcMotor.Direction.FORWARD;
+    private static final double v_motor_slider_SpeedSlowDown = 0.5f;
+    private static final int v_motor_slider_encoder_min = 30;
+    private static final int v_motor_slider_encoder_max = 11200;
+    private static final int v_motor_slider_ExtendSlowdownTicks = 300;
+    private int v_motor_slider_Position = 0;
 
 
     private Servo v_servo_blockgrabber;
     private static final double v_servo_blockgrabber_MinPosition = 0.1;
     private static final double v_servo_blockgrabber_MaxPosition = 0.5;
-    private double v_servo_blockgrabber_position = 0.1D;  //init arm elbow Position
-    boolean v_servo_blockgrabber_is_extended = false;
+    private double v_servo_blockgrabber_position = 0.5D;  //init arm elbow Position
+    boolean v_servo_blockgrabber_is_extended = true;
     private Servo.Direction v_servo_blockgrabber_direction = Servo.Direction.REVERSE;
 
     private Servo v_servo_blockslide;
@@ -495,39 +497,50 @@ public class CFPushBotHardware {
 
         try
         {
-            v_motor_rackpinion = opMode.hardwareMap.dcMotor.get (config_motor_rackpinion);
-            v_motor_rackpinion.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            v_motor_rackpinion.setDirection(DcMotor.Direction.REVERSE);
-            v_motor_rackpinion.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//            while(v_motor_rackpinion.getMode() != DcMotor.RunMode.STOP_AND_RESET_ENCODER) {
-//                sleep(10);
-//            }
+            v_motor_slider = opMode.hardwareMap.dcMotor.get (config_motor_slider);
+            v_motor_slider.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            v_motor_slider.setDirection(v_motor_lifter_direction);
+            v_motor_slider.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             int counter = 0;
-            while (counter < 10 && v_motor_rackpinion.getMode() != DcMotor.RunMode.STOP_AND_RESET_ENCODER){
+            while (counter < 10 && v_motor_slider.getMode() != DcMotor.RunMode.STOP_AND_RESET_ENCODER){
                 counter++;
                 sleep(10);
-                debugLogException("init", "waiting on rackpinion motor Stop_and_rest complete",null);
+                debugLogException("init", "waiting on slider motor Stop_and_rest complete",null);
             }
-            v_motor_rackpinion.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            v_motor_slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             counter = 0;
-            while (counter < 10 && v_motor_rackpinion.getMode() != DcMotor.RunMode.RUN_TO_POSITION){
+            while (counter < 10 && v_motor_slider.getMode() != DcMotor.RunMode.RUN_TO_POSITION){
                 counter++;
                 sleep(10);
-                debugLogException("init", "waiting on rackpinion motor RUN_TO_POSITION complete",null);
+                debugLogException("init", "waiting on slider motor RUN_TO_POSITION complete",null);
             }
 
         }
         catch (Exception p_exeception)
         {
-            debugLogException(config_motor_rackpinion,"missing",p_exeception);
-            v_motor_rackpinion = null;
+            debugLogException(config_motor_slider,"missing",p_exeception);
+            v_motor_slider = null;
         }
 
         try
         {
             v_motor_lifter = opMode.hardwareMap.dcMotor.get (config_motor_lifter);
-            v_motor_lifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            v_motor_lifter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             v_motor_lifter.setDirection(v_motor_lifter_direction);
+            v_motor_lifter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            int counter = 0;
+            while (counter < 10 && v_motor_lifter.getMode() != DcMotor.RunMode.STOP_AND_RESET_ENCODER){
+                counter++;
+                sleep(10);
+                debugLogException("init", "waiting on lifter motor Stop_and_rest complete",null);
+            }
+            v_motor_lifter.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            counter = 0;
+            while (counter < 10 && v_motor_lifter.getMode() != DcMotor.RunMode.RUN_TO_POSITION){
+                counter++;
+                sleep(10);
+                debugLogException("init", "waiting on lifter motor RUN_TO_POSITION complete",null);
+            }
         }
         catch (Exception p_exeception)
         {
@@ -857,8 +870,8 @@ public class CFPushBotHardware {
         if(v_motor_lifter != null){
             v_motor_lifter.setPower(0);
         }
-        if(v_motor_rackpinion != null){
-            v_motor_rackpinion.setPower(0);
+        if(v_motor_slider != null){
+            v_motor_slider.setPower(0);
         }
     }
 
@@ -1008,44 +1021,44 @@ public class CFPushBotHardware {
 
 
 
-    public void rackpinion_extend () throws InterruptedException
+    public void slider_extend () throws InterruptedException
     {
-        if (v_motor_rackpinion != null)
+        if (v_motor_slider != null)
         {
-            if (v_rackpinion_isExtended == true){
-                set_second_message("rackpinion already extended");
+            if (v_slider_isExtended == true){
+                set_second_message("slider already extended");
                 return;
             }
-            v_rackpinion_state = 0;
-            v_motor_rackpinion_Position = v_motor_rackpinion_Position + v_motor_rackpinion_ExtendTicks - v_motor_rackpinion_ExtendSlowdownTicks;
+            v_slider_state = 0;
+            v_motor_slider_Position = v_motor_slider_Position + v_motor_slider_encoder_max - v_motor_slider_ExtendSlowdownTicks;
 
-            v_motor_rackpinion.setTargetPosition(v_motor_rackpinion_Position);
-            set_second_message("extendinging rackpinion");
-            v_motor_rackpinion.setPower(v_motor_rackpinion_Speed);
+            v_motor_slider.setTargetPosition(v_motor_slider_Position);
+            set_second_message("extendinging slider");
+            v_motor_slider.setPower(v_motor_slider_power);
 
         }
     }
 
-    private int v_rackpinion_state = 0;
-    public boolean rackpinion_extend_complete () {
-        if (v_motor_rackpinion != null) {
-            switch (v_rackpinion_state) {
+    private int v_slider_state = 0;
+    public boolean slider_extend_complete () {
+        if (v_motor_slider != null) {
+            switch (v_slider_state) {
                 case 0:
-                    if (v_motor_rackpinion.isBusy() == false) {
-                        v_motor_rackpinion_Position = v_motor_rackpinion_Position + v_motor_rackpinion_ExtendSlowdownTicks;
-                        v_motor_rackpinion.setPower(0.0F);
-                        v_motor_rackpinion.setTargetPosition(v_motor_rackpinion_Position);
-                        set_second_message("rackpinion almost extended");
-                        v_motor_rackpinion.setPower(0.5F);
+                    if (v_motor_slider.isBusy() == false) {
+                        v_motor_slider_Position = v_motor_slider_Position + v_motor_slider_ExtendSlowdownTicks;
+                        v_motor_slider.setPower(0.0F);
+                        v_motor_slider.setTargetPosition(v_motor_slider_Position);
+                        set_second_message("slider almost extended");
+                        v_motor_slider.setPower(0.5F);
 
-                        v_rackpinion_state++;
+                        v_slider_state++;
                     }
                     break;
                 case 1:
-                    if (v_motor_rackpinion.isBusy() == false) {
-                        v_motor_rackpinion.setPower(0.0F);
-                        v_rackpinion_isExtended = true;
-                        set_second_message("rackpinion loaded");
+                    if (v_motor_slider.isBusy() == false) {
+                        v_motor_slider.setPower(0.0F);
+                        v_slider_isExtended = true;
+                        set_second_message("slider loaded");
                         return true;
                     }
                     break;
@@ -1058,44 +1071,44 @@ public class CFPushBotHardware {
     }
 
 
-    //Retract the rackpinion
+    //Retract the slider
 
     //--------------------------------------------------------------------------
     //
-    // Retract_rackpinion
+    // Retract_slider
     //
     /**
-     * Retract the Rack and Pinion
+     * Retract the slider
      */
-    private boolean v_rackpinion_isExtended = false;
-    public void rackpinion_retract ()
+    private boolean v_slider_isExtended = false;
+    public void slider_retract ()
     {
 
-        if (v_motor_rackpinion != null )
+        if (v_motor_slider != null )
         {
-            if (v_rackpinion_isExtended == false){
-                set_second_message("rackpinion not loaded");
+            if (v_slider_isExtended == false){
+                set_second_message("slider not loaded");
                 return;
             }
-            v_motor_rackpinion_Position = 0;
-            v_motor_rackpinion.setTargetPosition(v_motor_rackpinion_Position);
-            set_second_message("Retracting rackpinion");
-            v_motor_rackpinion.setPower(v_motor_rackpinion_Speed);
+            v_motor_slider_Position = v_motor_slider_encoder_min;
+            v_motor_slider.setTargetPosition(v_motor_slider_Position);
+            set_second_message("Retracting slider");
+            v_motor_slider.setPower(v_motor_slider_power);
         }
 
     }
-    public boolean rackpinion_retract_complete ()
+    public boolean slider_retract_complete ()
     {
-        if (v_motor_rackpinion != null )
+        if (v_motor_slider != null )
         {
-            if (v_rackpinion_isExtended == false){
-                set_second_message("rackpinion not Extended");
+            if (v_slider_isExtended == false){
+                set_second_message("slider not Extended");
                 return true;
             }
-            if (v_motor_rackpinion.isBusy()== false) {
-                v_motor_rackpinion.setPower(0.0F);
-                v_rackpinion_isExtended = false;
-                set_second_message("Retracted rackpinion");
+            if (v_motor_slider.isBusy()== false) {
+                v_motor_slider.setPower(0.0F);
+                v_slider_isExtended = false;
+                set_second_message("Retracted slider");
                 return true;
             }
         }
@@ -3667,10 +3680,10 @@ public class CFPushBotHardware {
                                         + ", "
                                         + a_right_drive_mode()
                         );
-                if(v_motor_rackpinion != null) {
-                    opMode.telemetry.addData("rackpinion", " to %7d at %7d",
-                            v_motor_rackpinion_Position,
-                            v_motor_rackpinion.getCurrentPosition());
+                if(v_motor_slider != null) {
+                    opMode.telemetry.addData("slider", " to %7d at %7d",
+                            v_motor_slider_Position,
+                            v_motor_slider.getCurrentPosition());
                 }
                 if(v_sensor_color_i2c_enabled) {
                     int[] v_color_rgba = sensor_color_get_rgba();

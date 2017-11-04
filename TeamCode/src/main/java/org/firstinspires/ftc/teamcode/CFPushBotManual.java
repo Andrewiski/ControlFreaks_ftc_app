@@ -44,6 +44,11 @@ public class CFPushBotManual extends LinearOpMode {
     boolean buttonDpadDownReleased = true;
     boolean buttonLeftBumperReleased = true;
     boolean buttonRightBumperReleased = true;
+
+    boolean buttonG2DpadleftReleased = true;
+    boolean buttonG2DpadrightReleased = true;
+    boolean buttonG2DpadUpReleased = true;
+    boolean buttonG2DpadDownReleased = true;
     boolean buttonG2XReleased = true;
     boolean buttonG2YReleased = true;
     boolean buttonG2AReleased = true;
@@ -62,6 +67,7 @@ public class CFPushBotManual extends LinearOpMode {
             // Wait for the game to start (driver presses PLAY)
             //robot.led7seg_timer_init(120);
             robot.run_without_encoders();
+
             waitForStart();
             //robot.debugOff();
             //robot.led7seg_timer_start(120);
@@ -92,8 +98,9 @@ public class CFPushBotManual extends LinearOpMode {
                     }else{
                         buttonRightBumperReleased = true;
                     }
-                    if(gamepad2.dpad_up){
-                        robot.lifter_up();
+
+                    if(gamepad1.dpad_up){
+                        //robot.lifter_up();
                         if(buttonDpadUpReleased == true) {
 
                             buttonDpadUpReleased = false;
@@ -105,37 +112,78 @@ public class CFPushBotManual extends LinearOpMode {
                         buttonDpadUpReleased = true;
 
                     }
-                    if(gamepad2.dpad_down){
-                        robot.lifter_down();
+                    if(gamepad1.dpad_down){
+                        //robot.lifter_down();
                         if(buttonDpadDownReleased == true) {
 
                             buttonDpadDownReleased = false;
                         }
                     }else{
                         if(buttonDpadDownReleased == false){
-                            robot.lifter_off();
+                            //robot.lifter_off();
                         }
                         buttonDpadDownReleased = true;
-
-
                     }
 
-                    if(gamepad2.dpad_left){
+                    if(gamepad1.dpad_left){
                         if(buttonDpadleftReleased == true) {
-                            robot.blockslide_left();
+                            robot.slider_retract();
                             buttonDpadleftReleased = false;
                         }
                     }else {
                         buttonDpadleftReleased = true;
                     }
-
-                    if(gamepad2.dpad_right){
+                    if(gamepad1.dpad_right){
                         if(buttonDpadrightReleased == true) {
-                            robot.blockslide_right();
+                            robot.slider_extend();
                             buttonDpadrightReleased = false;
                         }
                     }else {
                         buttonDpadrightReleased = true;
+                    }
+
+
+                    if(gamepad2.dpad_up){
+                        robot.lifter_up();
+                        if(buttonG2DpadUpReleased == true) {
+
+                            buttonG2DpadUpReleased = false;
+                        }
+                    }else{
+                        if(buttonG2DpadUpReleased == false){
+                            robot.lifter_off();
+                        }
+                        buttonG2DpadUpReleased = true;
+
+                    }
+                    if(gamepad2.dpad_down){
+                        robot.lifter_down();
+                        if(buttonG2DpadDownReleased == true) {
+
+                            buttonG2DpadDownReleased = false;
+                        }
+                    }else{
+                        if(buttonG2DpadDownReleased == false){
+                            robot.lifter_off();
+                        }
+                        buttonG2DpadDownReleased = true;
+                    }
+
+                    if(gamepad2.dpad_left){
+                        if(buttonG2DpadleftReleased == true) {
+                            robot.blockslide_left();
+                            buttonG2DpadleftReleased = false;
+                        }
+                    }else {
+                        buttonG2DpadleftReleased = true;
+                    }
+                    if(gamepad2.dpad_right){
+                        if(buttonG2DpadrightReleased == true) {
+                            robot.blockslide_right();
+                            buttonG2DpadrightReleased = false;
+                        }
+                    }else {
+                        buttonG2DpadrightReleased = true;
                     }
                     if(gamepad1.x ){
                         if(buttonXReleased == true) {
@@ -187,6 +235,12 @@ public class CFPushBotManual extends LinearOpMode {
                     }
                     if(gamepad2.y){
                         if(buttonG2YReleased == true) {
+                            robot.sensor_color_enable(true);
+                            robot.sensor_color_led(true);
+
+                            //myFliperRetractElapsedTime = null;
+                            buttonG2YReleased = false;
+                        }else {
                             int myColor = robot.sensor_color_GreatestColor();
                             if (myColor == 0) {
                                 robot.redled_on();
@@ -199,9 +253,6 @@ public class CFPushBotManual extends LinearOpMode {
                                 robot.redled_off();
                                 robot.blueled_off();
                             }
-
-                            //myFliperRetractElapsedTime = null;
-                            buttonG2YReleased = false;
                         }
                     }else{
                         buttonG2YReleased = true;
