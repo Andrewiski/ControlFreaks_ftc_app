@@ -93,6 +93,7 @@ public class CFPushBotAuto_blue1 extends LinearOpMode
                         robot.turn_degrees(-10, true, v_useGyro);
                         robot.turn_degrees(10, true, v_useGyro);
                     }
+                    //hi
                     v_state++;
                     break;
                 case 4:
