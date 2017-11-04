@@ -126,7 +126,7 @@ public class CFPushBotManual_Connor extends LinearOpMode {
                     }
                     if(gamepad1.a){
                         if(buttonAReleased == true) {
-                            robot.elbow_toggle();
+                            robot.jewel_toggle();
                             buttonAReleased = false;
                         }
                     }else{
