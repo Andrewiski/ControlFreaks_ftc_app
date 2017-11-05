@@ -152,7 +152,7 @@ public class CFPushBotHardware {
     private static final DcMotor.Direction v_motor_slider_direction = DcMotor.Direction.FORWARD;
     private static final double v_motor_slider_SpeedSlowDown = 0.5f;
     private static final int v_motor_slider_encoder_min = 30;
-    private static final int v_motor_slider_encoder_max = 11200;
+    private static final int v_motor_slider_encoder_max = 11450;
     private static final int v_motor_slider_ExtendSlowdownTicks = 300;
     private int v_motor_slider_Position = 0;
 
@@ -174,18 +174,26 @@ public class CFPushBotHardware {
 
     private Servo v_servo_jewel;
     private static final double v_servo_jewel_MinPosition = 0.00;
-    private static final double v_servo_jewel_MaxPosition = 0.50;
-    private double v_servo_jewel_position = 0.00D;  //init arm jewel Position
+    private static final double v_servo_jewel_MaxPosition = 0.77;
+    private double v_servo_jewel_position = 0.77D;  //init arm jewel Position
     private Servo.Direction v_servo_jewel_direction = Servo.Direction.FORWARD;
     boolean v_servo_jewel_is_extending = false;
 
 
+    private Servo v_servo_hand;
+    private static final double v_servo_hand_MinPosition = 0.00;
+    private static final double v_servo_hand_MaxPosition = 0.40;
+    private double v_servo_hand_position = 0.00D;  //init hand Position
+    private Servo.Direction v_servo_hand_direction = Servo.Direction.FORWARD;
+    boolean v_servo_hand_is_extending = false;
 
     private Servo v_servo_shoulder;
     private static final double v_servo_shoulder_MinPosition = 0.00;
-    private static final double v_servo_shoulder_MaxPosition = 0.50;
-    private double v_servo_shoulder_position = 0.00D;  //init arm shoulder Position
+    private static final double v_servo_shoulder_MaxPosition = 1.00;
+    private double v_servo_shoulder_position = 0.20D;  //init arm shoulder Position
+    private Servo.Direction v_servo_shoulder_direction = Servo.Direction.FORWARD;
     boolean v_servo_shoulder_is_extended = false;
+
 
     //Legecy Color Sensor
   /*  private ColorSensor v_sensor_colorLegecy;
@@ -485,12 +493,32 @@ public class CFPushBotHardware {
         try
         {
             v_servo_shoulder = opMode.hardwareMap.servo.get(config_servo_shoulder);
+            v_servo_shoulder.setDirection(v_servo_shoulder_direction);
             v_servo_shoulder.setPosition (v_servo_shoulder_position);
         }
         catch (Exception p_exeception)
         {
             debugLogException(config_servo_shoulder, "missing", p_exeception);
             v_servo_shoulder = null;
+        }
+
+        //
+        // Connect the hand servo.
+        //
+        try
+        {
+            v_servo_hand = opMode.hardwareMap.servo.get(config_servo_hand);
+            //set the Server Direction
+            v_servo_hand.setDirection(v_servo_hand_direction);
+            //set the Servo ranage
+            v_servo_hand.scaleRange(v_servo_hand_MinPosition, v_servo_hand_MaxPosition );
+            //move the Servo to its init position
+            v_servo_hand.setPosition (v_servo_hand_position);
+        }
+        catch (Exception p_exeception)
+        {
+            debugLogException(config_servo_hand, "missing", p_exeception);
+            v_servo_hand = null;
         }
 
 
@@ -534,12 +562,12 @@ public class CFPushBotHardware {
                 sleep(10);
                 debugLogException("init", "waiting on lifter motor Stop_and_rest complete",null);
             }
-            v_motor_lifter.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            v_motor_lifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             counter = 0;
-            while (counter < 10 && v_motor_lifter.getMode() != DcMotor.RunMode.RUN_TO_POSITION){
+            while (counter < 10 && v_motor_lifter.getMode() != DcMotor.RunMode.RUN_USING_ENCODER){
                 counter++;
                 sleep(10);
-                debugLogException("init", "waiting on lifter motor RUN_TO_POSITION complete",null);
+                debugLogException("init", "waiting on lifter motor RUN_USING_ENCODER complete",null);
             }
         }
         catch (Exception p_exeception)
@@ -1081,6 +1109,25 @@ public class CFPushBotHardware {
      * Retract the slider
      */
     private boolean v_slider_isExtended = false;
+    public void slider_step (int stepAmount)
+    {
+        try{
+            if (v_motor_slider != null )
+            {
+                v_motor_slider_Position = v_motor_slider.getCurrentPosition() + stepAmount;
+                if(v_motor_slider_Position >= v_motor_slider_encoder_min && v_motor_slider_Position <= v_motor_slider_encoder_max ) {
+                    v_motor_slider.setTargetPosition(v_motor_slider_Position);
+                    v_motor_slider.setPower(v_motor_slider_power);
+                }
+            }
+            set_second_message("Slider Step " + v_motor_slider_Position);
+        }catch (Exception p_exeception)
+        {
+            debugLogException("slider_step", "error", p_exeception);
+        }
+    }
+
+
     public void slider_retract ()
     {
 
@@ -1090,8 +1137,7 @@ public class CFPushBotHardware {
                 set_second_message("slider not loaded");
                 return;
             }
-            v_motor_slider_Position = v_motor_slider_encoder_min;
-            v_motor_slider.setTargetPosition(v_motor_slider_Position);
+            v_motor_slider.setTargetPosition(v_motor_slider_encoder_min);
             set_second_message("Retracting slider");
             v_motor_slider.setPower(v_motor_slider_power);
         }
@@ -1136,7 +1182,7 @@ public class CFPushBotHardware {
         {
             if(v_motor_lifter.getCurrentPosition() > v_motor_lifter_encoder_min) {
 
-                v_motor_lifter.setPower(0 - v_motor_lifter_power);
+                v_motor_lifter.setPower(0-v_motor_lifter_power);
                 v_motor_lifter_is_on = true;
                 set_second_message("lifter_down " + v_motor_lifter.getCurrentPosition());
             }else{
@@ -2453,6 +2499,8 @@ public class CFPushBotHardware {
     }
 
 
+
+
     public void jewel_toggle ()
     {
         try {
@@ -2483,6 +2531,8 @@ public class CFPushBotHardware {
     {
         try {
             if (v_servo_jewel != null) {
+                v_servo_jewel.setPosition(v_servo_jewel_MinPosition-.2);
+                wait(300);
                 v_servo_jewel.setPosition(v_servo_jewel_MinPosition);
                 v_servo_jewel_is_extending = false;
             }
@@ -2514,6 +2564,46 @@ public class CFPushBotHardware {
         }catch (Exception p_exeception)
         {
             debugLogException("jewel_setposition", "error", p_exeception);
+        }
+    }
+
+
+    public void hand_toggle ()
+    {
+        try {
+            if (v_servo_hand_is_extending == true){
+                hand_close();
+            }else{
+                hand_open();
+            }
+        }catch (Exception p_exeception)
+        {
+            debugLogException("hand_toggle", "error", p_exeception);
+        }
+    }
+    public void hand_open ()
+    {
+        try {
+            if (v_servo_hand != null) {
+                v_servo_hand.setPosition(v_servo_hand_MaxPosition);
+                v_servo_hand_is_extending = true;
+            }
+        }catch (Exception p_exeception)
+        {
+            debugLogException("hand_open", "error", p_exeception);
+        }
+    }
+
+    public void hand_close ()
+    {
+        try {
+            if (v_servo_hand != null) {
+                v_servo_hand.setPosition(v_servo_hand_MinPosition);
+                v_servo_hand_is_extending = false;
+            }
+        }catch (Exception p_exeception)
+        {
+            debugLogException("hand_retract", "error", p_exeception);
         }
     }
 
@@ -2562,9 +2652,12 @@ public class CFPushBotHardware {
     public void shoulder_step(double stepAmount)
     {
         try {
+            double v_server_shoulderPosition = 0;
             if (v_servo_shoulder != null) {
-                v_servo_shoulder.setPosition(v_servo_shoulder.getPosition() + stepAmount);
+                v_server_shoulderPosition = v_servo_shoulder.getPosition() + stepAmount;
+                v_servo_shoulder.setPosition(v_server_shoulderPosition);
             }
+            set_second_message("shoulder_step " + v_server_shoulderPosition);
         }catch (Exception p_exeception)
         {
             debugLogException("shoulder_step", "error", p_exeception);

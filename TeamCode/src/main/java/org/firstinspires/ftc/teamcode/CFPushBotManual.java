@@ -82,9 +82,25 @@ public class CFPushBotManual extends LinearOpMode {
                     }else{
                         robot.set_drive_power(-gamepad1.left_stick_y/1.5f, -gamepad1.right_stick_y/1.5f);
                     }
+
+                    if(gamepad2.left_stick_y > .2 ) {
+                        robot.shoulder_step(.02);
+                    }else if(gamepad2.left_stick_y < -.2)
+                    {
+                        robot.shoulder_step(-.02);
+                    }
+
+                    if(gamepad2.right_stick_y > .2 ) {
+                        robot.slider_step(100);
+                    }else if(gamepad2.right_stick_y < -.2)
+                    {
+                        robot.slider_step(-100);
+                    }
+
+
                     if(gamepad1.left_bumper){
                         if(buttonLeftBumperReleased == true) {
-                            //robot.pushbutton_left_toggle();
+                            robot.jewel_extend();
                             buttonLeftBumperReleased = false;
                         }
                     }else{
@@ -92,7 +108,7 @@ public class CFPushBotManual extends LinearOpMode {
                     }
                     if(gamepad1.right_bumper){
                         if(buttonRightBumperReleased == true) {
-                            //robot.pushbutton_right_toggle();
+                            robot.jewel_retract();
                             buttonRightBumperReleased = false;
                         }
                     }else{
@@ -100,44 +116,36 @@ public class CFPushBotManual extends LinearOpMode {
                     }
 
                     if(gamepad1.dpad_up){
-                        //robot.lifter_up();
+                        robot.hand_open();
                         if(buttonDpadUpReleased == true) {
-
                             buttonDpadUpReleased = false;
                         }
                     }else{
-                        if(buttonDpadUpReleased == false){
-                            robot.lifter_off();
-                        }
                         buttonDpadUpReleased = true;
-
                     }
                     if(gamepad1.dpad_down){
-                        //robot.lifter_down();
+                        robot.hand_close();
                         if(buttonDpadDownReleased == true) {
-
                             buttonDpadDownReleased = false;
                         }
                     }else{
-                        if(buttonDpadDownReleased == false){
-                            //robot.lifter_off();
-                        }
                         buttonDpadDownReleased = true;
                     }
-
                     if(gamepad1.dpad_left){
                         if(buttonDpadleftReleased == true) {
-                            robot.slider_retract();
+
                             buttonDpadleftReleased = false;
                         }
+                        robot.slider_step(100);
                     }else {
                         buttonDpadleftReleased = true;
                     }
                     if(gamepad1.dpad_right){
                         if(buttonDpadrightReleased == true) {
-                            robot.slider_extend();
+
                             buttonDpadrightReleased = false;
                         }
+                        robot.slider_step(-100);
                     }else {
                         buttonDpadrightReleased = true;
                     }
@@ -146,7 +154,6 @@ public class CFPushBotManual extends LinearOpMode {
                     if(gamepad2.dpad_up){
                         robot.lifter_up();
                         if(buttonG2DpadUpReleased == true) {
-
                             buttonG2DpadUpReleased = false;
                         }
                     }else{
@@ -223,14 +230,12 @@ public class CFPushBotManual extends LinearOpMode {
                     }
                     if(gamepad2.b){
                         if(buttonG2BReleased == true) {
-                            //robot.catapult_fire();
+                            robot.hand_toggle();
                             buttonG2BReleased = false;
                         }
                     }else{
                         if(buttonG2BReleased == false) {
-                            //if (robot.catapult_fire_complete()) {
-                                buttonG2BReleased = true;
-                           // }
+                            buttonG2BReleased = true;
                         }
                     }
                     if(gamepad2.y){
