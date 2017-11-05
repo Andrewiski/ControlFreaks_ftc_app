@@ -88,16 +88,33 @@ public class CFPushBotAuto_blue1 extends LinearOpMode
                 case 3:
                     if (color == 0) {
                         robot.turn_degrees(10, true, v_useGyro);
+                        robot.turn_degrees(-10,true,v_useGyro);
                     }else if(color==2){
                         robot.turn_degrees(-10, true, v_useGyro);
+                        robot.turn_degrees(10, true, v_useGyro);
                     }
                     v_state++;
                     break;
                 case 4:
                     robot.jewel_retract();
+
                     v_state++;
                     break;
-
+                case 5:
+                    robot.drive_inches(-24,v_useGyro);
+                    if(robot.turn_complete())
+                    {
+                        v_state++;
+                    }
+                    break;
+                case 6:
+                    robot.turn_degrees(90,false,v_useGyro);
+                    if (robot.turn_complete())
+                    {
+                        v_state++;
+                    }
+                    break;
+                case 7:robot.drive_inches(16,v_useGyro);
                 default:
                     //
                     // The autonomous actions have been accomplished (i.e. the state has

@@ -60,7 +60,7 @@ public class CFPushBotHardware {
      */
     /*
         AndyMark 20 560 Pulses per 360
-        AndyMark 40 1120 Pulses per 360
+        AndyMark 40 1120 Pulses per6 360
         AndyMark 60 1680 Pulses per 360
      */
 /*
