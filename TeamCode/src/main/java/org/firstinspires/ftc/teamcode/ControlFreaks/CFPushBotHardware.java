@@ -2955,8 +2955,12 @@ public class CFPushBotHardware {
 
     public void setup_am20(){
         //am20 run in reverse as am40 so swap reversed motor
-        v_motor_right_drive.setDirection (DcMotor.Direction.FORWARD);
-        v_motor_left_drive.setDirection (DcMotor.Direction.REVERSE);
+        if(v_motor_right_drive != null) {
+            v_motor_right_drive.setDirection(DcMotor.Direction.FORWARD);
+        }
+        if(v_motor_left_drive != null) {
+            v_motor_left_drive.setDirection(DcMotor.Direction.REVERSE);
+        }
         v_drive_power = 0.8f;
         //we have to move slower backing up to prevent a wheely
         v_drive_power_reverse = 0.5f;
