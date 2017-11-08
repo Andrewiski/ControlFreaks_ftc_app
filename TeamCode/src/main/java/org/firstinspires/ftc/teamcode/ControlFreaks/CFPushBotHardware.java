@@ -9,6 +9,7 @@ import android.media.ToneGenerator;
 
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
+import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -26,6 +27,7 @@ import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
@@ -50,11 +52,13 @@ public class CFPushBotHardware {
     private String config_servo_blockgrabber = "blockgrabber";
     private String config_servo_blockslide = "blockslide";
 
+
     private String config_servo_shoulder = "shoulder";
     private String config_dim = "dim";
     private String config_i2c_gyro = "gyro";
     private String config_i2c_led7seg = "ledseg";
     private String config_i2c_colorsensor = "color";
+    private String config_i2c_range = "range";
     /*
         Motor Encoder Vars
      */
@@ -187,6 +191,14 @@ public class CFPushBotHardware {
     private Servo.Direction v_servo_hand_direction = Servo.Direction.FORWARD;
     boolean v_servo_hand_is_extending = false;
 
+    private Servo v_servo_wrist;
+    private static final double v_servo_wrist_MinPosition = 0.00;
+    private static final double v_servo_wrist_MaxPosition = 1.00;
+    private double v_servo_wrist_position = 0.00D;  //init hand Position
+    private Servo.Direction v_servo_wrist_direction = Servo.Direction.FORWARD;
+    boolean v_servo_wrist_is_extending = false;
+
+
     private Servo v_servo_shoulder;
     private static final double v_servo_shoulder_MinPosition = 0.00;
     private static final double v_servo_shoulder_MaxPosition = 1.00;
@@ -214,6 +226,10 @@ public class CFPushBotHardware {
     private int v_sensor_color_i2c_rgbaValues[]= {0,0,0,0};
     //we read the values in the loop only if the sensor is enabled as they take resourses
     private boolean v_sensor_color_i2c_enabled = false;
+
+    private boolean v_sensor_rangeSensor_enabled = false;
+    private double v_sensor_rangeSensor_distance = 0.0;
+    private ModernRoboticsI2cRangeSensor v_sensor_rangeSensor;
 
     //Legecy OSD Sensor
     //private OpticalDistanceSensor v_sensor_odsLegecy;
@@ -319,6 +335,7 @@ public class CFPushBotHardware {
         }
 
 
+
         try {
             // get a reference to our GyroSensor object.
             v_sensor_gyro = opMode.hardwareMap.gyroSensor.get(config_i2c_gyro);
@@ -340,6 +357,17 @@ public class CFPushBotHardware {
             v_sensor_gyro = null;
         }
 
+
+        try {
+            // get a reference to our Rangesensor object.
+            //v_sensor_rangeSensor
+            v_sensor_rangeSensor = opMode.hardwareMap.get(ModernRoboticsI2cRangeSensor.class, config_i2c_range);
+            // calibrate the gyro.
+            set_third_message("Range Sensor Found" + v_sensor_rangeSensor.getDistance(DistanceUnit.INCH));
+        }catch(Exception p_exeception){
+            debugLogException(config_i2c_range,"missing",p_exeception);
+            v_sensor_rangeSensor = null;
+        }
         //
         // Connect the drive wheel motors.
         //
@@ -521,6 +549,24 @@ public class CFPushBotHardware {
             v_servo_hand = null;
         }
 
+        //
+        // Connect the hand servo.
+        //
+        try
+        {
+            v_servo_wrist = opMode.hardwareMap.servo.get(config_servo_wrist);
+            //set the Server Direction
+            v_servo_wrist.setDirection(v_servo_wrist_direction);
+            //set the Servo ranage
+            v_servo_wrist.scaleRange(v_servo_wrist_MinPosition, v_servo_wrist_MaxPosition );
+            //move the Servo to its init position
+            v_servo_wrist.setPosition (v_servo_wrist_position);
+        }
+        catch (Exception p_exeception)
+        {
+            debugLogException(config_servo_wrist, "missing", p_exeception);
+            v_servo_wrist = null;
+        }
 
 
         try
@@ -2567,6 +2613,84 @@ public class CFPushBotHardware {
         }
     }
 
+///////wrist
+
+
+
+    public void wrist_toggle ()
+    {
+        try {
+            if (v_servo_wrist_is_extending == true){
+                wrist_retract();
+            }else{
+                wrist_extend();
+            }
+        }catch (Exception p_exeception)
+        {
+            debugLogException("wrist_toggle", "error", p_exeception);
+        }
+    }
+    public void wrist_extend ()
+    {
+        try {
+            if (v_servo_wrist != null) {
+                v_servo_wrist.setPosition(v_servo_wrist_MaxPosition);
+                v_servo_wrist_is_extending = true;
+            }
+            set_third_message(config_servo_wrist + " " + v_servo_wrist.getPosition());
+        }catch (Exception p_exeception)
+        {
+            debugLogException("wrist_extend", "error", p_exeception);
+        }
+    }
+
+    public void wrist_retract ()
+    {
+        try {
+            if (v_servo_wrist != null) {
+                //v_servo_wrist.setPosition(v_servo_wrist_MinPosition-.2);
+                //wait(300);
+                v_servo_wrist.setPosition(v_servo_wrist_MinPosition);
+                v_servo_wrist_is_extending = false;
+            }
+            set_third_message(config_servo_wrist + " " + v_servo_wrist.getPosition());
+        }catch (Exception p_exeception)
+        {
+            debugLogException("wrist_retract", "error", p_exeception);
+        }
+    }
+
+    //Warning there is no way to read the servos current position ie there is no feed back
+    // to the electronics So calling this function a hundred times while a button is down will make it hard to control
+    public void wrist_step(double stepAmount)
+    {
+        try {
+            if (v_servo_wrist != null) {
+                v_servo_wrist.setPosition(v_servo_wrist.getPosition() + stepAmount);
+
+            }
+            set_third_message(config_servo_wrist + " " + v_servo_wrist.getPosition());
+        }catch (Exception p_exeception)
+        {
+            debugLogException("wrist_step", "error", p_exeception);
+        }
+    }
+    public void wrist_setposition (double position)
+    {
+        try {
+            if (v_servo_wrist != null) {
+                v_servo_wrist.setPosition(position);
+            }
+            set_third_message(config_servo_wrist + " " + v_servo_wrist.getPosition());
+        }catch (Exception p_exeception)
+        {
+            debugLogException("wrist_setposition", "error", p_exeception);
+        }
+    }
+
+
+
+
 
     public void hand_toggle ()
     {
@@ -3459,6 +3583,26 @@ public class CFPushBotHardware {
     }
 
 
+    /**
+     * Enable the Legecy Color Sensor
+     * @return returns true is successfull returns false on error
+     */
+    public boolean sensor_range_enable(boolean enable){
+        try{
+            // convert the RGB values to HSV values.
+            if(v_sensor_rangeSensor !=null) {
+                //turn on the led this is the only way legecy color will detect anything
+                v_sensor_rangeSensor_enabled = enable;
+                return true;
+            }
+            return false;
+        }catch (Exception p_exeception)
+        {
+            debugLogException("sensor_ranger", "sensor_color_enable", p_exeception);
+            return false;
+        }
+    }
+
     public int[] sensor_color_get_rgba(){
         try{
             return v_sensor_color_i2c_rgbaValues;
@@ -3486,6 +3630,26 @@ public class CFPushBotHardware {
         }catch (Exception p_exeception)
         {
             debugLogException("sensor_gyro", "sensor_gyro_get_heading", p_exeception);
+            return 0;
+        }
+
+
+    }
+
+    /**
+     *
+     * @return gyro heading in degrees since reset
+     */
+    public double sensor_range_get_distance(){
+        try{
+            if(v_sensor_rangeSensor != null) {
+                return v_sensor_rangeSensor.getDistance(DistanceUnit.INCH);
+            }else{
+                return 0;
+            }
+        }catch (Exception p_exeception)
+        {
+            debugLogException("sensor_range", "sensor_range", p_exeception);
             return 0;
         }
 
