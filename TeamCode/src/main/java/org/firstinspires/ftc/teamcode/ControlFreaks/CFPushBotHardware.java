@@ -913,6 +913,11 @@ public class CFPushBotHardware {
                 v_sensor_color_i2c_rgbaValues[2] = v_sensor_color_i2c.blue();
                 v_sensor_color_i2c_rgbaValues[3] = v_sensor_color_i2c.alpha();
             }
+
+            if(v_sensor_rangeSensor_enabled == true){
+                v_sensor_rangeSensor_distance = v_sensor_rangeSensor.getDistance(DistanceUnit.INCH);
+
+            }
             vuforia_hardwareLoop();
             if(v_debug) {
                 update_telemetry();
@@ -3638,12 +3643,12 @@ public class CFPushBotHardware {
 
     /**
      *
-     * @return gyro heading in degrees since reset
+     * @return sensor_range
      */
     public double sensor_range_get_distance(){
         try{
             if(v_sensor_rangeSensor != null) {
-                return v_sensor_rangeSensor.getDistance(DistanceUnit.INCH);
+                return v_sensor_rangeSensor_distance;
             }else{
                 return 0;
             }
