@@ -9,6 +9,7 @@ import android.media.ToneGenerator;
 
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
+import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -26,6 +27,7 @@ import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
@@ -50,11 +52,13 @@ public class CFPushBotHardware {
     private String config_servo_blockgrabber = "blockgrabber";
     private String config_servo_blockslide = "blockslide";
 
+
     private String config_servo_shoulder = "shoulder";
     private String config_dim = "dim";
     private String config_i2c_gyro = "gyro";
     private String config_i2c_led7seg = "ledseg";
     private String config_i2c_colorsensor = "color";
+    private String config_i2c_range = "range";
     /*
         Motor Encoder Vars
      */
@@ -152,7 +156,7 @@ public class CFPushBotHardware {
     private static final DcMotor.Direction v_motor_slider_direction = DcMotor.Direction.FORWARD;
     private static final double v_motor_slider_SpeedSlowDown = 0.5f;
     private static final int v_motor_slider_encoder_min = 30;
-    private static final int v_motor_slider_encoder_max = 11200;
+    private static final int v_motor_slider_encoder_max = 11450;
     private static final int v_motor_slider_ExtendSlowdownTicks = 300;
     private int v_motor_slider_Position = 0;
 
@@ -174,18 +178,34 @@ public class CFPushBotHardware {
 
     private Servo v_servo_jewel;
     private static final double v_servo_jewel_MinPosition = 0.00;
-    private static final double v_servo_jewel_MaxPosition = 0.50;
-    private double v_servo_jewel_position = 0.00D;  //init arm jewel Position
+    private static final double v_servo_jewel_MaxPosition = 0.77;
+    private double v_servo_jewel_position = 0.77D;  //init arm jewel Position
     private Servo.Direction v_servo_jewel_direction = Servo.Direction.FORWARD;
     boolean v_servo_jewel_is_extending = false;
 
 
+    private Servo v_servo_hand;
+    private static final double v_servo_hand_MinPosition = 0.00;
+    private static final double v_servo_hand_MaxPosition = 0.40;
+    private double v_servo_hand_position = 0.00D;  //init hand Position
+    private Servo.Direction v_servo_hand_direction = Servo.Direction.FORWARD;
+    boolean v_servo_hand_is_extending = false;
+
+    private Servo v_servo_wrist;
+    private static final double v_servo_wrist_MinPosition = 0.00;
+    private static final double v_servo_wrist_MaxPosition = 1.00;
+    private double v_servo_wrist_position = 0.00D;  //init hand Position
+    private Servo.Direction v_servo_wrist_direction = Servo.Direction.FORWARD;
+    boolean v_servo_wrist_is_extending = false;
+
 
     private Servo v_servo_shoulder;
     private static final double v_servo_shoulder_MinPosition = 0.00;
-    private static final double v_servo_shoulder_MaxPosition = 0.50;
-    private double v_servo_shoulder_position = 0.00D;  //init arm shoulder Position
+    private static final double v_servo_shoulder_MaxPosition = 1.00;
+    private double v_servo_shoulder_position = 0.20D;  //init arm shoulder Position
+    private Servo.Direction v_servo_shoulder_direction = Servo.Direction.FORWARD;
     boolean v_servo_shoulder_is_extended = false;
+
 
     //Legecy Color Sensor
   /*  private ColorSensor v_sensor_colorLegecy;
@@ -206,6 +226,10 @@ public class CFPushBotHardware {
     private int v_sensor_color_i2c_rgbaValues[]= {0,0,0,0};
     //we read the values in the loop only if the sensor is enabled as they take resourses
     private boolean v_sensor_color_i2c_enabled = false;
+
+    private boolean v_sensor_rangeSensor_enabled = false;
+    private double v_sensor_rangeSensor_distance = 0.0;
+    private ModernRoboticsI2cRangeSensor v_sensor_rangeSensor;
 
     //Legecy OSD Sensor
     //private OpticalDistanceSensor v_sensor_odsLegecy;
@@ -311,6 +335,7 @@ public class CFPushBotHardware {
         }
 
 
+
         try {
             // get a reference to our GyroSensor object.
             v_sensor_gyro = opMode.hardwareMap.gyroSensor.get(config_i2c_gyro);
@@ -332,6 +357,17 @@ public class CFPushBotHardware {
             v_sensor_gyro = null;
         }
 
+
+        try {
+            // get a reference to our Rangesensor object.
+            //v_sensor_rangeSensor
+            v_sensor_rangeSensor = opMode.hardwareMap.get(ModernRoboticsI2cRangeSensor.class, config_i2c_range);
+            // calibrate the gyro.
+            set_third_message("Range Sensor Found" + v_sensor_rangeSensor.getDistance(DistanceUnit.INCH));
+        }catch(Exception p_exeception){
+            debugLogException(config_i2c_range,"missing",p_exeception);
+            v_sensor_rangeSensor = null;
+        }
         //
         // Connect the drive wheel motors.
         //
@@ -485,6 +521,7 @@ public class CFPushBotHardware {
         try
         {
             v_servo_shoulder = opMode.hardwareMap.servo.get(config_servo_shoulder);
+            v_servo_shoulder.setDirection(v_servo_shoulder_direction);
             v_servo_shoulder.setPosition (v_servo_shoulder_position);
         }
         catch (Exception p_exeception)
@@ -493,6 +530,43 @@ public class CFPushBotHardware {
             v_servo_shoulder = null;
         }
 
+        //
+        // Connect the hand servo.
+        //
+        try
+        {
+            v_servo_hand = opMode.hardwareMap.servo.get(config_servo_hand);
+            //set the Server Direction
+            v_servo_hand.setDirection(v_servo_hand_direction);
+            //set the Servo ranage
+            v_servo_hand.scaleRange(v_servo_hand_MinPosition, v_servo_hand_MaxPosition );
+            //move the Servo to its init position
+            v_servo_hand.setPosition (v_servo_hand_position);
+        }
+        catch (Exception p_exeception)
+        {
+            debugLogException(config_servo_hand, "missing", p_exeception);
+            v_servo_hand = null;
+        }
+
+        //
+        // Connect the hand servo.
+        //
+        try
+        {
+            v_servo_wrist = opMode.hardwareMap.servo.get(config_servo_wrist);
+            //set the Server Direction
+            v_servo_wrist.setDirection(v_servo_wrist_direction);
+            //set the Servo ranage
+            v_servo_wrist.scaleRange(v_servo_wrist_MinPosition, v_servo_wrist_MaxPosition );
+            //move the Servo to its init position
+            v_servo_wrist.setPosition (v_servo_wrist_position);
+        }
+        catch (Exception p_exeception)
+        {
+            debugLogException(config_servo_wrist, "missing", p_exeception);
+            v_servo_wrist = null;
+        }
 
 
         try
@@ -534,12 +608,12 @@ public class CFPushBotHardware {
                 sleep(10);
                 debugLogException("init", "waiting on lifter motor Stop_and_rest complete",null);
             }
-            v_motor_lifter.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            v_motor_lifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             counter = 0;
-            while (counter < 10 && v_motor_lifter.getMode() != DcMotor.RunMode.RUN_TO_POSITION){
+            while (counter < 10 && v_motor_lifter.getMode() != DcMotor.RunMode.RUN_USING_ENCODER){
                 counter++;
                 sleep(10);
-                debugLogException("init", "waiting on lifter motor RUN_TO_POSITION complete",null);
+                debugLogException("init", "waiting on lifter motor RUN_USING_ENCODER complete",null);
             }
         }
         catch (Exception p_exeception)
@@ -839,6 +913,11 @@ public class CFPushBotHardware {
                 v_sensor_color_i2c_rgbaValues[2] = v_sensor_color_i2c.blue();
                 v_sensor_color_i2c_rgbaValues[3] = v_sensor_color_i2c.alpha();
             }
+
+            if(v_sensor_rangeSensor_enabled == true){
+                v_sensor_rangeSensor_distance = v_sensor_rangeSensor.getDistance(DistanceUnit.INCH);
+
+            }
             vuforia_hardwareLoop();
             if(v_debug) {
                 update_telemetry();
@@ -1081,6 +1160,25 @@ public class CFPushBotHardware {
      * Retract the slider
      */
     private boolean v_slider_isExtended = false;
+    public void slider_step (int stepAmount)
+    {
+        try{
+            if (v_motor_slider != null )
+            {
+                v_motor_slider_Position = v_motor_slider.getCurrentPosition() + stepAmount;
+                if(v_motor_slider_Position >= v_motor_slider_encoder_min && v_motor_slider_Position <= v_motor_slider_encoder_max ) {
+                    v_motor_slider.setTargetPosition(v_motor_slider_Position);
+                    v_motor_slider.setPower(v_motor_slider_power);
+                }
+            }
+            set_second_message("Slider Step " + v_motor_slider_Position);
+        }catch (Exception p_exeception)
+        {
+            debugLogException("slider_step", "error", p_exeception);
+        }
+    }
+
+
     public void slider_retract ()
     {
 
@@ -1090,8 +1188,7 @@ public class CFPushBotHardware {
                 set_second_message("slider not loaded");
                 return;
             }
-            v_motor_slider_Position = v_motor_slider_encoder_min;
-            v_motor_slider.setTargetPosition(v_motor_slider_Position);
+            v_motor_slider.setTargetPosition(v_motor_slider_encoder_min);
             set_second_message("Retracting slider");
             v_motor_slider.setPower(v_motor_slider_power);
         }
@@ -1136,7 +1233,7 @@ public class CFPushBotHardware {
         {
             if(v_motor_lifter.getCurrentPosition() > v_motor_lifter_encoder_min) {
 
-                v_motor_lifter.setPower(0 - v_motor_lifter_power);
+                v_motor_lifter.setPower(0-v_motor_lifter_power);
                 v_motor_lifter_is_on = true;
                 set_second_message("lifter_down " + v_motor_lifter.getCurrentPosition());
             }else{
@@ -2453,6 +2550,8 @@ public class CFPushBotHardware {
     }
 
 
+
+
     public void jewel_toggle ()
     {
         try {
@@ -2483,6 +2582,8 @@ public class CFPushBotHardware {
     {
         try {
             if (v_servo_jewel != null) {
+                v_servo_jewel.setPosition(v_servo_jewel_MinPosition-.2);
+                wait(300);
                 v_servo_jewel.setPosition(v_servo_jewel_MinPosition);
                 v_servo_jewel_is_extending = false;
             }
@@ -2514,6 +2615,124 @@ public class CFPushBotHardware {
         }catch (Exception p_exeception)
         {
             debugLogException("jewel_setposition", "error", p_exeception);
+        }
+    }
+
+///////wrist
+
+
+
+    public void wrist_toggle ()
+    {
+        try {
+            if (v_servo_wrist_is_extending == true){
+                wrist_retract();
+            }else{
+                wrist_extend();
+            }
+        }catch (Exception p_exeception)
+        {
+            debugLogException("wrist_toggle", "error", p_exeception);
+        }
+    }
+    public void wrist_extend ()
+    {
+        try {
+            if (v_servo_wrist != null) {
+                v_servo_wrist.setPosition(v_servo_wrist_MaxPosition);
+                v_servo_wrist_is_extending = true;
+            }
+            set_third_message(config_servo_wrist + " " + v_servo_wrist.getPosition());
+        }catch (Exception p_exeception)
+        {
+            debugLogException("wrist_extend", "error", p_exeception);
+        }
+    }
+
+    public void wrist_retract ()
+    {
+        try {
+            if (v_servo_wrist != null) {
+                //v_servo_wrist.setPosition(v_servo_wrist_MinPosition-.2);
+                //wait(300);
+                v_servo_wrist.setPosition(v_servo_wrist_MinPosition);
+                v_servo_wrist_is_extending = false;
+            }
+            set_third_message(config_servo_wrist + " " + v_servo_wrist.getPosition());
+        }catch (Exception p_exeception)
+        {
+            debugLogException("wrist_retract", "error", p_exeception);
+        }
+    }
+
+    //Warning there is no way to read the servos current position ie there is no feed back
+    // to the electronics So calling this function a hundred times while a button is down will make it hard to control
+    public void wrist_step(double stepAmount)
+    {
+        try {
+            if (v_servo_wrist != null) {
+                v_servo_wrist.setPosition(v_servo_wrist.getPosition() + stepAmount);
+
+            }
+            set_third_message(config_servo_wrist + " " + v_servo_wrist.getPosition());
+        }catch (Exception p_exeception)
+        {
+            debugLogException("wrist_step", "error", p_exeception);
+        }
+    }
+    public void wrist_setposition (double position)
+    {
+        try {
+            if (v_servo_wrist != null) {
+                v_servo_wrist.setPosition(position);
+            }
+            set_third_message(config_servo_wrist + " " + v_servo_wrist.getPosition());
+        }catch (Exception p_exeception)
+        {
+            debugLogException("wrist_setposition", "error", p_exeception);
+        }
+    }
+
+
+
+
+
+    public void hand_toggle ()
+    {
+        try {
+            if (v_servo_hand_is_extending == true){
+                hand_close();
+            }else{
+                hand_open();
+            }
+        }catch (Exception p_exeception)
+        {
+            debugLogException("hand_toggle", "error", p_exeception);
+        }
+    }
+    public void hand_open ()
+    {
+        try {
+            if (v_servo_hand != null) {
+                v_servo_hand.setPosition(v_servo_hand_MaxPosition);
+                v_servo_hand_is_extending = true;
+            }
+        }catch (Exception p_exeception)
+        {
+            debugLogException("hand_open", "error", p_exeception);
+        }
+    }
+
+    public void hand_close ()
+    {
+        try {
+            if (v_servo_hand != null) {
+                v_servo_hand.setPosition(v_servo_hand_MinPosition);
+                v_servo_hand_is_extending = false;
+            }
+        }catch (Exception p_exeception)
+        {
+            debugLogException("hand_retract", "error", p_exeception);
         }
     }
 
@@ -2562,9 +2781,12 @@ public class CFPushBotHardware {
     public void shoulder_step(double stepAmount)
     {
         try {
+            double v_server_shoulderPosition = 0;
             if (v_servo_shoulder != null) {
-                v_servo_shoulder.setPosition(v_servo_shoulder.getPosition() + stepAmount);
+                v_server_shoulderPosition = v_servo_shoulder.getPosition() + stepAmount;
+                v_servo_shoulder.setPosition(v_server_shoulderPosition);
             }
+            set_second_message("shoulder_step " + v_server_shoulderPosition);
         }catch (Exception p_exeception)
         {
             debugLogException("shoulder_step", "error", p_exeception);
@@ -2862,8 +3084,12 @@ public class CFPushBotHardware {
 
     public void setup_am20(){
         //am20 run in reverse as am40 so swap reversed motor
-        v_motor_right_drive.setDirection (DcMotor.Direction.FORWARD);
-        v_motor_left_drive.setDirection (DcMotor.Direction.REVERSE);
+        if(v_motor_right_drive != null) {
+            v_motor_right_drive.setDirection(DcMotor.Direction.FORWARD);
+        }
+        if(v_motor_left_drive != null) {
+            v_motor_left_drive.setDirection(DcMotor.Direction.REVERSE);
+        }
         v_drive_power = 0.8f;
         //we have to move slower backing up to prevent a wheely
         v_drive_power_reverse = 0.5f;
@@ -3362,6 +3588,26 @@ public class CFPushBotHardware {
     }
 
 
+    /**
+     * Enable the Legecy Color Sensor
+     * @return returns true is successfull returns false on error
+     */
+    public boolean sensor_range_enable(boolean enable){
+        try{
+            // convert the RGB values to HSV values.
+            if(v_sensor_rangeSensor !=null) {
+                //turn on the led this is the only way legecy color will detect anything
+                v_sensor_rangeSensor_enabled = enable;
+                return true;
+            }
+            return false;
+        }catch (Exception p_exeception)
+        {
+            debugLogException("sensor_ranger", "sensor_color_enable", p_exeception);
+            return false;
+        }
+    }
+
     public int[] sensor_color_get_rgba(){
         try{
             return v_sensor_color_i2c_rgbaValues;
@@ -3389,6 +3635,26 @@ public class CFPushBotHardware {
         }catch (Exception p_exeception)
         {
             debugLogException("sensor_gyro", "sensor_gyro_get_heading", p_exeception);
+            return 0;
+        }
+
+
+    }
+
+    /**
+     *
+     * @return sensor_range
+     */
+    public double sensor_range_get_distance(){
+        try{
+            if(v_sensor_rangeSensor != null) {
+                return v_sensor_rangeSensor_distance;
+            }else{
+                return 0;
+            }
+        }catch (Exception p_exeception)
+        {
+            debugLogException("sensor_range", "sensor_range", p_exeception);
             return 0;
         }
 
