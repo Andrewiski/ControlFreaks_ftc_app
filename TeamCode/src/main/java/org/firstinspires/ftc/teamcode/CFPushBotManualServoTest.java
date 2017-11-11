@@ -105,6 +105,21 @@ public class CFPushBotManualServoTest extends LinearOpMode {
                         buttonDpadLeftReleased = true;
                     }
 
+                    if(gamepad1.x){
+                        if(buttonXReleased == true){
+                            buttonXReleased = false;
+                            robot.sensor_range_enable(true);
+                        }
+                        robot.sensor_range_get_distance();
+                    }else{
+                        if(buttonXReleased = false){
+                            buttonXReleased = true;
+                            robot.sensor_range_enable(false);
+                        }
+                    }
+
+
+
                     //robot.waitForTick(2);
                 }catch(Exception ex){
                     robot.set_error_message("Fatal Error "  + ex.toString());
