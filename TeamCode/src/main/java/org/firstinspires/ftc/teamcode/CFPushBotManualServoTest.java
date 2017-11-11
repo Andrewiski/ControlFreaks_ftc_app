@@ -110,9 +110,9 @@ public class CFPushBotManualServoTest extends LinearOpMode {
                             buttonXReleased = false;
                             robot.sensor_range_enable(true);
                         }
-                        robot.sensor_range_get_distance();
+                        robot.set_message("Range " +  robot.sensor_range_get_distance());
                     }else{
-                        if(buttonXReleased = false){
+                        if(buttonXReleased == false){
                             buttonXReleased = true;
                             robot.sensor_range_enable(false);
                         }

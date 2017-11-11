@@ -147,8 +147,8 @@ public class CFPushBotHardware {
     private static final DcMotor.Direction v_motor_lifter_direction = DcMotor.Direction.FORWARD;
     private static final int v_motor_lifter_encoder_min = 30;
     private static final int v_motor_lifter_encoder_max = 4750;
-    private static final int v_motor_lifter_encoder_blockHeight = 1000;
-    private static final int v_motor_lifter_encoder_target = 0;
+    private static final int v_motor_lifter_ExtendSlowdownTicks = 300;
+    private int v_motor_lifter_Position = 0;
 
     //Slider is a AndyMark 40 1120 Pulses per 360 10 rotation to fully extend 11200
     private DcMotor v_motor_slider;
@@ -886,7 +886,6 @@ public class CFPushBotHardware {
                 v_slow_loop_milliseconds = Calendar.getInstance().getTimeInMillis() - v_loop_previous_timestamp.getTimeInMillis();
             }
             v_loop_previous_timestamp = Calendar.getInstance();
-
         }else{
             v_loop_ticks_slow = false;
         }
@@ -907,16 +906,15 @@ public class CFPushBotHardware {
 //                v_sensor_gyro_z = v_sensor_gyro.rawZ();
 //            }
             //the i2c color sensor uses a memory lock that is taxing so we only do this if we are using the color sensor and ever slow loop count
-            if(v_sensor_color_i2c_enabled == true){
+            if(v_sensor_color_i2c != null && v_sensor_color_i2c_enabled == true){
                 v_sensor_color_i2c_rgbaValues[0] = v_sensor_color_i2c.red();
                 v_sensor_color_i2c_rgbaValues[1] = v_sensor_color_i2c.green();
                 v_sensor_color_i2c_rgbaValues[2] = v_sensor_color_i2c.blue();
                 v_sensor_color_i2c_rgbaValues[3] = v_sensor_color_i2c.alpha();
             }
 
-            if(v_sensor_rangeSensor_enabled == true){
+            if(v_sensor_rangeSensor != null && v_sensor_rangeSensor_enabled == true){
                 v_sensor_rangeSensor_distance = v_sensor_rangeSensor.getDistance(DistanceUnit.INCH);
-
             }
             vuforia_hardwareLoop();
             if(v_debug) {
@@ -1177,6 +1175,21 @@ public class CFPushBotHardware {
             debugLogException("slider_step", "error", p_exeception);
         }
     }
+    public void slider_stop ()
+    {
+        try{
+            if (v_motor_slider != null )
+            {
+                v_motor_slider.setPower(0);
+                v_motor_slider_Position = v_motor_slider.getCurrentPosition();
+                v_motor_slider.setTargetPosition(v_motor_slider_Position);
+            }
+            set_second_message("Slider Stop " + v_motor_slider_Position);
+        }catch (Exception p_exeception)
+        {
+            debugLogException("slider_stop", "error", p_exeception);
+        }
+    }
 
 
     public void slider_retract ()
@@ -1213,51 +1226,126 @@ public class CFPushBotHardware {
     }
 
 
-    boolean v_motor_lifter_is_on = false;
-
-
-    public void lifter_off ()
+    public void lifter_extend () throws InterruptedException
     {
         if (v_motor_lifter != null)
         {
-            v_motor_lifter.setPower(0);
-            v_motor_lifter_is_on = false;
+            if (v_lifter_isExtended == true){
+                set_second_message("lifter already extended");
+                return;
+            }
+            v_lifter_state = 0;
+            v_motor_lifter_Position = v_motor_lifter_Position + v_motor_lifter_encoder_max - v_motor_lifter_ExtendSlowdownTicks;
+
+            v_motor_lifter.setTargetPosition(v_motor_lifter_Position);
+            set_second_message("extendinging lifter");
+            v_motor_lifter.setPower(v_motor_lifter_power);
+
         }
-        set_second_message("lifter_off " + v_motor_lifter.getCurrentPosition() );
     }
 
-    public void lifter_down ()
+    private int v_lifter_state = 0;
+    public boolean lifter_extend_complete () {
+        if (v_motor_lifter != null) {
+            switch (v_lifter_state) {
+                case 0:
+                    if (v_motor_lifter.isBusy() == false) {
+                        v_motor_lifter_Position = v_motor_lifter_Position + v_motor_lifter_ExtendSlowdownTicks;
+                        v_motor_lifter.setPower(0.0F);
+                        v_motor_lifter.setTargetPosition(v_motor_lifter_Position);
+                        set_second_message("lifter almost extended");
+                        v_motor_lifter.setPower(0.5F);
+
+                        v_lifter_state++;
+                    }
+                    break;
+                case 1:
+                    if (v_motor_lifter.isBusy() == false) {
+                        v_motor_lifter.setPower(0.0F);
+                        v_lifter_isExtended = true;
+                        set_second_message("lifter loaded");
+                        return true;
+                    }
+                    break;
+            }
+            return false;
+
+        }else{
+            return true;
+        }
+    }
+
+
+
+    /**
+     * Retract the slider
+     */
+    private boolean v_lifter_isExtended = false;
+    public void lifter_step (int stepAmount)
+    {
+        try{
+            if (v_motor_lifter != null )
+            {
+                v_motor_lifter_Position = v_motor_lifter.getCurrentPosition() + stepAmount;
+                if(v_motor_lifter_Position >= v_motor_lifter_encoder_min && v_motor_lifter_Position <= v_motor_lifter_encoder_max ) {
+                    v_motor_lifter.setTargetPosition(v_motor_lifter_Position);
+                    v_motor_lifter.setPower(v_motor_lifter_power);
+                }
+            }
+            set_second_message("lifter Step " + v_motor_lifter_Position);
+        }catch (Exception p_exeception)
+        {
+            debugLogException("lifter_step", "error", p_exeception);
+        }
+    }
+
+    public void lifter_stop ()
+    {
+        try{
+            if (v_motor_lifter != null )
+            {
+                v_motor_lifter.setPower(0);
+                v_motor_lifter_Position = v_motor_lifter.getCurrentPosition();
+                v_motor_lifter.setTargetPosition(v_motor_lifter_Position);
+            }
+            set_second_message("lifter Stop " + v_motor_lifter_Position);
+        }catch (Exception p_exeception)
+        {
+            debugLogException("lifter_stop", "error", p_exeception);
+        }
+    }
+
+    public void lifter_retract ()
     {
 
-        if (v_motor_lifter != null)
+        if (v_motor_lifter != null )
         {
-            if(v_motor_lifter.getCurrentPosition() > v_motor_lifter_encoder_min) {
-
-                v_motor_lifter.setPower(0-v_motor_lifter_power);
-                v_motor_lifter_is_on = true;
-                set_second_message("lifter_down " + v_motor_lifter.getCurrentPosition());
-            }else{
-                lifter_off();
-                set_second_message("lifter_down min reached" );
+            if (v_lifter_isExtended == false){
+                set_second_message("lifter not loaded");
+                return;
             }
+            v_motor_lifter.setTargetPosition(v_motor_lifter_encoder_min);
+            set_second_message("Retracting lifter");
+            v_motor_lifter.setPower(v_motor_lifter_power);
         }
 
     }
-
-    public void lifter_up ()
+    public boolean lifter_retract_complete ()
     {
-        if (v_motor_lifter != null)
+        if (v_motor_lifter != null )
         {
-            if(v_motor_lifter.getCurrentPosition() < v_motor_lifter_encoder_max) {
-                v_motor_lifter.setPower(v_motor_lifter_power);
-                v_motor_lifter_is_on = true;
-                set_second_message("lifter_up " + v_motor_lifter.getCurrentPosition());
-            }else{
-                lifter_off();
-                set_second_message("lifter_up max reached" );
+            if (v_lifter_isExtended == false){
+                set_second_message("lifter not Extended");
+                return true;
+            }
+            if (v_motor_lifter.isBusy()== false) {
+                v_motor_lifter.setPower(0.0F);
+                v_lifter_isExtended = false;
+                set_second_message("Retracted lifter");
+                return true;
             }
         }
-
+        return false;
     }
 
 
@@ -3589,15 +3677,14 @@ public class CFPushBotHardware {
 
 
     /**
-     * Enable the Legecy Color Sensor
+     * Enable the Range Sensor
      * @return returns true is successfull returns false on error
      */
     public boolean sensor_range_enable(boolean enable){
         try{
-            // convert the RGB values to HSV values.
-            if(v_sensor_rangeSensor !=null) {
-                //turn on the led this is the only way legecy color will detect anything
+            if(v_sensor_rangeSensor != null) {
                 v_sensor_rangeSensor_enabled = enable;
+                set_third_message("sensro range enable " + enable);
                 return true;
             }
             return false;

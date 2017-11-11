@@ -131,47 +131,49 @@ public class CFPushBotManual extends LinearOpMode {
                     }else{
                         buttonDpadDownReleased = true;
                     }
-                    if(gamepad1.dpad_left){
-                        if(buttonDpadleftReleased == true) {
-
-                            buttonDpadleftReleased = false;
-                        }
-                        robot.slider_step(100);
-                    }else {
-                        buttonDpadleftReleased = true;
-                    }
-                    if(gamepad1.dpad_right){
-                        if(buttonDpadrightReleased == true) {
-
-                            buttonDpadrightReleased = false;
-                        }
-                        robot.slider_step(-100);
-                    }else {
-                        buttonDpadrightReleased = true;
-                    }
+//                    if(gamepad1.dpad_left){
+//                        if(buttonDpadleftReleased == true) {
+//
+//                            buttonDpadleftReleased = false;
+//                        }
+//                        robot.slider_step(100);
+//                    }else {
+//                        buttonDpadleftReleased = true;
+//                    }
+//                    if(gamepad1.dpad_right){
+//                        if(buttonDpadrightReleased == true) {
+//
+//                            buttonDpadrightReleased = false;
+//                        }
+//                        robot.slider_step(-100);
+//                    }else {
+//                        buttonDpadrightReleased = true;
+//                    }
 
 
                     if(gamepad2.dpad_up){
-                        robot.lifter_up();
+
                         if(buttonG2DpadUpReleased == true) {
                             buttonG2DpadUpReleased = false;
                         }
+                        robot.lifter_step(100);
                     }else{
                         if(buttonG2DpadUpReleased == false){
-                            robot.lifter_off();
+                            robot.lifter_stop();
                         }
                         buttonG2DpadUpReleased = true;
 
                     }
                     if(gamepad2.dpad_down){
-                        robot.lifter_down();
+
                         if(buttonG2DpadDownReleased == true) {
 
                             buttonG2DpadDownReleased = false;
                         }
+                        robot.lifter_step(-100);
                     }else{
                         if(buttonG2DpadDownReleased == false){
-                            robot.lifter_off();
+                            robot.lifter_stop();
                         }
                         buttonG2DpadDownReleased = true;
                     }
