@@ -64,7 +64,7 @@ public class CFPushBotHardware {
      */
     /*
         AndyMark 20 560 Pulses per 360
-        AndyMark 40 1120 Pulses per6 360
+        AndyMark 40 1120 Pulses per 360
         AndyMark 60 1680 Pulses per 360
      */
 /*
@@ -573,7 +573,7 @@ public class CFPushBotHardware {
         {
             v_motor_slider = opMode.hardwareMap.dcMotor.get (config_motor_slider);
             v_motor_slider.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            v_motor_slider.setDirection(v_motor_lifter_direction);
+            v_motor_slider.setDirection(v_motor_slider_direction);
             v_motor_slider.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             int counter = 0;
             while (counter < 10 && v_motor_slider.getMode() != DcMotor.RunMode.STOP_AND_RESET_ENCODER){
@@ -608,12 +608,12 @@ public class CFPushBotHardware {
                 sleep(10);
                 debugLogException("init", "waiting on lifter motor Stop_and_rest complete",null);
             }
-            v_motor_lifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            v_motor_lifter.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             counter = 0;
-            while (counter < 10 && v_motor_lifter.getMode() != DcMotor.RunMode.RUN_USING_ENCODER){
+            while (counter < 10 && v_motor_lifter.getMode() != DcMotor.RunMode.RUN_TO_POSITION){
                 counter++;
                 sleep(10);
-                debugLogException("init", "waiting on lifter motor RUN_USING_ENCODER complete",null);
+                debugLogException("init", "waiting on lifter motor RUN_TO_Position complete",null);
             }
         }
         catch (Exception p_exeception)

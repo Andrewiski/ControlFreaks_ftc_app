@@ -95,6 +95,8 @@ public class CFPushBotManual extends LinearOpMode {
                     }else if(gamepad2.right_stick_y < -.2)
                     {
                         robot.slider_step(-100);
+                    }else{
+                        robot.slider_stop();
                     }
 
 
