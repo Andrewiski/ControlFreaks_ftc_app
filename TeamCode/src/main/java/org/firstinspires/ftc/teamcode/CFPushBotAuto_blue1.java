@@ -49,6 +49,8 @@ public class CFPushBotAuto_blue1 extends LinearOpMode
     @Override
     public void runOpMode() throws InterruptedException {
         int color = -1;
+        int colorReadTimeout = 1000;
+        int colorReadCounter = 0;
         robot.init(this);
         robot.blueled_on();
         //robot.redled_on();
@@ -67,14 +69,15 @@ public class CFPushBotAuto_blue1 extends LinearOpMode
                     // drive Forward  inches
                     //
                     //robot.led7seg_timer_start(30);
+                    robot.sensor_color_enable(true);
+                    robot.sensor_color_led(true);
                     robot.jewel_extend();
 
                     v_state++;
                     break;
                 case 1:
                 //enable color sensor
-                    robot.sensor_color_enable(true);
-                    robot.sensor_color_led(true);
+
                     // Transition to the next state when this method is called again.
                     v_state++;
                     break;
@@ -88,37 +91,73 @@ public class CFPushBotAuto_blue1 extends LinearOpMode
                 case 3:
                     if (color == 0) {
                         robot.turn_degrees(10, true, v_useGyro);
-                        robot.turn_degrees(-10,true,v_useGyro);
+                        v_state++;
                     }else if(color==2){
                         robot.turn_degrees(-10, true, v_useGyro);
+                        v_state++;
+                    }else{
+                        colorReadCounter++;
+                        if(colorReadCounter > colorReadTimeout){
+                            robot.set_message("Color Not Read Timeout");
+                            v_state=v_state+2;
+
+                        }
+                    }
+                    break;
+                case 4:
+                    if(robot.turn_complete()){
+                        v_state++;
+                    }
+                    break;
+                case 5:
+                    robot.jewel_retract();
+                    v_state++;
+                    break;
+                case 6:
+                    if (color == 0) {
+                        robot.turn_degrees(-10,true,v_useGyro);
+                    }else if(color==2){
                         robot.turn_degrees(10, true, v_useGyro);
                     }
                     //hi
                     v_state++;
                     break;
-                case 4:
-                    robot.jewel_retract();
-
-                    v_state++;
+                case 7:
+                    if(robot.turn_complete()){
+                        v_state++;
+                    }
                     break;
-                case 5:
+                case 8:
                     robot.drive_inches(24,v_useGyro);
                     v_state++;
                     break;
-                case 6:
+                case 9:
                     if(robot.drive_inches_complete())
                     {
                         v_state++;
                     }
                     break;
-                case 7:
+                case 10:
                     robot.turn_degrees(90,false,v_useGyro);
+                    v_state++;
+                    break;
+                case 11:
                     if (robot.turn_complete())
                     {
                         v_state++;
                     }
                     break;
-                case 8:robot.drive_inches(16,v_useGyro);
+                case 12:
+                    robot.drive_inches(16,v_useGyro);
+                    v_state++;
+                    break;
+                case 13:
+                    if (robot.drive_inches_complete())
+                    {
+                        v_state++;
+                    }
+                    break;
+
                 default:
                     //
                     // The autonomous actions have been accomplished (i.e. the state has
