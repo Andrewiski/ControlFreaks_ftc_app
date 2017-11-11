@@ -53,6 +53,7 @@ public class CFPushBotManual extends LinearOpMode {
     boolean buttonG2YReleased = true;
     boolean buttonG2AReleased = true;
     boolean buttonG2BReleased = true;
+    boolean button_rightstick_deadzone = true;
     ElapsedTime myFliperRetractElapsedTime;
     @Override
     public void runOpMode() throws InterruptedException {
@@ -84,19 +85,24 @@ public class CFPushBotManual extends LinearOpMode {
                     }
 
                     if(gamepad2.left_stick_y > .2 ) {
-                        robot.shoulder_step(.02);
+                        robot.shoulder_step(.001);
                     }else if(gamepad2.left_stick_y < -.2)
                     {
-                        robot.shoulder_step(-.02);
+                        robot.shoulder_step(-.001);
                     }
 
                     if(gamepad2.right_stick_y > .2 ) {
                         robot.slider_step(100);
+                        button_rightstick_deadzone = false;
                     }else if(gamepad2.right_stick_y < -.2)
                     {
                         robot.slider_step(-100);
+                        button_rightstick_deadzone = false;
                     }else{
-                        robot.slider_stop();
+                        if(button_rightstick_deadzone == false) {
+                            robot.slider_stop();
+                            button_rightstick_deadzone = true;
+                        }
                     }
 
 

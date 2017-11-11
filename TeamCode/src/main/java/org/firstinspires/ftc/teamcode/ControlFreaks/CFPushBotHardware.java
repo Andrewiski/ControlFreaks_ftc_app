@@ -201,8 +201,8 @@ public class CFPushBotHardware {
 
     private Servo v_servo_shoulder;
     private static final double v_servo_shoulder_MinPosition = 0.00;
-    private static final double v_servo_shoulder_MaxPosition = 1.00;
-    private double v_servo_shoulder_position = 0.20D;  //init arm shoulder Position
+    private static final double v_servo_shoulder_MaxPosition = 0.15;
+    private double v_servo_shoulder_position = 0.05D;  //init arm shoulder Position
     private Servo.Direction v_servo_shoulder_direction = Servo.Direction.FORWARD;
     boolean v_servo_shoulder_is_extended = false;
 
@@ -2087,6 +2087,13 @@ public class CFPushBotHardware {
 
 
     // inches is positive
+    public void drive_powerOverride(float drive_power, float drive_power_reverse, float drive_power_slowdown){
+        v_drive_power = drive_power;
+        v_drive_power_reverse=drive_power_reverse;
+        v_drive_power_slowdown=drive_power_slowdown;
+    }
+
+    // inches is positive
     public void drive_inches(float inches, boolean useGyro){
         if(inches < 0){
             //added a reverse power as we are rear heavey need to run slower backward so not to tip over
@@ -2842,7 +2849,8 @@ public class CFPushBotHardware {
     {
         try {
             if (v_servo_shoulder != null) {
-                v_servo_shoulder.setPosition(v_servo_shoulder_MinPosition);
+                v_servo_shoulder.setPosition(v_servo_shoulder_MaxPosition);
+                set_second_message("shoulder_extend " + v_servo_shoulder_MaxPosition);
                 v_servo_shoulder_is_extended = true;
             }
         }catch (Exception p_exeception)
@@ -2856,7 +2864,8 @@ public class CFPushBotHardware {
         try {
             if (v_servo_shoulder != null) {
                 v_servo_shoulder_is_extended = false;
-                v_servo_shoulder.setPosition(v_servo_shoulder_MaxPosition);
+                v_servo_shoulder.setPosition(v_servo_shoulder_MinPosition);
+                set_second_message("shoulder_retract " + v_servo_shoulder_MinPosition);
             }
         }catch (Exception p_exeception)
         {
@@ -2869,12 +2878,15 @@ public class CFPushBotHardware {
     public void shoulder_step(double stepAmount)
     {
         try {
-            double v_server_shoulderPosition = 0;
+            double v_servo_shoulderPosition = 0;
             if (v_servo_shoulder != null) {
-                v_server_shoulderPosition = v_servo_shoulder.getPosition() + stepAmount;
-                v_servo_shoulder.setPosition(v_server_shoulderPosition);
+
+                v_servo_shoulderPosition = v_servo_shoulder.getPosition() + stepAmount;
+                if (v_servo_shoulderPosition >= v_servo_shoulder_MinPosition && v_servo_shoulderPosition <= v_servo_shoulder_MaxPosition ) {
+                    v_servo_shoulder.setPosition(v_servo_shoulderPosition);
+                }
             }
-            set_second_message("shoulder_step " + v_server_shoulderPosition);
+            set_second_message("shoulder_step " + v_servo_shoulderPosition);
         }catch (Exception p_exeception)
         {
             debugLogException("shoulder_step", "error", p_exeception);
@@ -2884,8 +2896,10 @@ public class CFPushBotHardware {
     {
         try {
             if (v_servo_shoulder != null) {
+
                 v_servo_shoulder.setPosition(position);
             }
+            set_second_message("shoulder_setposition " + position);
         }catch (Exception p_exeception)
         {
             debugLogException("shoulder_setposition", "error", p_exeception);
