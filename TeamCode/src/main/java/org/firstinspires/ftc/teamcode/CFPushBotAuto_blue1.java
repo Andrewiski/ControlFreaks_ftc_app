@@ -49,8 +49,6 @@ public class CFPushBotAuto_blue1 extends LinearOpMode
     @Override
     public void runOpMode() throws InterruptedException {
         int color = -1;
-        int colorReadTimeout = 1000;
-        int colorReadCounter = 0;
         robot.init(this);
         robot.blueled_on();
         //robot.redled_on();
@@ -77,7 +75,7 @@ public class CFPushBotAuto_blue1 extends LinearOpMode
                     break;
                 case 1:
                 //enable color sensor
-
+                    robot.timewait(15);
                     // Transition to the next state when this method is called again.
                     v_state++;
                     break;
@@ -85,23 +83,22 @@ public class CFPushBotAuto_blue1 extends LinearOpMode
                     color = robot.sensor_color_GreatestColor();
                      if (color == 0 || color == 2)
                      {
+                         robot.set_message("Color Read " + color);
                          v_state++;
+                     }else{
+                         if(robot.timewait_Complete()){
+                             robot.set_message("Color Timeout ");
+                             v_state = v_state+ 3;
+                         }
                      }
                     break;
                 case 3:
                     if (color == 0) {
-                        robot.turn_degrees(10, true, v_useGyro);
+                        robot.turn_degrees(20, true, v_useGyro);
                         v_state++;
                     }else if(color==2){
-                        robot.turn_degrees(-10, true, v_useGyro);
+                        robot.turn_degrees(-20, true, v_useGyro);
                         v_state++;
-                    }else{
-                        colorReadCounter++;
-                        if(colorReadCounter > colorReadTimeout){
-                            robot.set_message("Color Not Read Timeout");
-                            v_state=v_state+2;
-
-                        }
                     }
                     break;
                 case 4:
@@ -115,9 +112,9 @@ public class CFPushBotAuto_blue1 extends LinearOpMode
                     break;
                 case 6:
                     if (color == 0) {
-                        robot.turn_degrees(-10,true,v_useGyro);
+                        robot.turn_degrees(-20,true,v_useGyro);
                     }else if(color==2){
-                        robot.turn_degrees(10, true, v_useGyro);
+                        robot.turn_degrees(20, true, v_useGyro);
                     }
                     //hi
                     v_state++;
@@ -155,7 +152,9 @@ public class CFPushBotAuto_blue1 extends LinearOpMode
                     if (robot.drive_inches_complete())
                     {
                         v_state++;
+
                     }
+                    robot.set_message("the robot worked thank connor ");
                     break;
 
                 default:
