@@ -9,7 +9,7 @@ import org.firstinspires.ftc.teamcode.ControlFreaks.CFPushBotHardware;
 /**
  * Created by adevries on 11/6/2015.
  */
-@Autonomous(name="blue1", group="Blue")
+@Autonomous(name="Blue1", group="Blue")
 //@Disabled
 public class CFPushBotAuto_blue1 extends LinearOpMode
 {
@@ -67,19 +67,27 @@ public class CFPushBotAuto_blue1 extends LinearOpMode
                     // drive Forward  inches
                     //
                     //robot.led7seg_timer_start(30);
+                    robot.blockgrabber_close();
+                    robot.jewel_lower();
                     robot.sensor_color_enable(true);
                     robot.sensor_color_led(true);
-                    robot.jewel_extend();
 
                     v_state++;
                     break;
                 case 1:
                 //enable color sensor
-                    robot.timewait(15);
+                    robot.timewait(1);
                     // Transition to the next state when this method is called again.
                     v_state++;
                     break;
                 case 2:
+                    if(robot.timewait_Complete()){
+                        robot.lifter_step(100);
+                        robot.timewait(5);
+                        v_state++;
+                    }
+                    break;
+                case 3:
                     color = robot.sensor_color_GreatestColor();
                      if (color == 0 || color == 2)
                      {
@@ -92,69 +100,97 @@ public class CFPushBotAuto_blue1 extends LinearOpMode
                          }
                      }
                     break;
-                case 3:
+                case 4:
                     if (color == 0) {
-                        robot.turn_degrees(20, true, v_useGyro);
+                        robot.drive_inches(-3, v_useGyro);
                         v_state++;
                     }else if(color==2){
-                        robot.turn_degrees(-20, true, v_useGyro);
-                        v_state++;
-                    }
-                    break;
-                case 4:
-                    if(robot.turn_complete()){
+                        robot.drive_inches(3,  v_useGyro);
                         v_state++;
                     }
                     break;
                 case 5:
-                    robot.jewel_retract();
-                    v_state++;
+                    if(robot.drive_inches_complete()){
+                        v_state++;
+                    }
                     break;
                 case 6:
-                    if (color == 0) {
-                        robot.turn_degrees(-20,true,v_useGyro);
-                    }else if(color==2){
-                        robot.turn_degrees(20, true, v_useGyro);
-                    }
-                    //hi
+                    robot.jewel_raise();
+                    robot.timewait(1);
                     v_state++;
                     break;
                 case 7:
-                    if(robot.turn_complete()){
+                    if(robot.timewait_Complete()) {
                         v_state++;
                     }
                     break;
                 case 8:
-                    robot.drive_inches(24,v_useGyro);
+                    if (color == 0) {
+                        robot.drive_inches(3,v_useGyro);
+                    }else if(color==2){
+                        robot.drive_inches(-3, v_useGyro);
+                    }
                     v_state++;
+                    //hi
+
                     break;
                 case 9:
+                    if(robot.drive_inches_complete()){
+                        v_state++;
+                    }
+                    break;
+                case 10:
+                    robot.drive_inches(-24,v_useGyro);
+                    v_state++;
+                    break;
+                case 11:
                     if(robot.drive_inches_complete())
                     {
                         v_state++;
                     }
                     break;
-                case 10:
-                    robot.turn_degrees(90,false,v_useGyro);
+                case 12:
+                    robot.turn_degrees(-90,false,v_useGyro);
                     v_state++;
                     break;
-                case 11:
+                case 13:
                     if (robot.turn_complete())
                     {
                         v_state++;
                     }
                     break;
-                case 12:
+                case 14:
                     robot.drive_inches(16,v_useGyro);
                     v_state++;
                     break;
-                case 13:
+                case 15:
                     if (robot.drive_inches_complete())
                     {
                         v_state++;
-
                     }
+                    break;
+                case 16:
+                    robot.blockgrabber_open();
+                    v_state++;
+                    break;
+                case 17:
+                    if(robot.timewait_Complete()){
+                        v_state++;
+                    }
+                    break;
+                case 18:
+                    robot.drive_inches(-2,v_useGyro);
+                    v_state++;
+                    break;
+                case 19:
+                    if(robot.drive_inches_complete()){
+                        v_state++;
+                    }
+                    break;
+                case 20:
                     robot.set_message("the robot worked thank connor ");
+                    //robot.play_jingle_bells();
+                    v_state++;
                     break;
 
                 default:

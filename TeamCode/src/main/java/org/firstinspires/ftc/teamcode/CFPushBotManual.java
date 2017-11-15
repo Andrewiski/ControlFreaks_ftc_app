@@ -36,8 +36,10 @@ public class CFPushBotManual extends LinearOpMode {
      */
     float stickdeadzone = .1f;
     boolean buttonXReleased = true;
+    boolean buttonYReleased = true;
     boolean buttonBReleased = true;
     boolean buttonAReleased = true;
+    boolean buttonStartReleased = true;
     boolean buttonDpadleftReleased = true;
     boolean buttonDpadrightReleased = true;
     boolean buttonDpadUpReleased = true;
@@ -66,12 +68,12 @@ public class CFPushBotManual extends LinearOpMode {
             robot.setupManualDrive();
             //robot.vuforia_Init();
             // Wait for the game to start (driver presses PLAY)
-            //robot.led7seg_timer_init(120);
+            robot.led7seg_timer_init(120);
             robot.run_without_encoders();
 
             waitForStart();
-            //robot.debugOff();
-            //robot.led7seg_timer_start(120);
+            robot.debugOff();
+            robot.led7seg_timer_start(120);
 
 
             // run until the end of the match (driver presses STOP)
@@ -81,22 +83,22 @@ public class CFPushBotManual extends LinearOpMode {
                     if(gamepad1.left_trigger > .2 || gamepad1.right_trigger > .2 ) {
                         robot.set_drive_power(-gamepad1.left_stick_y, -gamepad1.right_stick_y);
                     }else{
-                        robot.set_drive_power(-gamepad1.left_stick_y/1.5f, -gamepad1.right_stick_y/1.5f);
+                        robot.set_drive_power(-gamepad1.left_stick_y/2.7f, -gamepad1.right_stick_y/2.7f);
                     }
 
                     if(gamepad2.left_stick_y > .2 ) {
-                        robot.shoulder_step(.001);
+                        robot.shoulder_step(-.001);
                     }else if(gamepad2.left_stick_y < -.2)
                     {
-                        robot.shoulder_step(-.001);
+                        robot.shoulder_step(.001);
                     }
 
                     if(gamepad2.right_stick_y > .2 ) {
-                        robot.slider_step(100);
+                        robot.slider_step(-100);
                         button_rightstick_deadzone = false;
                     }else if(gamepad2.right_stick_y < -.2)
                     {
-                        robot.slider_step(-100);
+                        robot.slider_step(100);
                         button_rightstick_deadzone = false;
                     }else{
                         if(button_rightstick_deadzone == false) {
@@ -108,7 +110,7 @@ public class CFPushBotManual extends LinearOpMode {
 
                     if(gamepad1.left_bumper){
                         if(buttonLeftBumperReleased == true) {
-                            robot.jewel_extend();
+                            //robot.jewel_raise();
                             buttonLeftBumperReleased = false;
                         }
                     }else{
@@ -116,7 +118,7 @@ public class CFPushBotManual extends LinearOpMode {
                     }
                     if(gamepad1.right_bumper){
                         if(buttonRightBumperReleased == true) {
-                            robot.jewel_retract();
+                            //robot.jewel_retract();
                             buttonRightBumperReleased = false;
                         }
                     }else{
@@ -124,7 +126,7 @@ public class CFPushBotManual extends LinearOpMode {
                     }
 
                     if(gamepad1.dpad_up){
-                        robot.hand_open();
+                        //robot.hand_open();
                         if(buttonDpadUpReleased == true) {
                             buttonDpadUpReleased = false;
                         }
@@ -132,7 +134,7 @@ public class CFPushBotManual extends LinearOpMode {
                         buttonDpadUpReleased = true;
                     }
                     if(gamepad1.dpad_down){
-                        robot.hand_close();
+                        //robot.hand_close();
                         if(buttonDpadDownReleased == true) {
                             buttonDpadDownReleased = false;
                         }
@@ -218,6 +220,19 @@ public class CFPushBotManual extends LinearOpMode {
                     }else{
                         buttonBReleased = true;
                     }
+                    if(gamepad1.start ){
+                        if(buttonStartReleased == true) {
+                            if(robot.debugMode()){
+                                robot.debugOff();
+                            }else{
+                                robot.debugOn();
+                            }
+                            buttonStartReleased = false;
+                        }
+                    }else{
+                        buttonStartReleased = true;
+                    }
+
                     if(gamepad2.a){
                             if(buttonG2AReleased == true) {
                                 robot.blockgrabber_toggle();
@@ -248,13 +263,13 @@ public class CFPushBotManual extends LinearOpMode {
                             buttonG2BReleased = true;
                         }
                     }
-                    if(gamepad2.y){
-                        if(buttonG2YReleased == true) {
+                    if(gamepad1.y){
+                        if(buttonYReleased == true) {
                             robot.sensor_color_enable(true);
                             robot.sensor_color_led(true);
 
                             //myFliperRetractElapsedTime = null;
-                            buttonG2YReleased = false;
+                            buttonYReleased = false;
                         }else {
                             int myColor = robot.sensor_color_GreatestColor();
                             if (myColor == 0) {
@@ -270,7 +285,14 @@ public class CFPushBotManual extends LinearOpMode {
                             }
                         }
                     }else{
-                        buttonG2YReleased = true;
+                        if(buttonYReleased == false){
+                            robot.sensor_color_led(false);
+                            robot.sensor_color_enable(false);
+                            robot.redled_off();
+                            robot.blueled_off();
+                        }
+                        buttonYReleased = true;
+
                     }
 
                     //robot.waitForTick(2);

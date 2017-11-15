@@ -15,6 +15,7 @@ import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DeviceInterfaceModule;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DigitalChannelController;
 import com.qualcomm.robotcore.hardware.GyroSensor;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -58,6 +59,7 @@ public class CFPushBotHardware {
     private String config_i2c_gyro = "gyro";
     private String config_i2c_led7seg = "ledseg";
     private String config_i2c_colorsensor = "color";
+    private String config_i2c_colorsensor_led = "color_led";
     private String config_i2c_range = "range";
     /*
         Motor Encoder Vars
@@ -146,7 +148,7 @@ public class CFPushBotHardware {
     private static final double v_motor_lifter_power = 1.0;
     private static final DcMotor.Direction v_motor_lifter_direction = DcMotor.Direction.FORWARD;
     private static final int v_motor_lifter_encoder_min = 30;
-    private static final int v_motor_lifter_encoder_max = 4750;
+    private static final int v_motor_lifter_encoder_max = 2250;
     private static final int v_motor_lifter_ExtendSlowdownTicks = 300;
     private int v_motor_lifter_Position = 0;
 
@@ -162,31 +164,32 @@ public class CFPushBotHardware {
 
 
     private Servo v_servo_blockgrabber;
-    private static final double v_servo_blockgrabber_MinPosition = 0.1;
-    private static final double v_servo_blockgrabber_MaxPosition = 0.5;
-    private double v_servo_blockgrabber_position = 0.5D;  //init arm jewel Position
+    private static final double v_servo_blockgrabber_MinPosition = 0.6;
+    private static final double v_servo_blockgrabber_MaxPosition = 0.87;
+    private double v_servo_blockgrabber_position = 0.0D;  //init arm jewel Position
     boolean v_servo_blockgrabber_is_extended = true;
-    private Servo.Direction v_servo_blockgrabber_direction = Servo.Direction.REVERSE;
+    private Servo.Direction v_servo_blockgrabber_direction = Servo.Direction.FORWARD;
 
     private Servo v_servo_blockslide;
     private static final double v_servo_blockslide_MinPosition = 0.00;
-    private static final double v_servo_blockslide_MaxPosition = 1.0;
-    private static final double v_servo_blockslide_MiddlePosition = 0.5;
+    private static final double v_servo_blockslide_MaxPosition = 1.0D;
+    private static final double v_servo_blockslide_MiddlePosition = 0.5D;
     private int v_servo_blockslide_position = 1;  //move to Middle
     boolean v_servo_blockslide_is_extended = false;
     private Servo.Direction v_servo_blockslide_direction = Servo.Direction.FORWARD;
 
     private Servo v_servo_jewel;
-    private static final double v_servo_jewel_MinPosition = 0.00;
-    private static final double v_servo_jewel_MaxPosition = 0.77;
-    private double v_servo_jewel_position = 0.77D;  //init arm jewel Position
+    private static final double v_servo_jewel_MinPosition = 0.00D;
+    private static final double v_servo_jewel_MaxPosition = 0.62D;
+    private double v_servo_jewel_position = 0.62D;  //init arm jewel Position
     private Servo.Direction v_servo_jewel_direction = Servo.Direction.FORWARD;
     boolean v_servo_jewel_is_extending = false;
-
+    boolean v_servo_jewel_is_retracting = false;
+    private static final double v_servo_jewel_retract_ease = .2;
 
     private Servo v_servo_hand;
     private static final double v_servo_hand_MinPosition = 0.00;
-    private static final double v_servo_hand_MaxPosition = 0.40;
+    private static final double v_servo_hand_MaxPosition = 0.25;
     private double v_servo_hand_position = 0.00D;  //init hand Position
     private Servo.Direction v_servo_hand_direction = Servo.Direction.FORWARD;
     boolean v_servo_hand_is_extending = false;
@@ -201,7 +204,7 @@ public class CFPushBotHardware {
 
     private Servo v_servo_shoulder;
     private static final double v_servo_shoulder_MinPosition = 0.00;
-    private static final double v_servo_shoulder_MaxPosition = 0.15;
+    private static final double v_servo_shoulder_MaxPosition = 0.131;
     private double v_servo_shoulder_position = 0.05D;  //init arm shoulder Position
     private Servo.Direction v_servo_shoulder_direction = Servo.Direction.FORWARD;
     boolean v_servo_shoulder_is_extended = false;
@@ -219,13 +222,14 @@ public class CFPushBotHardware {
 */
     //Adafruit RGB Sensor
     private ColorSensor v_sensor_color_i2c;
-    private static final int v_sensor_color_i2c_led_pin = 1;
+    private DigitalChannel v_sensor_color_i2c_led;
     // bEnabled represents the state of the LED.
     private boolean v_sensor_color_i2c_led_enabled = false;
     //red, green, blue, alpha
     private int v_sensor_color_i2c_rgbaValues[]= {0,0,0,0};
     //we read the values in the loop only if the sensor is enabled as they take resourses
     private boolean v_sensor_color_i2c_enabled = false;
+    private int v_sensor_color_min_value = 100;
 
     private boolean v_sensor_rangeSensor_enabled = false;
     private double v_sensor_rangeSensor_distance = 0.0;
@@ -446,19 +450,29 @@ public class CFPushBotHardware {
         }
         try{
             if(v_dim != null) {
-                // set the digital channel to output mode.
                 // remember, the Adafruit sensor is actually two devices.
                 // It's an I2C sensor and it's also an LED that can be turned on or off.
-                v_dim.setDigitalChannelMode(v_sensor_color_i2c_led_pin, DigitalChannelController.Mode.OUTPUT);
                 // get a reference to our ColorSensor object.
                 v_sensor_color_i2c = opMode.hardwareMap.colorSensor.get(config_i2c_colorsensor);
-                // turn the LED on in the beginning, just so user will know that the sensor is active.
-                v_dim.setDigitalChannelState(v_sensor_color_i2c_led_pin, v_sensor_color_i2c_led_enabled);
+
             }
         } catch (Exception p_exeception)
         {
             debugLogException(config_i2c_colorsensor, "missing", p_exeception);
             v_sensor_color_i2c = null;
+        }
+
+        try{
+            if(v_dim !=null){
+                v_sensor_color_i2c_led = opMode.hardwareMap.get(DigitalChannel.class, config_i2c_colorsensor_led);
+                // turn the LED on in the beginning, just so user will know that the sensor is active.
+                v_sensor_color_i2c_led.setMode(DigitalChannel.Mode.OUTPUT);
+                v_sensor_color_i2c_led.setState( v_sensor_color_i2c_led_enabled);
+            }
+        } catch (Exception p_exeception)
+        {
+            debugLogException(config_i2c_colorsensor_led, "missing", p_exeception);
+            v_sensor_color_i2c_led = null;
         }
 
         //
@@ -484,7 +498,7 @@ public class CFPushBotHardware {
         try
         {
             v_servo_blockslide = opMode.hardwareMap.servo.get(config_servo_blockslide);
-            v_servo_blockslide.scaleRange(v_servo_blockslide_MinPosition,v_servo_blockslide_MaxPosition);
+            //v_servo_blockslide.scaleRange(v_servo_blockslide_MinPosition,v_servo_blockslide_MaxPosition);
             v_servo_blockslide.setDirection(v_servo_blockslide_direction);
             v_servo_blockslide.setPosition (v_servo_blockslide_MiddlePosition);  //Middle
         }
@@ -504,7 +518,7 @@ public class CFPushBotHardware {
             //set the Server Direction
             v_servo_jewel.setDirection(v_servo_jewel_direction);
             //set the Servo ranage
-            v_servo_jewel.scaleRange(v_servo_jewel_MinPosition, v_servo_jewel_MaxPosition );
+            //v_servo_jewel.scaleRange(v_servo_jewel_MinPosition, v_servo_jewel_MaxPosition );
             //move the Servo to its init position
             v_servo_jewel.setPosition (v_servo_jewel_position);
         }
@@ -539,7 +553,7 @@ public class CFPushBotHardware {
             //set the Server Direction
             v_servo_hand.setDirection(v_servo_hand_direction);
             //set the Servo ranage
-            v_servo_hand.scaleRange(v_servo_hand_MinPosition, v_servo_hand_MaxPosition );
+            //v_servo_hand.scaleRange(v_servo_hand_MinPosition, v_servo_hand_MaxPosition );
             //move the Servo to its init position
             v_servo_hand.setPosition (v_servo_hand_position);
         }
@@ -558,7 +572,7 @@ public class CFPushBotHardware {
             //set the Server Direction
             v_servo_wrist.setDirection(v_servo_wrist_direction);
             //set the Servo ranage
-            v_servo_wrist.scaleRange(v_servo_wrist_MinPosition, v_servo_wrist_MaxPosition );
+            //v_servo_wrist.scaleRange(v_servo_wrist_MinPosition, v_servo_wrist_MaxPosition );
             //move the Servo to its init position
             v_servo_wrist.setPosition (v_servo_wrist_position);
         }
@@ -911,10 +925,22 @@ public class CFPushBotHardware {
                 v_sensor_color_i2c_rgbaValues[1] = v_sensor_color_i2c.green();
                 v_sensor_color_i2c_rgbaValues[2] = v_sensor_color_i2c.blue();
                 v_sensor_color_i2c_rgbaValues[3] = v_sensor_color_i2c.alpha();
+                set_first_message("color:" + v_sensor_color_i2c_rgbaValues[0] + ":" + v_sensor_color_i2c_rgbaValues[1] + ":" + v_sensor_color_i2c_rgbaValues[2] + ":" + v_sensor_color_i2c_rgbaValues[3]);
             }
 
             if(v_sensor_rangeSensor != null && v_sensor_rangeSensor_enabled == true){
                 v_sensor_rangeSensor_distance = v_sensor_rangeSensor.getDistance(DistanceUnit.INCH);
+            }
+
+            //jewel ease so not to hard hit ground
+            if(v_servo_jewel_is_retracting){
+                if( v_servo_jewel_position > v_servo_jewel_MinPosition){
+                    v_servo_jewel_position = v_servo_jewel_position - .05;
+                    v_servo_jewel.setPosition(v_servo_jewel_position);
+                }else{
+                    v_servo_jewel.setPosition(v_servo_jewel_MinPosition);
+                    v_servo_jewel_is_retracting = false;
+                }
             }
             vuforia_hardwareLoop();
             if(v_debug) {
@@ -2408,6 +2434,11 @@ public class CFPushBotHardware {
         set_second_message("turn_degrees: ticks:" + ticks + ", lt:" + v_turn_degrees_ticks_target_left + " rt:" + v_turn_degrees_ticks_target_right + ", re:" + v_motor_right_drive.getCurrentPosition() + ", le:" + v_motor_left_drive.getCurrentPosition() );
     }
 
+    public void turn_power_override(float turn_motorspeed, float turn_motorspeed_slow){
+        v_turn_motorspeed = turn_motorspeed;
+        v_turn_motorspeed_slow = turn_motorspeed_slow;
+    }
+
     /**
      * Used to tell if the turn is complete turn_degrees must be called first
      *
@@ -2651,21 +2682,23 @@ public class CFPushBotHardware {
     {
         try {
             if (v_servo_jewel_is_extending == true){
-                jewel_retract();
+                jewel_lower();
             }else{
-                jewel_extend();
+                jewel_raise();
             }
         }catch (Exception p_exeception)
         {
             debugLogException("jewel_toggle", "error", p_exeception);
         }
     }
-    public void jewel_extend ()
+    public void jewel_raise ()
     {
         try {
             if (v_servo_jewel != null) {
                 v_servo_jewel.setPosition(v_servo_jewel_MaxPosition);
+                set_second_message("jewel extend " + v_servo_jewel_MaxPosition);
                 v_servo_jewel_is_extending = true;
+                v_servo_jewel_is_retracting = false;
             }
         }catch (Exception p_exeception)
         {
@@ -2673,14 +2706,16 @@ public class CFPushBotHardware {
         }
     }
 
-    public void jewel_retract ()
+    public void jewel_lower ()
     {
         try {
             if (v_servo_jewel != null) {
-                v_servo_jewel.setPosition(v_servo_jewel_MinPosition-.2);
-                wait(300);
-                v_servo_jewel.setPosition(v_servo_jewel_MinPosition);
+                v_servo_jewel_position = v_servo_jewel_MinPosition + v_servo_jewel_retract_ease;
+                v_servo_jewel.setPosition(v_servo_jewel_position);
+                set_second_message("jewel retract " + (v_servo_jewel_position));
+
                 v_servo_jewel_is_extending = false;
+                v_servo_jewel_is_retracting = true;
             }
         }catch (Exception p_exeception)
         {
@@ -2694,7 +2729,12 @@ public class CFPushBotHardware {
     {
         try {
             if (v_servo_jewel != null) {
-                v_servo_jewel.setPosition(v_servo_jewel.getPosition() + stepAmount);
+                double position= v_servo_jewel.getPosition() + stepAmount;
+                if(position >= v_servo_jewel_MinPosition && position <= v_servo_jewel_MaxPosition) {
+                    v_servo_jewel.setPosition(position);
+                    set_second_message("jewel step " + position);
+                }
+
             }
         }catch (Exception p_exeception)
         {
@@ -2706,6 +2746,7 @@ public class CFPushBotHardware {
         try {
             if (v_servo_jewel != null) {
                 v_servo_jewel.setPosition(position);
+                set_second_message("jewel setposition " + position);
             }
         }catch (Exception p_exeception)
         {
@@ -2913,7 +2954,16 @@ public class CFPushBotHardware {
         opMode.updateTelemetry(opMode.telemetry);
     }
 
+    public boolean debugMode(){
+        return v_debug;
+    }
 
+    public void debugOn(){
+        v_debug = true;
+        set_second_message("Debug is On");
+        update_telemetry();
+        opMode.updateTelemetry(opMode.telemetry);
+    }
 
     //--------------------------------------------------------------------------
     //
@@ -3576,7 +3626,7 @@ public class CFPushBotHardware {
 //        return false;
 //    }
 //
-    private int v_sensor_color_min_value = 500;
+
 
     //returns -1 if neither detected, 0 if red detected, 2 if blue detected higher
     public int sensor_color_GreatestColor(){
@@ -3587,7 +3637,7 @@ public class CFPushBotHardware {
             int cBlue = myRGBA[2];
 
             if (cRed < v_sensor_color_min_value && cBlue < v_sensor_color_min_value) {
-                set_third_message("Both Red and Blue Under Min");
+                set_third_message("Both Red and Blue Under Min " + myRGBA[0] + ":" + myRGBA[1] + ":" + myRGBA[2]);
                 return -1;
             }
 
@@ -3603,15 +3653,7 @@ public class CFPushBotHardware {
         return -1;
     }
 
-    public int sensor_getGreatestColor(){
-        if(v_sensor_color_i2c_enabled) {
-            return sensor_color_GreatestColor();
-        }else{
-            return -1;
-        }
 
-
-    }
 
 //    public boolean beacon_make_blue() throws InterruptedException{
 //        //the sensor is on the right side so the logic is  to read the
@@ -3655,12 +3697,13 @@ public class CFPushBotHardware {
     public boolean sensor_color_led(boolean enable){
         try{
 
-            if(v_sensor_color_i2c !=null) {
+            if(v_sensor_color_i2c_led !=null) {
                 v_sensor_color_i2c_led_enabled = enable;
-                v_dim.setDigitalChannelState(v_sensor_color_i2c_led_pin, v_sensor_color_i2c_led_enabled);
+                v_sensor_color_i2c_led.setState( v_sensor_color_i2c_led_enabled);
                 //v_sensor_color_i2c.enableLed(enable);
                 return true;
             }
+            set_first_message("color led " + enable);
             return false;
         }catch (Exception p_exeception)
         {
@@ -3679,6 +3722,7 @@ public class CFPushBotHardware {
             if(v_sensor_color_i2c !=null) {
                 //turn on the led this is the only way legecy color will detect anything
                 v_sensor_color_i2c_enabled = enable;
+                set_second_message("sensor_color_enable " + enable );
                 return true;
             }
             return false;
@@ -3698,7 +3742,7 @@ public class CFPushBotHardware {
         try{
             if(v_sensor_rangeSensor != null) {
                 v_sensor_rangeSensor_enabled = enable;
-                set_third_message("sensro range enable " + enable);
+                set_third_message("sensor range enable " + enable);
                 return true;
             }
             return false;
