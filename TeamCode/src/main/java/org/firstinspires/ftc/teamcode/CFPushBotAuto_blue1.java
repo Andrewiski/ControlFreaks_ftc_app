@@ -49,6 +49,7 @@ public class CFPushBotAuto_blue1 extends LinearOpMode
     @Override
     public void runOpMode() throws InterruptedException {
         int color = -1;
+        robot.drive_powerOverride(.3F,.3F, .3F);
         robot.init(this);
         robot.blueled_on();
         //robot.redled_on();
@@ -102,10 +103,10 @@ public class CFPushBotAuto_blue1 extends LinearOpMode
                     break;
                 case 4:
                     if (color == 0) {
-                        robot.drive_inches(-3, v_useGyro);
+                        robot.drive_inches(3, v_useGyro);
                         v_state++;
                     }else if(color==2){
-                        robot.drive_inches(3,  v_useGyro);
+                        robot.drive_inches(-3,  v_useGyro);
                         v_state++;
                     }
                     break;
@@ -126,9 +127,9 @@ public class CFPushBotAuto_blue1 extends LinearOpMode
                     break;
                 case 8:
                     if (color == 0) {
-                        robot.drive_inches(3,v_useGyro);
+                        robot.drive_inches(-3,v_useGyro);
                     }else if(color==2){
-                        robot.drive_inches(-3, v_useGyro);
+                        robot.drive_inches(3, v_useGyro);
                     }
                     v_state++;
                     //hi
@@ -150,7 +151,7 @@ public class CFPushBotAuto_blue1 extends LinearOpMode
                     }
                     break;
                 case 12:
-                    robot.turn_degrees(-90,false,v_useGyro);
+                    robot.turn_degrees(90,false,v_useGyro);
                     v_state++;
                     break;
                 case 13:
