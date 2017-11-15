@@ -76,7 +76,7 @@ public class CFPushBotAuto_blue1 extends LinearOpMode
                     break;
                 case 1:
                 //enable color sensor
-                    robot.timewait(1);
+                    robot.timewait(3);
                     // Transition to the next state when this method is called again.
                     v_state++;
                     break;
