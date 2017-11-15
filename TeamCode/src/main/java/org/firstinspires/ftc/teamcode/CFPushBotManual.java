@@ -110,7 +110,9 @@ public class CFPushBotManual extends LinearOpMode {
 
                     if(gamepad1.left_bumper){
                         if(buttonLeftBumperReleased == true) {
-                            //robot.jewel_raise();
+                            if (robot.debugMode()){
+                                robot.jewel_raise();
+                            }
                             buttonLeftBumperReleased = false;
                         }
                     }else{
@@ -118,7 +120,9 @@ public class CFPushBotManual extends LinearOpMode {
                     }
                     if(gamepad1.right_bumper){
                         if(buttonRightBumperReleased == true) {
-                            //robot.jewel_retract();
+                            if(robot.debugMode()){
+                                robot.jewel_lower();
+                            }
                             buttonRightBumperReleased = false;
                         }
                     }else{

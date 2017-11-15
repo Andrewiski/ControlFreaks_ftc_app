@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.ControlFreaks.CFPushBotHardware;
  */
 @Autonomous(name="Blue1", group="Blue")
 //@Disabled
-public class CFPushBotAuto_blue1 extends LinearOpMode
+public class CFPushBotAuto_Blue1 extends LinearOpMode
 {
     /* Declare OpMode members. */
     CFPushBotHardware robot   = new CFPushBotHardware();
@@ -49,8 +49,10 @@ public class CFPushBotAuto_blue1 extends LinearOpMode
     @Override
     public void runOpMode() throws InterruptedException {
         int color = -1;
-        robot.drive_powerOverride(.3F,.3F, .3F);
+
         robot.init(this);
+        robot.drive_powerOverride(.25F,.25F, .25F);
+        robot.turn_power_override(.25F, .25F);
         robot.blueled_on();
         //robot.redled_on();
         //robot.led7seg_timer_init(30);
@@ -83,7 +85,7 @@ public class CFPushBotAuto_blue1 extends LinearOpMode
                     break;
                 case 2:
                     if(robot.timewait_Complete()){
-                        robot.lifter_step(100);
+                        robot.lifter_step(300);
                         robot.timewait(5);
                         v_state++;
                     }
@@ -117,7 +119,7 @@ public class CFPushBotAuto_blue1 extends LinearOpMode
                     break;
                 case 6:
                     robot.jewel_raise();
-                    robot.timewait(1);
+                    robot.timewait(3);
                     v_state++;
                     break;
                 case 7:
@@ -141,7 +143,7 @@ public class CFPushBotAuto_blue1 extends LinearOpMode
                     }
                     break;
                 case 10:
-                    robot.drive_inches(-24,v_useGyro);
+                    robot.drive_inches(-30,v_useGyro);
                     v_state++;
                     break;
                 case 11:
@@ -161,7 +163,7 @@ public class CFPushBotAuto_blue1 extends LinearOpMode
                     }
                     break;
                 case 14:
-                    robot.drive_inches(16,v_useGyro);
+                    robot.drive_inches(6,v_useGyro);
                     v_state++;
                     break;
                 case 15:

@@ -164,7 +164,7 @@ public class CFPushBotHardware {
 
 
     private Servo v_servo_blockgrabber;
-    private static final double v_servo_blockgrabber_MinPosition = 0.6;
+    private static final double v_servo_blockgrabber_MinPosition = 0.4;
     private static final double v_servo_blockgrabber_MaxPosition = 0.87;
     private double v_servo_blockgrabber_position = 0.0D;  //init arm jewel Position
     boolean v_servo_blockgrabber_is_extended = true;
