@@ -61,6 +61,7 @@ public class CFPushBotHardware {
     private String config_i2c_colorsensor = "color";
     private String config_i2c_colorsensor_led = "color_led";
     private String config_i2c_range = "range";
+    private String config_i2c_pixy = "pixy";
     /*
         Motor Encoder Vars
      */
@@ -158,13 +159,13 @@ public class CFPushBotHardware {
     private static final DcMotor.Direction v_motor_slider_direction = DcMotor.Direction.FORWARD;
     private static final double v_motor_slider_SpeedSlowDown = 0.5f;
     private static final int v_motor_slider_encoder_min = 30;
-    private static final int v_motor_slider_encoder_max = 11450;
+    private static final int v_motor_slider_encoder_max = 8750;
     private static final int v_motor_slider_ExtendSlowdownTicks = 300;
     private int v_motor_slider_Position = 0;
 
 
     private Servo v_servo_blockgrabber;
-    private static final double v_servo_blockgrabber_MinPosition = 0.4;
+    private static final double v_servo_blockgrabber_MinPosition = 0.45;
     private static final double v_servo_blockgrabber_MaxPosition = 0.87;
     private double v_servo_blockgrabber_position = 0.0D;  //init arm jewel Position
     boolean v_servo_blockgrabber_is_extended = true;
@@ -185,11 +186,11 @@ public class CFPushBotHardware {
     private Servo.Direction v_servo_jewel_direction = Servo.Direction.FORWARD;
     boolean v_servo_jewel_is_extending = false;
     boolean v_servo_jewel_is_retracting = false;
-    private static final double v_servo_jewel_retract_ease = .2;
+    private static final double v_servo_jewel_retract_ease = .1;
 
     private Servo v_servo_hand;
     private static final double v_servo_hand_MinPosition = 0.00;
-    private static final double v_servo_hand_MaxPosition = 0.25;
+    private static final double v_servo_hand_MaxPosition = 0.15;
     private double v_servo_hand_position = 0.00D;  //init hand Position
     private Servo.Direction v_servo_hand_direction = Servo.Direction.FORWARD;
     boolean v_servo_hand_is_extending = false;
@@ -268,6 +269,8 @@ public class CFPushBotHardware {
     //private int v_led_heartbeat_ticks = 0;
 
     private DeviceInterfaceModule v_dim;
+
+    private PixyCamera v_pixy;
 
     private AdafruitLEDBackpack7Seg v_ledseg;
 
@@ -777,6 +780,58 @@ public class CFPushBotHardware {
         }
     }
 
+    public boolean sensor_pixy_init(){
+        try{
+
+            v_pixy = new PixyCamera(opMode.hardwareMap, config_i2c_pixy);
+            return true;
+        }catch (Exception p_exeception)
+        {
+            debugLogException(config_i2c_pixy, "missing", p_exeception);
+            v_pixy = null;
+            return false;
+        }
+    }
+
+    public boolean sensor_pixy_set_servos(int s0, int s1){
+        try{
+            if(v_pixy != null) {
+                v_pixy.set_servos(s0, s1);
+            }
+            return true;
+        }catch (Exception p_exeception)
+        {
+            debugLogException(config_i2c_pixy, "sensor_pixy_set_servos", p_exeception);
+            return false;
+        }
+    }
+
+    public boolean sensor_pixy_enable(boolean enable){
+        try{
+            if(v_pixy != null) {
+                v_pixy.enabled(enable);
+            }
+            return true;
+        }catch (Exception p_exeception)
+        {
+            debugLogException(config_i2c_pixy, "sensor_pixy_enable", p_exeception);
+            return false;
+        }
+    }
+
+    public boolean sensor_pixy_set_leds(byte red, byte green, byte blue){
+        try{
+            if(v_pixy != null) {
+                v_pixy.set_led(red,green,blue);
+            }
+            return true;
+        }catch (Exception p_exeception)
+        {
+            debugLogException(config_i2c_pixy, "sensor_pixy_set_leds", p_exeception);
+            return false;
+        }
+    }
+
     private ElapsedTime v_timewait2_elapsedtime;
     private boolean v_is_timewaiting2_complete;
     private int v_timewait2_milliseconds;
@@ -941,6 +996,9 @@ public class CFPushBotHardware {
                     v_servo_jewel.setPosition(v_servo_jewel_MinPosition);
                     v_servo_jewel_is_retracting = false;
                 }
+            }
+            if(v_pixy != null){
+               v_pixy.loop();
             }
             vuforia_hardwareLoop();
             if(v_debug) {
@@ -1410,8 +1468,8 @@ public class CFPushBotHardware {
     }
 
     public void run_without_encoders(){
-        v_motor_left_drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        v_motor_right_drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        v_motor_left_drive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        v_motor_right_drive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
     //--------------------------------------------------------------------------
@@ -2113,7 +2171,7 @@ public class CFPushBotHardware {
 
 
     // inches is positive
-    public void drive_powerOverride(float drive_power, float drive_power_reverse, float drive_power_slowdown){
+    public void drive_power_override(float drive_power, float drive_power_reverse, float drive_power_slowdown){
         v_drive_power = drive_power;
         v_drive_power_reverse=drive_power_reverse;
         v_drive_power_slowdown=drive_power_slowdown;

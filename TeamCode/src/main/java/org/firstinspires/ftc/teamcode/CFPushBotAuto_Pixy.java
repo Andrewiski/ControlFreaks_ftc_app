@@ -10,12 +10,15 @@ import org.firstinspires.ftc.teamcode.ControlFreaks.CFPushBotHardware;
 /**
  * Created by adevries on 11/6/2015.
  */
-@Autonomous(name="Mr D Turn -90 AM20", group="MrD")
-@Disabled
-public class CFPushBotAuto_MrDeVries extends LinearOpMode
+@Autonomous(name="Pixy", group="MrD")
+//@Disabled
+public class CFPushBotAuto_Pixy extends LinearOpMode
 {
     /* Declare OpMode members. */
         CFPushBotHardware robot   = new CFPushBotHardware();
+        byte red = (byte)255;
+        byte green = (byte)0;
+        byte blue = (byte)0;
 
 
 
@@ -47,21 +50,25 @@ public class CFPushBotAuto_MrDeVries extends LinearOpMode
                 //
                 case 0:
                     //v_state = 100;
-                    robot.turn_degrees(-90, false,false);
+                    robot.sensor_pixy_init();
                     v_state++;
                     break;
                 case 1:
 
                     //
                     // Transition to the next state when this method is true
-                    if (robot.turn_complete()) {
+                    if (robot.sensor_pixy_set_leds((byte)0,(byte)255,(byte)0)) {
                         //
-                        v_state++;
+                        robot.set_message("Set Led Color");
 
                     }
+                    v_state++;
 
                     break;
-
+                case 2:
+                    robot.sensor_pixy_enable(true);
+                    v_state++;
+                    break;
                 default:
                     //
                     // The autonomous actions have been accomplished (i.e. the state has

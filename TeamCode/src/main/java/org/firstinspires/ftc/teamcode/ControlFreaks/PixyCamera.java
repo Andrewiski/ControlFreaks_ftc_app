@@ -96,8 +96,19 @@ public class PixyCamera {
     /**
      * put this in your loop so its called over and over in the loop
      */
+    boolean readingData = false;
+    byte[] buffer;
     public void loop() {
+        if(v_pixy_enabled){
+            if(readingData == false) {
+                v_pixy.beginWrite(0x00);
+                v_pixy.endWrite();
+                readingData = true;
+                v_pixy.getResponse();
+            }else{
 
+            }
+        }
     }
 /*
 int setServos(uint16_t s0, uint16_t s1)
@@ -162,13 +173,6 @@ int setServos(uint16_t s0, uint16_t s1)
         try{
             if (v_pixy_enabled != enable) {
                 v_pixy_enabled = enable;
-                if (enable == true) {
-                    //writeDigits("0000",true);
-                    v_pixy.write(0x81, 0);
-                } else {
-                    //writeDigits("    ", false);
-                    v_pixy.write(0x80, 0);
-                }
             }
             return true;
         }catch (Exception p_exeception)

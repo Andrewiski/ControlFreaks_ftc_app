@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.ControlFreaks.CFPushBotHardware;
  * Created by adevries on 11/6/2015.
  */
 @Autonomous(name="Drive Forward 67 Inch", group="BlueRed")
-//@Disabled
+@Disabled
 public class CFPushBotAuto_DriveForward extends LinearOpMode
 {
     /* Declare OpMode members. */

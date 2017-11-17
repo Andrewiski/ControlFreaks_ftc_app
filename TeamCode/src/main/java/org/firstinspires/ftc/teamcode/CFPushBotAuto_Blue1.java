@@ -18,6 +18,7 @@ public class CFPushBotAuto_Blue1 extends LinearOpMode
 
     boolean v_useGyro = false;
     boolean v_turnSlow = true;
+    int v_lifter_step = 500;
 
     //--------------------------------------------------------------------------
     //
@@ -49,15 +50,16 @@ public class CFPushBotAuto_Blue1 extends LinearOpMode
     @Override
     public void runOpMode() throws InterruptedException {
         int color = -1;
-
+        float jewelKnockDistance=0;
         robot.init(this);
-        robot.drive_powerOverride(.25F,.25F, .25F);
-        robot.turn_power_override(.25F, .25F);
+        robot.drive_power_override(.3F,.3F, .3F);
+        robot.turn_power_override(.3F, .3F);
         robot.blueled_on();
         //robot.redled_on();
-        //robot.led7seg_timer_init(30);
+        robot.led7seg_timer_init(30);
         waitForStart();
         // run until the end of the match (driver presses STOP)
+        robot.led7seg_timer_start(30);
         while (opModeIsActive()) {
             robot.hardware_loop();
 
@@ -79,13 +81,13 @@ public class CFPushBotAuto_Blue1 extends LinearOpMode
                     break;
                 case 1:
                 //enable color sensor
-                    robot.timewait(3);
+                    robot.timewait(2);
                     // Transition to the next state when this method is called again.
                     v_state++;
                     break;
                 case 2:
                     if(robot.timewait_Complete()){
-                        robot.lifter_step(300);
+                        robot.lifter_step(v_lifter_step);
                         robot.timewait(5);
                         v_state++;
                     }
@@ -105,10 +107,14 @@ public class CFPushBotAuto_Blue1 extends LinearOpMode
                     break;
                 case 4:
                     if (color == 0) {
-                        robot.drive_inches(3, v_useGyro);
+                        jewelKnockDistance = 3;
+                        robot.drive_inches(jewelKnockDistance, v_useGyro);
+                        robot.timewait(2);
                         v_state++;
                     }else if(color==2){
-                        robot.drive_inches(-3,  v_useGyro);
+                        jewelKnockDistance = -3;
+                        robot.drive_inches(jewelKnockDistance,  v_useGyro);
+                        robot.timewait(2);
                         v_state++;
                     }
                     break;
@@ -119,7 +125,7 @@ public class CFPushBotAuto_Blue1 extends LinearOpMode
                     break;
                 case 6:
                     robot.jewel_raise();
-                    robot.timewait(3);
+                    robot.timewait(1);
                     v_state++;
                     break;
                 case 7:
@@ -128,22 +134,22 @@ public class CFPushBotAuto_Blue1 extends LinearOpMode
                     }
                     break;
                 case 8:
-                    if (color == 0) {
-                        robot.drive_inches(-3,v_useGyro);
-                    }else if(color==2){
-                        robot.drive_inches(3, v_useGyro);
-                    }
+//                    if (color == 0) {
+//                        robot.drive_inches(-3,v_useGyro);
+//                    }else if(color==2){
+//                        robot.drive_inches(3, v_useGyro);
+//                    }
                     v_state++;
                     //hi
 
                     break;
                 case 9:
-                    if(robot.drive_inches_complete()){
+//                    if(robot.drive_inches_complete()){
                         v_state++;
-                    }
+//                    }
                     break;
                 case 10:
-                    robot.drive_inches(-30,v_useGyro);
+                    robot.drive_inches(-30 - jewelKnockDistance,v_useGyro);
                     v_state++;
                     break;
                 case 11:
@@ -153,21 +159,23 @@ public class CFPushBotAuto_Blue1 extends LinearOpMode
                     }
                     break;
                 case 12:
-                    robot.turn_degrees(90,false,v_useGyro);
+                    robot.turn_degrees(135,false,v_useGyro);
+                    robot.timewait(2);
                     v_state++;
                     break;
                 case 13:
-                    if (robot.turn_complete())
+                    if (robot.turn_complete()| robot.timewait_Complete())
                     {
                         v_state++;
                     }
                     break;
                 case 14:
-                    robot.drive_inches(6,v_useGyro);
+                    robot.drive_inches(8,v_useGyro);
+                    robot.timewait(2);
                     v_state++;
                     break;
                 case 15:
-                    if (robot.drive_inches_complete())
+                    if (robot.drive_inches_complete() || robot.timewait_Complete())
                     {
                         v_state++;
                     }
@@ -183,14 +191,16 @@ public class CFPushBotAuto_Blue1 extends LinearOpMode
                     break;
                 case 18:
                     robot.drive_inches(-2,v_useGyro);
+                    robot.timewait(1);
                     v_state++;
                     break;
                 case 19:
-                    if(robot.drive_inches_complete()){
+                    if(robot.drive_inches_complete() || robot.timewait_Complete()){
                         v_state++;
                     }
                     break;
                 case 20:
+                    robot.lifter_step(-v_lifter_step);
                     robot.set_message("the robot worked thank connor ");
                     //robot.play_jingle_bells();
                     v_state++;

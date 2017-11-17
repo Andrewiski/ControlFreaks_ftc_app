@@ -56,6 +56,8 @@ public class CFPushBotManual extends LinearOpMode {
     boolean buttonG2AReleased = true;
     boolean buttonG2BReleased = true;
     boolean button_rightstick_deadzone = true;
+
+    boolean highspeedmode = false;
     ElapsedTime myFliperRetractElapsedTime;
     @Override
     public void runOpMode() throws InterruptedException {
@@ -74,13 +76,14 @@ public class CFPushBotManual extends LinearOpMode {
             waitForStart();
             robot.debugOff();
             robot.led7seg_timer_start(120);
-
+            robot.blockgrabber_open();
 
             // run until the end of the match (driver presses STOP)
             while (opModeIsActive()) {
                 try {
                     robot.hardware_loop();
-                    if(gamepad1.left_trigger > .2 || gamepad1.right_trigger > .2 ) {
+//
+                    if(highspeedmode || gamepad1.left_trigger > .2 || gamepad1.right_trigger > .2 ) {
                         robot.set_drive_power(-gamepad1.left_stick_y, -gamepad1.right_stick_y);
                     }else{
                         robot.set_drive_power(-gamepad1.left_stick_y/2.7f, -gamepad1.right_stick_y/2.7f);
@@ -111,8 +114,9 @@ public class CFPushBotManual extends LinearOpMode {
                     if(gamepad1.left_bumper){
                         if(buttonLeftBumperReleased == true) {
                             if (robot.debugMode()){
-                                robot.jewel_raise();
+                                robot.jewel_toggle();
                             }
+
                             buttonLeftBumperReleased = false;
                         }
                     }else{
@@ -120,9 +124,7 @@ public class CFPushBotManual extends LinearOpMode {
                     }
                     if(gamepad1.right_bumper){
                         if(buttonRightBumperReleased == true) {
-                            if(robot.debugMode()){
-                                robot.jewel_lower();
-                            }
+                            highspeedmode = !highspeedmode;
                             buttonRightBumperReleased = false;
                         }
                     }else{
@@ -211,6 +213,7 @@ public class CFPushBotManual extends LinearOpMode {
                     if(gamepad1.x ){
                         if(buttonXReleased == true) {
                             robot.blueled_toggle();
+                            highspeedmode = false;
                             buttonXReleased = false;
                         }
                     }else{
@@ -219,6 +222,7 @@ public class CFPushBotManual extends LinearOpMode {
                     if(gamepad1.b){
                         if(buttonBReleased == true) {
                             robot.redled_toggle();
+                            highspeedmode = true;
                             buttonBReleased = false;
                         }
                     }else{
