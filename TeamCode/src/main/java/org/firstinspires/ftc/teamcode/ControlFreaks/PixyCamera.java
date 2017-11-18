@@ -15,7 +15,7 @@ import java.util.List;
 public class PixyCamera {
     static final String logId = "Pixy:";       // Tag identifier in FtcRobotController.LogCat
     private String v_deviceName = "Not Set";
-    private byte I2CAddress = 0x54;
+    private byte I2CAddress = 0x01; // 0x54;
     private Wire v_pixy;
 
     // Communication/misc parameters
@@ -112,18 +112,18 @@ public class PixyCamera {
      * put this in your loop so its called over and over in the loop
      */
     boolean readingData = false;
-    byte[] buffer;
+    Block[] Block;
     public void loop() {
-        if(v_pixy_enabled){
-            if(readingData == false) {
-                v_pixy.beginWrite(0x00);
-                v_pixy.endWrite();
-                readingData = true;
-                v_pixy.getResponse();
-            }else{
-
-            }
-        }
+//        if(v_pixy_enabled){
+//            if(readingData == false) {
+//                v_pixy.beginWrite(0x00);
+//                v_pixy.endWrite();
+//                readingData = true;
+//                v_pixy.getResponse();
+//            }else{
+//
+//            }
+//        }
     }
 /*
 int setServos(uint16_t s0, uint16_t s1)
@@ -230,7 +230,7 @@ int setServos(uint16_t s0, uint16_t s1)
     public class Block
     {
         // print block structure!
-        String print()
+        public String print()
         {
             int i, j;
             String sig = "";
@@ -299,80 +299,104 @@ int setServos(uint16_t s0, uint16_t s1)
         }
     }
 
-    ArrayList<Block> blocks;
-    private int getBlocks(int maxBlocks) {
-        int i;
-        int w, checksum, sum;
 
-        blocks = new ArrayList<Block>();
-        if (!skipStart) {
-            if (getStart() == false)
-                return 0;
-        } else
-            skipStart = false;
-
-        for (blockCount = 0; blockCount < maxBlocks; ) {
-            checksum = v_pixy.readLH();
-            if (checksum == PIXY_START_WORD) // we've reached the beginning of the next frame
-            {
-                skipStart = true;
-                blockType = BlockType.NORMAL_BLOCK;
-                //Serial.println("skip");
-                return blockCount;
-            } else if (checksum == PIXY_START_WORD_CC) {
-                skipStart = true;
-                blockType = BlockType.CC_BLOCK;
-                return blockCount;
-            } else if (checksum == 0) {
-                return blockCount;
-            }
-            Block block = new Block();
-            for (i = 0, sum = 0; i < 6; i++) {
-                if (blockType == BlockType.NORMAL_BLOCK && i >= 5) // skip
-                {
-                    block.angle = 0;
-                    break;
-                }
-                w = v_pixy.readLH();
-                sum += w;
-                switch (i) {
-                    case 0:
-                        block.signature = w;
-                        break;
-                    case 1:
-                        block.x = w;
-                        break;
-                    case 2:
-                        block.y = w;
-                        break;
-                    case 3:
-                        block.width = w;
-                        break;
-                    case 4:
-                        block.height = w;
-                        break;
-                    case 5:
-                        block.angle = w;
-                        break;
-                }
-
-                if (checksum == sum) {
-                    blockCount++;
-                    blocks.add(block);
-                } else {
-                    debugPrint("cs error");
-                }
-
-                w = v_pixy.readLH();
-                if (w == PIXY_START_WORD) {
-                    blockType = BlockType.NORMAL_BLOCK;
-                } else if (w == PIXY_START_WORD_CC) {
-                    blockType = BlockType.CC_BLOCK;
-                } else {
-                    return blockCount;
-                }
+    public Block getLargestBlock() {
+        if (v_pixy != null) {
+//            v_pixy.beginWrite(0x50);
+//            v_pixy.endWrite();
+            v_pixy.requestFrom(0x50, 1);
+            if (v_pixy.responseCount() > 0) {
+                Block block = new Block();
+                block.signature = v_pixy.readLH();
+                block.x = v_pixy.read();
+                block.y = v_pixy.read();
+                block.width = v_pixy.read();
+                block.height = v_pixy.read();
+                return block;
             }
         }
-        return blockCount;
+        return null;
+    }
+
+    public Block[] getBlocks(int maxBlocks) {
+        if(v_pixy != null) {
+            v_pixy.beginWrite(0x00);
+            v_pixy.endWrite();
+            int i;
+            int w, checksum, sum;
+            ArrayList<Block> blocks;
+            blocks = new ArrayList<Block>();
+            if (!skipStart) {
+                if (getStart() == false)
+                    return null;
+            } else
+                skipStart = false;
+
+            for (blockCount = 0; blockCount < maxBlocks; ) {
+                checksum = v_pixy.readLH();
+                if (checksum == PIXY_START_WORD) // we've reached the beginning of the next frame
+                {
+                    skipStart = true;
+                    blockType = BlockType.NORMAL_BLOCK;
+                    //Serial.println("skip");
+                    return blocks.toArray(Block);
+                } else if (checksum == PIXY_START_WORD_CC) {
+                    skipStart = true;
+                    blockType = BlockType.CC_BLOCK;
+                    return blocks.toArray(Block);
+                } else if (checksum == 0) {
+                    return blocks.toArray(Block);
+                }
+                Block block = new Block();
+                for (i = 0, sum = 0; i < 6; i++) {
+                    if (blockType == BlockType.NORMAL_BLOCK && i >= 5) // skip
+                    {
+                        block.angle = 0;
+                        break;
+                    }
+                    w = v_pixy.readLH();
+                    sum += w;
+                    switch (i) {
+                        case 0:
+                            block.signature = w;
+                            break;
+                        case 1:
+                            block.x = w;
+                            break;
+                        case 2:
+                            block.y = w;
+                            break;
+                        case 3:
+                            block.width = w;
+                            break;
+                        case 4:
+                            block.height = w;
+                            break;
+                        case 5:
+                            block.angle = w;
+                            break;
+                    }
+
+                    if (checksum == sum) {
+                        blockCount++;
+                        blocks.add(block);
+                    } else {
+                        debugPrint("cs error");
+                    }
+
+                    w = v_pixy.readLH();
+                    if (w == PIXY_START_WORD) {
+                        blockType = BlockType.NORMAL_BLOCK;
+                    } else if (w == PIXY_START_WORD_CC) {
+                        blockType = BlockType.CC_BLOCK;
+                    } else {
+                        return blocks.toArray(Block);
+                    }
+                }
+            }
+            return blocks.toArray(Block);
+        }else{
+            return null;
+        }
     }
 }

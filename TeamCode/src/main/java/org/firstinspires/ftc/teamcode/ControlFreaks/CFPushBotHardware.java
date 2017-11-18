@@ -60,6 +60,7 @@ public class CFPushBotHardware {
     private String config_i2c_led7seg = "ledseg";
     private String config_i2c_colorsensor = "color";
     private String config_i2c_colorsensor_led = "color_led";
+    boolean hasRange = false;
     private String config_i2c_range = "range";
     private String config_i2c_pixy = "pixy";
     /*
@@ -148,7 +149,7 @@ public class CFPushBotHardware {
     private DcMotor v_motor_lifter;
     private static final double v_motor_lifter_power = 1.0;
     private static final DcMotor.Direction v_motor_lifter_direction = DcMotor.Direction.FORWARD;
-    private static final int v_motor_lifter_encoder_min = 30;
+    private static final int v_motor_lifter_encoder_min = 0;
     private static final int v_motor_lifter_encoder_max = 2250;
     private static final int v_motor_lifter_ExtendSlowdownTicks = 300;
     private int v_motor_lifter_Position = 0;
@@ -159,7 +160,7 @@ public class CFPushBotHardware {
     private static final DcMotor.Direction v_motor_slider_direction = DcMotor.Direction.FORWARD;
     private static final double v_motor_slider_SpeedSlowDown = 0.5f;
     private static final int v_motor_slider_encoder_min = 30;
-    private static final int v_motor_slider_encoder_max = 8750;
+    private static final int v_motor_slider_encoder_max = 8150; //8750;
     private static final int v_motor_slider_ExtendSlowdownTicks = 300;
     private int v_motor_slider_Position = 0;
 
@@ -366,11 +367,13 @@ public class CFPushBotHardware {
 
 
         try {
-            // get a reference to our Rangesensor object.
-            //v_sensor_rangeSensor
-            v_sensor_rangeSensor = opMode.hardwareMap.get(ModernRoboticsI2cRangeSensor.class, config_i2c_range);
-            // calibrate the gyro.
-            set_third_message("Range Sensor Found" + v_sensor_rangeSensor.getDistance(DistanceUnit.INCH));
+            if(hasRange) {
+                // get a reference to our Rangesensor object.
+                //v_sensor_rangeSensor
+                v_sensor_rangeSensor = opMode.hardwareMap.get(ModernRoboticsI2cRangeSensor.class, config_i2c_range);
+                // calibrate the gyro.
+                set_third_message("Range Sensor Found" + v_sensor_rangeSensor.getDistance(DistanceUnit.INCH));
+            }
         }catch(Exception p_exeception){
             debugLogException(config_i2c_range,"missing",p_exeception);
             v_sensor_rangeSensor = null;
@@ -816,6 +819,36 @@ public class CFPushBotHardware {
         {
             debugLogException(config_i2c_pixy, "sensor_pixy_enable", p_exeception);
             return false;
+        }
+    }
+
+    public PixyCamera.Block[]  sensor_pixy_get_blocks(){
+        try{
+            if(v_pixy != null) {
+                return v_pixy.getBlocks(6);
+            }else{
+                return null;
+            }
+
+        }catch (Exception p_exeception)
+        {
+            debugLogException(config_i2c_pixy, "sensor_pixy_get_blocks", p_exeception);
+            return null;
+        }
+    }
+
+    public PixyCamera.Block  sensor_pixy_get_LargestBlock(){
+        try{
+            if(v_pixy != null) {
+                return v_pixy.getLargestBlock();
+            }else{
+                return null;
+            }
+
+        }catch (Exception p_exeception)
+        {
+            debugLogException(config_i2c_pixy, "sensor_pixy_get_blocks", p_exeception);
+            return null;
         }
     }
 
@@ -1314,10 +1347,10 @@ public class CFPushBotHardware {
     {
         if (v_motor_lifter != null)
         {
-            if (v_lifter_isExtended == true){
-                set_second_message("lifter already extended");
-                return;
-            }
+//            if (v_lifter_isExtended == true){
+//                set_second_message("lifter already extended");
+//                return;
+//            }
             v_lifter_state = 0;
             v_motor_lifter_Position = v_motor_lifter_Position + v_motor_lifter_encoder_max - v_motor_lifter_ExtendSlowdownTicks;
 
@@ -1371,6 +1404,12 @@ public class CFPushBotHardware {
             if (v_motor_lifter != null )
             {
                 v_motor_lifter_Position = v_motor_lifter.getCurrentPosition() + stepAmount;
+                if(v_motor_lifter_Position <= v_motor_lifter_encoder_min  ) {
+                    v_motor_lifter_Position = v_motor_lifter_encoder_min;
+                }
+                if(v_motor_lifter_Position >= v_motor_lifter_encoder_max  ) {
+                    v_motor_lifter_Position = v_motor_lifter_encoder_max;
+                }
                 if(v_motor_lifter_Position >= v_motor_lifter_encoder_min && v_motor_lifter_Position <= v_motor_lifter_encoder_max ) {
                     v_motor_lifter.setTargetPosition(v_motor_lifter_Position);
                     v_motor_lifter.setPower(v_motor_lifter_power);
@@ -1404,10 +1443,10 @@ public class CFPushBotHardware {
 
         if (v_motor_lifter != null )
         {
-            if (v_lifter_isExtended == false){
-                set_second_message("lifter not loaded");
-                return;
-            }
+//            if (v_lifter_isExtended == false){
+//                set_second_message("lifter not loaded");
+//                return;
+//            }
             v_motor_lifter.setTargetPosition(v_motor_lifter_encoder_min);
             set_second_message("Retracting lifter");
             v_motor_lifter.setPower(v_motor_lifter_power);

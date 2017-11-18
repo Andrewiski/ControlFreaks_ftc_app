@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.ControlFreaks.CFPushBotHardware;
+import org.firstinspires.ftc.teamcode.ControlFreaks.PixyCamera;
 
 
 /**
@@ -60,7 +61,6 @@ public class CFPushBotAuto_Pixy extends LinearOpMode
                     if (robot.sensor_pixy_set_leds((byte)0,(byte)255,(byte)0)) {
                         //
                         robot.set_message("Set Led Color");
-
                     }
                     v_state++;
 
@@ -69,6 +69,21 @@ public class CFPushBotAuto_Pixy extends LinearOpMode
                     robot.sensor_pixy_enable(true);
                     v_state++;
                     break;
+                case 3:
+                    PixyCamera.Block myBlock = robot.sensor_pixy_get_LargestBlock();
+                    if(myBlock != null){
+                        //for(int i=0; i< myBlocks.length; i ++){
+                        //    PixyCamera.Block myBlock = myBlocks[i];
+                            robot.set_message(myBlock.print());
+                        //}
+                        v_state++;
+                    }else
+                    {
+                        robot.set_message("Blocks is null");
+                    }
+
+                    break;
+
                 default:
                     //
                     // The autonomous actions have been accomplished (i.e. the state has

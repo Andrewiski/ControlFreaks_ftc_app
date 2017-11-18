@@ -54,9 +54,13 @@ public class CFPushBotAuto_Blue1 extends LinearOpMode
         robot.init(this);
         robot.drive_power_override(.3F,.3F, .3F);
         robot.turn_power_override(.3F, .3F);
+        robot.setupDriveToPosition();
         robot.blueled_on();
         //robot.redled_on();
         robot.led7seg_timer_init(30);
+        robot.sensor_color_enable(true);
+        robot.sensor_color_led(true);
+        robot.blockgrabber_close();
         waitForStart();
         // run until the end of the match (driver presses STOP)
         robot.led7seg_timer_start(30);
@@ -72,11 +76,7 @@ public class CFPushBotAuto_Blue1 extends LinearOpMode
                     // drive Forward  inches
                     //
                     //robot.led7seg_timer_start(30);
-                    robot.blockgrabber_close();
                     robot.jewel_lower();
-                    robot.sensor_color_enable(true);
-                    robot.sensor_color_led(true);
-
                     v_state++;
                     break;
                 case 1:
@@ -106,13 +106,16 @@ public class CFPushBotAuto_Blue1 extends LinearOpMode
                      }
                     break;
                 case 4:
+                    robot.sensor_color_led(false);
+                    robot.sensor_color_enable(false);
+
                     if (color == 0) {
-                        jewelKnockDistance = 3;
+                        jewelKnockDistance = 2;
                         robot.drive_inches(jewelKnockDistance, v_useGyro);
                         robot.timewait(2);
                         v_state++;
                     }else if(color==2){
-                        jewelKnockDistance = -3;
+                        jewelKnockDistance = -2;
                         robot.drive_inches(jewelKnockDistance,  v_useGyro);
                         robot.timewait(2);
                         v_state++;
@@ -159,12 +162,12 @@ public class CFPushBotAuto_Blue1 extends LinearOpMode
                     }
                     break;
                 case 12:
-                    robot.turn_degrees(135,false,v_useGyro);
+                    robot.turn_degrees(140,false,v_useGyro);
                     robot.timewait(2);
                     v_state++;
                     break;
                 case 13:
-                    if (robot.turn_complete()| robot.timewait_Complete())
+                    if (robot.turn_complete()|| robot.timewait_Complete())
                     {
                         v_state++;
                     }
@@ -182,6 +185,7 @@ public class CFPushBotAuto_Blue1 extends LinearOpMode
                     break;
                 case 16:
                     robot.blockgrabber_open();
+                    robot.timewait(1);
                     v_state++;
                     break;
                 case 17:
@@ -190,8 +194,8 @@ public class CFPushBotAuto_Blue1 extends LinearOpMode
                     }
                     break;
                 case 18:
-                    robot.drive_inches(-2,v_useGyro);
-                    robot.timewait(1);
+                    robot.drive_inches(-6,v_useGyro);
+                    robot.timewait(2);
                     v_state++;
                     break;
                 case 19:
@@ -200,12 +204,22 @@ public class CFPushBotAuto_Blue1 extends LinearOpMode
                     }
                     break;
                 case 20:
-                    robot.lifter_step(-v_lifter_step);
-                    robot.set_message("the robot worked thank connor ");
+                    robot.lifter_retract();
+                    robot.timewait(2);
                     //robot.play_jingle_bells();
                     v_state++;
                     break;
-
+                case 21:
+                    if(robot.lifter_retract_complete()|| robot.timewait_Complete()) {
+                        robot.drive_inches(3, v_useGyro);
+                        robot.timewait(2);
+                        v_state++;
+                    }
+                case 22:
+                    if(robot.drive_inches_complete()|| robot.timewait_Complete()){
+                        robot.set_message("Drive Comptete");
+                        v_state++;
+                    }
                 default:
                     //
                     // The autonomous actions have been accomplished (i.e. the state has
