@@ -10,8 +10,8 @@ import org.firstinspires.ftc.teamcode.ControlFreaks.CFPushBotHardware;
 /**
  * Created by adevries on 10/7/2017.
  */
-@TeleOp(name="Servo Test", group="Manual" )  // @Autonomous(...) is the other common choice
-@Disabled
+@TeleOp(name="Servo Color Y Test", group="Manual" )  // @Autonomous(...) is the other common choice
+//@Disabled
 public class CFPushBotManualServoTest extends LinearOpMode {
 
     /* Declare OpMode members. */
@@ -30,6 +30,7 @@ public class CFPushBotManualServoTest extends LinearOpMode {
      * The system calls this member repeatedly while the OpMode is running.
      */
     float stickdeadzone = .1f;
+    boolean buttonYReleased = true;
     boolean buttonXReleased = true;
     boolean buttonBReleased = true;
     boolean buttonAReleased = true;
@@ -118,6 +119,19 @@ public class CFPushBotManualServoTest extends LinearOpMode {
                         }
                     }
 
+                    if(gamepad1.y){
+                        if(buttonYReleased == true){
+                            buttonYReleased = false;
+                            robot.sensor_color_enable(true);
+                            robot.sensor_color_led(true);
+                        }
+                        robot.set_message("Color " +  robot.sensor_color_GreatestColor());
+                    }else{
+                        if(buttonYReleased == false){
+                            buttonYReleased = true;
+                            robot.sensor_range_enable(false);
+                        }
+                    }
 
 
                     //robot.waitForTick(2);

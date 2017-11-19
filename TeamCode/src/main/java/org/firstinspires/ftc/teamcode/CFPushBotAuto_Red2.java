@@ -63,6 +63,7 @@ public class CFPushBotAuto_Red2 extends LinearOpMode
         waitForStart();
         // run until the end of the match (driver presses STOP)
         robot.led7seg_timer_start(30);
+        robot.blockgrabber_close();
         while (opModeIsActive()) {
             robot.hardware_loop();
 
@@ -77,12 +78,10 @@ public class CFPushBotAuto_Red2 extends LinearOpMode
                     //robot.led7seg_timer_start(30);
 
                     robot.jewel_lower();
-
-
                     v_state++;
                     break;
                 case 1:
-                    //enable color sensor
+
                     robot.blockgrabber_close();
                     robot.timewait(2);
                     // Transition to the next state when this method is called again.
@@ -112,12 +111,12 @@ public class CFPushBotAuto_Red2 extends LinearOpMode
                     robot.sensor_color_enable(false);
                     robot.sensor_color_led(false);
                     if (color == 0) {
-                        jewelKnockDistance = -2;
+                        jewelKnockDistance = -2.5F;
                         robot.drive_inches(jewelKnockDistance, v_useGyro);
                         robot.timewait(2);
                         v_state++;
                     }else if(color==2){
-                        jewelKnockDistance = 2;
+                        jewelKnockDistance = 2.5F;
                         robot.drive_inches(jewelKnockDistance,  v_useGyro);
                         robot.timewait(2);
                         v_state++;
@@ -194,33 +193,33 @@ public class CFPushBotAuto_Red2 extends LinearOpMode
                         v_state++;
                     }
                     break;
-                case 18:
-                    robot.drive_inches(-6,v_useGyro);
-                    robot.timewait(1);
-                    v_state++;
-                    break;
-                case 19:
-                    if(robot.drive_inches_complete() || robot.timewait_Complete()){
-                        v_state++;
-                    }
-                    break;
-                case 20:
-                    robot.lifter_retract();
-                    robot.timewait(2);
-                    //robot.play_jingle_bells();
-                    v_state++;
-                    break;
-                case 21:
-                    if(robot.lifter_retract_complete()|| robot.timewait_Complete()) {
-                        robot.drive_inches(3, v_useGyro);
-                        robot.timewait(2);
-                        v_state++;
-                    }
-                case 22:
-                    if(robot.drive_inches_complete()|| robot.timewait_Complete()){
-                        robot.set_message("Drive Comptete");
-                        v_state++;
-                    }
+//                case 18:
+//                    robot.drive_inches(-6,v_useGyro);
+//                    robot.timewait(1);
+//                    v_state++;
+//                    break;
+//                case 19:
+//                    if(robot.drive_inches_complete() || robot.timewait_Complete()){
+//                        v_state++;
+//                    }
+//                    break;
+//                case 20:
+//                    robot.lifter_retract();
+//                    robot.timewait(2);
+//                    //robot.play_jingle_bells();
+//                    v_state++;
+//                    break;
+//                case 21:
+//                    if(robot.lifter_retract_complete()|| robot.timewait_Complete()) {
+//                        robot.drive_inches(3, v_useGyro);
+//                        robot.timewait(2);
+//                        v_state++;
+//                    }
+//                case 22:
+//                    if(robot.drive_inches_complete()|| robot.timewait_Complete()){
+//                        robot.set_message("Drive Comptete");
+//                        v_state++;
+//                    }
 
                 default:
                     //
