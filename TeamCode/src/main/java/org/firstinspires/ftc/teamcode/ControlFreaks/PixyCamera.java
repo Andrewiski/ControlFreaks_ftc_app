@@ -15,7 +15,7 @@ import java.util.List;
 public class PixyCamera {
     static final String logId = "Pixy:";       // Tag identifier in FtcRobotController.LogCat
     private String v_deviceName = "Not Set";
-    private byte I2CAddress = 0x01; // 0x54;
+    private byte I2CAddress = 0x54;
     private Wire v_pixy;
 
     // Communication/misc parameters

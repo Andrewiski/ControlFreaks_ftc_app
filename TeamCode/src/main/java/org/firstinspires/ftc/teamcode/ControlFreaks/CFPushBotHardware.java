@@ -23,6 +23,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
 import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -780,9 +781,9 @@ public class CFPushBotHardware {
                 debugMessage = debugMessage + errMsg;
             }
         }
-        if (v_debug) {
-            //DbgLog.msg(debugMessage);
-        }
+        //if (v_debug) {
+        android.util.Log.d("CFPushBotHardware", debugMessage);
+        //}
     }
 
     public boolean sensor_pixy_init(){
@@ -1174,16 +1175,18 @@ public class CFPushBotHardware {
     // float l_right_drive_power = 0.0f;
     public void set_drive_power (float p_left_power, float p_right_power)
     {
-        float l_left_drive_power = Range.clip (p_left_power, -1, 1);
-        float l_right_drive_power = Range.clip (p_right_power, -1, 1);
+        try {
+            float l_left_drive_power = Range.clip(p_left_power, -1, 1);
+            float l_right_drive_power = Range.clip(p_right_power, -1, 1);
 
-        if (v_motor_left_drive != null)
-        {
-            v_motor_left_drive.setPower (l_left_drive_power);
-        }
-        if (v_motor_right_drive != null)
-        {
-            v_motor_right_drive.setPower(l_right_drive_power);
+            if (v_motor_left_drive != null) {
+                v_motor_left_drive.setPower(l_left_drive_power);
+            }
+            if (v_motor_right_drive != null) {
+                v_motor_right_drive.setPower(l_right_drive_power);
+            }
+        }catch(Exception ex) {
+            debugLogException("robot", "set_drive_power", ex );
         }
         //set_second_message("set_drive_power l" + p_left_power + ":r" + p_right_power + " cliped:l:" + l_left_drive_power +":r" + l_right_drive_power);
     } // set_drive_power
@@ -1199,6 +1202,7 @@ public class CFPushBotHardware {
     // float l_right_drive_power = 0.0f;
     public void set_drive_power_scaled (float p_left_power, float p_right_power)
     {
+        try{
         float l_left_drive_power = scale_motor_power(p_left_power);
         float l_right_drive_power = scale_motor_power(p_right_power);
 
@@ -1211,6 +1215,9 @@ public class CFPushBotHardware {
             v_motor_right_drive.setPower(l_right_drive_power);
         }
         //set_second_message("set_drive_power " + p_left_power + ":" + p_right_power + " " + l_left_drive_power +":" + l_right_drive_power);
+        }catch(Exception ex) {
+            debugLogException("robot", "set_drive_power_scaled", ex );
+        }
     } // set_drive_power
 
 
