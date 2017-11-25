@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.ControlFreaks.CFPushBotHardware;
+import org.firstinspires.ftc.teamcode.ControlFreaks.PixyCamera;
 
 
 /**
@@ -57,17 +58,39 @@ public class CFPushBotAuto_Pixy extends LinearOpMode
 
                     //
                     // Transition to the next state when this method is true
-                    if (robot.sensor_pixy_set_leds((byte)0,(byte)255,(byte)0)) {
+                    //if (robot.sensor_pixy_set_leds((byte)0,(byte)255,(byte)0)) {
                         //
-                        robot.set_message("Set Led Color");
+                    //    robot.set_message("Set Led Color");
 
-                    }
+                    //}
                     v_state++;
 
                     break;
                 case 2:
+                    robot.set_message("Pixy Enabled");
+                    robot.sensor_pixy_signature_enable(0,true);
+                    robot.sensor_pixy_signature_enable(1,true);
                     robot.sensor_pixy_enable(true);
                     v_state++;
+                    break;
+                case 3:
+                    PixyCamera.Block largestBlock;
+                    largestBlock = robot.sensor_pixy_largestBlock();
+                    String dbg = "";
+                    if(largestBlock != null) {
+                        dbg = "lb:" + largestBlock.print();
+                    }else{
+                        dbg ="lb: null" ;
+                    }
+                    PixyCamera.Block sigBlock1;
+                    sigBlock1 = robot.sensor_pixy_signatureBlock(1);
+                    if(largestBlock != null) {
+                        dbg = dbg + " s1:" + sigBlock1.print();
+                    }else{
+                        dbg =dbg + " s1: null" ;
+                    }
+                    robot.set_message(dbg);
+                    //v_state++;
                     break;
                 default:
                     //

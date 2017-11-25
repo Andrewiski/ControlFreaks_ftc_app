@@ -818,6 +818,18 @@ public class CFPushBotHardware {
             return false;
         }
     }
+    public boolean sensor_pixy_signature_enable(int signature, boolean enable){
+        try{
+            if(v_pixy != null) {
+                v_pixy.signature_enable(signature, enable);
+            }
+            return true;
+        }catch (Exception p_exeception)
+        {
+            debugLogException(config_i2c_pixy, "sensor_pixy_signature_enable", p_exeception);
+            return false;
+        }
+    }
 
     public boolean sensor_pixy_set_leds(byte red, byte green, byte blue){
         try{
@@ -829,6 +841,32 @@ public class CFPushBotHardware {
         {
             debugLogException(config_i2c_pixy, "sensor_pixy_set_leds", p_exeception);
             return false;
+        }
+    }
+    public PixyCamera.Block sensor_pixy_largestBlock(){
+        try{
+            if(v_pixy != null) {
+                return v_pixy.largestBlock();
+            }else {
+                return v_pixy.emptyBlock();
+            }
+        }catch (Exception p_exeception)
+        {
+            debugLogException(config_i2c_pixy, "sensor_pixy_largestBlock", p_exeception);
+            return v_pixy.emptyBlock();
+        }
+    }
+    public PixyCamera.Block sensor_pixy_signatureBlock(int signature){
+        try{
+            if(v_pixy != null) {
+                return v_pixy.largestSignatureBlock(signature);
+            }else {
+                return v_pixy.emptyBlock();
+            }
+        }catch (Exception p_exeception)
+        {
+            debugLogException(config_i2c_pixy, "sensor_pixy_signatureBlock", p_exeception);
+            return v_pixy.emptyBlock();
         }
     }
 
@@ -958,13 +996,19 @@ public class CFPushBotHardware {
         }else{
             v_loop_ticks_slow = false;
         }
-        //heartbeat_tick();
-        if(v_ledseg != null){
-           v_ledseg.loop();
+        if(v_sensor_rangeSensor != null && v_sensor_rangeSensor_enabled == true){
+            v_sensor_rangeSensor_distance = v_sensor_rangeSensor.getDistance(DistanceUnit.INCH);
+        }
+        if(v_pixy != null){
+            v_pixy.loop();
         }
         //if vuforia is inited then we need to update our positions etc
 
         if(v_loop_ticks_slow){
+            //heartbeat_tick();
+            if(v_ledseg != null){
+                v_ledseg.loop();
+            }
             // get the heading info.
             // the Modern Robotics' gyro sensor keeps
             // track of the current heading for the Z axis only.
@@ -983,9 +1027,7 @@ public class CFPushBotHardware {
                 set_first_message("color:" + v_sensor_color_i2c_rgbaValues[0] + ":" + v_sensor_color_i2c_rgbaValues[1] + ":" + v_sensor_color_i2c_rgbaValues[2] + ":" + v_sensor_color_i2c_rgbaValues[3]);
             }
 
-            if(v_sensor_rangeSensor != null && v_sensor_rangeSensor_enabled == true){
-                v_sensor_rangeSensor_distance = v_sensor_rangeSensor.getDistance(DistanceUnit.INCH);
-            }
+
 
             //jewel ease so not to hard hit ground
             if(v_servo_jewel_is_retracting){
@@ -997,15 +1039,14 @@ public class CFPushBotHardware {
                     v_servo_jewel_is_retracting = false;
                 }
             }
-            if(v_pixy != null){
-               v_pixy.loop();
-            }
+
             vuforia_hardwareLoop();
             if(v_debug) {
                 update_telemetry();
                 opMode.updateTelemetry(opMode.telemetry);
             }
         }
+
         opMode.idle();
         waitForTick(5);
     }

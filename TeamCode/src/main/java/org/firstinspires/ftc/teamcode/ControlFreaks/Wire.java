@@ -1,24 +1,29 @@
 package org.firstinspires.ftc.teamcode.ControlFreaks;
 
 /**
- * Created by adevries on 11/16/2015.
+ *  Added to ControlFreaks by adevries on 11/16/2015.
+ *  Updated ControlFreaks by adevries on 11/24/2017 to reflect Fix by Olavi via Github.
  */
 /**
- * Created by Olavi Kamppari on 10/25/2015.
- *
- * Revisions:
- * 151107 by OAK:
- *      1) in portIsReady fixed problem related to repeated read of same address
- *      2) in executeCommands added missing line to stop idle polling
- */
+        * Created by Olavi Kamppari on 10/25/2015.
+        *
+        * Added to Github on 11/16/2015 (https://github.com/OliviliK/FTC_Library/blob/master/Wire.java)
+        *
+        * Revisions:
+        * 151107 by OAK:
+        *      1) in portIsReady fixed problem related to repeated read of same address
+        *      2) in executeCommands added missing line to stop idle polling
+        * 151116 by OAK:
+        *      1) added method requestCount(), to complement the existing responseCount()
+        *      2) added method write() with second parameter as object (for no value)
+        */
+        import android.util.Log;
 
-import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.I2cController;
-import com.qualcomm.robotcore.hardware.I2cDevice;
+        import com.qualcomm.robotcore.hardware.HardwareMap;
+        import com.qualcomm.robotcore.hardware.I2cController;
+        import com.qualcomm.robotcore.hardware.I2cDevice;
 
-import org.firstinspires.ftc.teamcode.ControlFreaks.ArrayQueue;
-
-import java.util.concurrent.locks.Lock;
+        import java.util.concurrent.locks.Lock;
 
 public class Wire implements I2cController.I2cPortReadyCallback {
 // --------------------------------- CONSTANTS -------------------------------------------------
@@ -40,8 +45,8 @@ public class Wire implements I2cController.I2cPortReadyCallback {
             CACHE_SIZE      = 32;           // dCache fixed size
 
     // --------------------------------- CLASS VARIABLES -------------------------------------------
-    private ArrayQueue downQueue;  // Down stream buffer
-    private ArrayQueue upQueue;    // Up stream buffer
+    private ArrayQueue<Element> downQueue;  // Down stream buffer
+    private ArrayQueue<Element> upQueue;    // Up stream buffer
     private I2cDevice wireDev;              // Generic I2C Device Object
     private byte wireDevAddr;               // Generic Device Address
     private byte[] rCache;                  // Read Cache
@@ -61,8 +66,8 @@ public class Wire implements I2cController.I2cPortReadyCallback {
 // --------------------------------- CLASS INIT AND CLOSE ---------------------------------------
 
     public Wire(HardwareMap hardwareMap, String deviceName, int devAddr) {
-        downQueue   = new ArrayQueue();
-        upQueue     = new ArrayQueue();
+        downQueue   = new ArrayQueue<Element>();
+        upQueue     = new ArrayQueue<Element>();
         wireDev     = hardwareMap.i2cDevice.get(deviceName);
         wireDevAddr = (byte) devAddr;
 
@@ -103,7 +108,6 @@ public class Wire implements I2cController.I2cPortReadyCallback {
         dCache[dNext++] = (byte) value;
     }
 
-
     public void write(int regNumber, int value) {
         beginWrite(regNumber);
         write(value);
@@ -122,6 +126,13 @@ public class Wire implements I2cController.I2cPortReadyCallback {
         write((byte) (value));
         write((byte) (value >> 8));
         endWrite();
+    }
+
+    public void write(int regNumber, Object x) {
+        if (x == null) {
+            beginWrite(regNumber);
+            endWrite();
+        }
     }
 
     public void endWrite() {
@@ -144,6 +155,17 @@ public class Wire implements I2cController.I2cPortReadyCallback {
             count = upQueue.length();
         } finally {
             rLock.unlock();
+        }
+        return count;
+    }
+
+    public int requestCount() {
+        int count = 0;
+        try {
+            wLock.lock();
+            count = downQueue.length();
+        } finally {
+            wLock.unlock();
         }
         return count;
     }
@@ -262,6 +284,7 @@ public class Wire implements I2cController.I2cPortReadyCallback {
 
     private void addRequest() {
         boolean isStarting = false;
+//        logCache('d',"addRequest");
         try {
             wLock.lock();
             if (isIdle) {
@@ -287,11 +310,12 @@ public class Wire implements I2cController.I2cPortReadyCallback {
         // rCache has been locked
         long uMicros = (System.nanoTime() - startTime) / 1000L;
         addToQueue(uMicros, rCache, upQueue);
+//        logCache('r',"storeReceivedData");
     }
 
 //------------------------------------------------- Add and Remove from Queue ------------------
 
-    private void addToQueue(long timeStamp, byte[] cache, ArrayQueue queue) {
+    private void addToQueue(long timeStamp, byte[] cache, ArrayQueue<Element> queue) {
         int length          = DATA_OFFSET + cache[REG_COUNT];
         Element element     = new Element();
         element.timeStamp   = timeStamp;
@@ -300,8 +324,8 @@ public class Wire implements I2cController.I2cPortReadyCallback {
         queue.add(element);
     }
 
-    private long getFromQueue(byte[] cache, ArrayQueue queue) {
-        Element element     = (Element)queue.remove();
+    private long getFromQueue(byte[] cache, ArrayQueue<Element> queue) {
+        Element element     = queue.remove();
         if (element == null) return 0;
         int length          = element.cache.length;
         long timeStamp      = element.timeStamp;
@@ -312,5 +336,39 @@ public class Wire implements I2cController.I2cPortReadyCallback {
     class Element {
         public long timeStamp;
         public byte[] cache;
+    }
+
+
+    private void logCache(char cacheLetter, String function) {
+        switch (cacheLetter){
+            case 'd':   logCache(dCache,function,cacheLetter); break;
+            case 'w':   logCache(wCache,function,cacheLetter); break;
+            case 'r':   logCache(rCache,function,cacheLetter); break;
+            case 'u':   logCache(uCache,function,cacheLetter); break;
+        }
+    }
+
+    private void logCache(byte[] cache, String function, char cacheLetter) {
+        int     showCount = cache[3];
+        boolean isWrite = (cache[0] == WRITE_MODE);
+        switch (cacheLetter){
+            case 'd':
+            case 'w':
+                if (cache[0] != WRITE_MODE) showCount = 0;
+                break;
+            case 'r':
+            case 'u':
+                if (cache[0] == WRITE_MODE) showCount = 0;
+                break;
+        }
+        if (showCount > 6)          showCount   = 6;
+        String msg = String.format(
+                "%17s %c[%d][%d], %cCache: mod=0x%02X, dev=0x%02X, reg=0x%02X, cnt=%2d  ",
+                function,isIdle?'T':'F',downQueue.length(),upQueue.length(),
+                cacheLetter,cache[0],cache[1],cache[2],cache[3]);
+        for (int i=0;i<showCount;i++) {
+            msg += String.format(" 0x%02X",cache[4+i]);
+        }
+        Log.i("Wire",msg);
     }
 }
