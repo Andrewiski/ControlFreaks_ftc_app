@@ -1,0 +1,46 @@
+
+ The summary of the changes were to add an FTC mode which is an enhanced version of the Lego mode with an assignable
+ I2C address as Lego is hard coded to 1 and to allow the request of mulitple blocks per signature but keeping
+ the Modern Robotics Core Device Interface Module I2C 27 byte hardware limit in mind.
+
+ Future enhancments I plan to work on is
+ 1. Add top 6 largest objects for a signature not just the largest.
+ 2. Add top 5 largest objects for Color Code Querys
+ 3. Support mulitple Color Code Querys at the Same Time
+ 4. Allow setting of Pixy Params via I2C
+    It has been reported that Pixy will drop its parameters in a brown out ie low voltage state
+    The would also allow FTC program to set colors its looking for at run time removing the need for a pc
+
+
+
+To use the Color Code Querys
+123 in Octal is 83 in Decimal so we are looking for sig 1 next to sig 2 next to sig 3
+To figure out the decimal code to query for in windows open calculator click view then programmer click octal radio button
+Type in Signatures numbers in the lowest to highest you want stacked  ie I want color 2 next to color for in octal is 24 converted to dec is 20
+
+
+ Special thanks to Olavi Kamppari and his FTC Wire Library https://github.com/OliviliK/FTC_Library made I2C a lot easier.
+
+ Control Freaks FTC 5618 and FTC 6494, Put It Together! Take It Apart!
+
+
+ This is a modified version of the Pixy firmware and our modifications to the pixy source can be found
+ on our github page at https://github.com/Andrewiski/pixy
+ We was able to download a free copy of LPCXpresso v8.2.2 for Windows (8.1 in my case) and build the firmware.
+
+https://www.nxp.com/support/developer-resources/software-development-tools/lpc-developer-resources-/lpc-microcontroller-utilities/lpcxpresso-ide-v8.2.2:LPCXPRESSO
+
+https://nxp.flexnetoperations.com/control/frse/download?agree=Accept&element=7632767
+
+  Things to note for the firmware build is you must execute the copy of the common source before any other build as in the build_this_first folder.
+  Next builds must happen in this order.
+  libpixy_m0
+  libpixy_m4
+  main_m0
+  main_m4
+
+  After the build in the source folder \src\device\main_m4\SPIFI there will be a pixy_firmware.hex file that can be loaded onto the pixy using the pixyMon application
+
+  To program a custom firmware hold the white button before pluging into the computer with pixyMon running.
+  It will detect pixy in programing mode and prompt for a hex file to load.
+

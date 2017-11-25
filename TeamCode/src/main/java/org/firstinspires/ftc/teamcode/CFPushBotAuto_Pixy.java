@@ -68,8 +68,17 @@ public class CFPushBotAuto_Pixy extends LinearOpMode
                     break;
                 case 2:
                     robot.set_message("Pixy Enabled");
+                    //enable Largest Object
                     robot.sensor_pixy_signature_enable(0,true);
+                    //Enable Signature 1
+
                     robot.sensor_pixy_signature_enable(1,true);
+                    //Set Color Code query to Sig 3 & 4  34 in Octal converted to Dec is 28
+                    robot.sensor_pixy_signature_colorcode_set(28);
+                    //Enable Color Code Querys
+                    robot.sensor_pixy_signature_enable(8,true);
+
+                    //Enable Pixy witch will start the i2c queries
                     robot.sensor_pixy_enable(true);
                     v_state++;
                     break;
@@ -78,16 +87,24 @@ public class CFPushBotAuto_Pixy extends LinearOpMode
                     largestBlock = robot.sensor_pixy_largestBlock();
                     String dbg = "";
                     if(largestBlock != null) {
-                        dbg = "lb:" + largestBlock.print();
+                        dbg = "lb:" + largestBlock.print()+ "\n";
                     }else{
-                        dbg ="lb: null" ;
+                        dbg ="lb: null\n" ;
                     }
                     PixyCamera.Block sigBlock1;
                     sigBlock1 = robot.sensor_pixy_signatureBlock(1);
-                    if(largestBlock != null) {
-                        dbg = dbg + " s1:" + sigBlock1.print();
+                    if(sigBlock1 != null) {
+                        dbg = dbg + " s1:" + sigBlock1.print() + "\n";
                     }else{
-                        dbg =dbg + " s1: null" ;
+                        dbg =dbg + " s1: null\n" ;
+                    }
+
+                    PixyCamera.Block sigBlock8;
+                    sigBlock8 = robot.sensor_pixy_signatureBlock(8);
+                    if(sigBlock8 != null) {
+                        dbg = dbg + " s8:" + sigBlock1.print() + "\n";
+                    }else{
+                        dbg =dbg + " s8: null\n" ;
                     }
                     robot.set_message(dbg);
                     //v_state++;

@@ -876,6 +876,31 @@ public class CFPushBotHardware {
         }
     }
 
+    public void sensor_pixy_signature_colorcode_set(int colorcode){
+        try{
+            if(v_pixy != null) {
+                v_pixy.color_code = colorcode;
+            }
+        }catch (Exception p_exeception)
+        {
+            debugLogException(config_i2c_pixy, "sensor_pixy_signature_colorcode_set", p_exeception);
+        }
+    }
+
+    public int sensor_pixy_signature_colorcode(){
+        try{
+            if(v_pixy != null) {
+                return v_pixy.color_code;
+            }else {
+                return 0;
+            }
+        }catch (Exception p_exeception)
+        {
+            debugLogException(config_i2c_pixy, "sensor_pixy_signature_colorcode", p_exeception);
+            return 0;
+        }
+    }
+
     private ElapsedTime v_timewait2_elapsedtime;
     private boolean v_is_timewaiting2_complete;
     private int v_timewait2_milliseconds;
@@ -1033,7 +1058,9 @@ public class CFPushBotHardware {
                 set_first_message("color:" + v_sensor_color_i2c_rgbaValues[0] + ":" + v_sensor_color_i2c_rgbaValues[1] + ":" + v_sensor_color_i2c_rgbaValues[2] + ":" + v_sensor_color_i2c_rgbaValues[3]);
             }
 
-
+            if(v_sensor_rangeSensor != null && v_sensor_rangeSensor_enabled == true){
+                v_sensor_rangeSensor_distance = v_sensor_rangeSensor.getDistance(DistanceUnit.INCH);
+            }
 
             //jewel ease so not to hard hit ground
             if(v_servo_jewel_is_retracting){

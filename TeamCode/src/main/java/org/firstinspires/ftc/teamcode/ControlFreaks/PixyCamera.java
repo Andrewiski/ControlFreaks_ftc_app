@@ -21,19 +21,25 @@ public class PixyCamera {
     private byte I2CAddress = 0x54;
     private Wire v_pixy;
 
+    private Block v_emptyBlock = new Block();
+    // Signature 0 is Max Area Block 1-7 is Signatures 1-7, 8 is Color Code Query
+    private Block[] v_signatureBlocks = new Block[9];
+    //This is Used to enable querys for a particular Signature
+    //Call Signature
+    private Boolean[] v_signatureEnable = new Boolean[7];
+    //83 in decimal converted to Oct is 123 so we are looking for sig 1 next to sig 2 next to sig 3
+    //In windows open calculator click view then programmer
+    public int color_code = 83;
+
     // Communication/misc parameters
-    private static final int PIXY_START_WORD = 0xaa55;
-    private static final int PIXY_START_WORD_CC = 0xaa56;
-    private static final int PIXY_START_WORDX = 0x55aa;
-    private static final int PIXY_MAX_SIGNATURE = 7;
     private static final byte PIXY_SERVO_SYNC = (byte) 0xff;
     private static final byte PIXY_CAM_BRIGHTNESS_SYNC = (byte) 0xfe;
     private static final byte PIXY_LED_SYNC = (byte) 0xfd;
-    // Pixy x-y position values
-    private static final int PIXY_MIN_X = 0;
-    private static final int PIXY_MAX_X = 319;
-    private static final int PIXY_MIN_Y = 0;
-    private static final int PIXY_MAX_Y = 199;
+    private static final int PIXY_MAX_SIGNATURE = 7;  //if Signature number is higher then 7 then its is a ColorCode Signature
+
+    private static final int PIXY_SIGNATURE_BYTES = 4;
+    private static final int PIXY_LARGEST_SIGNATURE_BYTES = 6;
+    private static final int PIXY_CC_SIGNATURE_BYTES = 5;
 
     // RC-servo values
     private static final int PIXY_RCS_MIN_POS = 0;
@@ -48,9 +54,6 @@ public class PixyCamera {
     private BlockType g_blockType;
     private boolean v_pixy_enabled = false;
 
-    //This is Used to enable querys for a particular Signature
-    //Call Signature
-    private Boolean[] v_signatureEnable = new Boolean[7];
 
     public PixyCamera(HardwareMap hardwareMap, String deviceName, byte RealI2CAddress) throws Exception {
         try {
@@ -69,16 +72,12 @@ public class PixyCamera {
 
     {
         //
-        // Initialize base classes.
-        //
-        // All via self-construction.
-
-        //
         // Initialize class members.
         //
         // All via self-construction.
         try {
             v_deviceName = deviceName;
+            //Depends on FTC Wire Class https://github.com/OliviliK/FTC_Library
             v_pixy = new Wire(hardwareMap, deviceName, I2CAddress * 2);
             init();
 
@@ -88,58 +87,58 @@ public class PixyCamera {
         }
 
     }
-
-    private void init() throws Exception {
-        try {
-            if (v_pixy != null) {
-
-            }
-            for (int i = 0; i < v_signatureBlocks.length; i++) {
-                v_signatureBlocks[i] = v_emptyBlock;
-            }
-        } catch (Exception p_exeception) {
-            debugLogException("Error Init", p_exeception);
-            throw p_exeception;
+    private void init(){
+        //common code called by the two contructors above
+        //Init all the blocks to empty blocks
+        for (int i = 0; i < v_signatureBlocks.length; i++) {
+            v_signatureBlocks[i] = v_emptyBlock;
         }
     }
+
+    //When the Pixy is Enabled we start the i2c request to get the data we care about
+    private void beginrequests() {
+        if (v_signatureEnable[0]) {
+            //Six bytes for the get Largest Blocks
+            v_pixy.requestFrom(0x50, PIXY_LARGEST_SIGNATURE_BYTES);
+        }
+        if (v_signatureEnable[1]) {
+            v_pixy.requestFrom(0x51, PIXY_SIGNATURE_BYTES);
+        }
+        if (v_signatureEnable[2]) {
+            v_pixy.requestFrom(0x52, PIXY_SIGNATURE_BYTES);
+        }
+        if (v_signatureEnable[3]) {
+            v_pixy.requestFrom(0x53, PIXY_SIGNATURE_BYTES);
+        }
+        if (v_signatureEnable[4]) {
+            v_pixy.requestFrom(0x54, PIXY_SIGNATURE_BYTES);
+        }
+        if (v_signatureEnable[5]) {
+            v_pixy.requestFrom(0x55, PIXY_SIGNATURE_BYTES);
+        }
+        if (v_signatureEnable[6]) {
+            v_pixy.requestFrom(0x56, PIXY_SIGNATURE_BYTES);
+        }
+        if (v_signatureEnable[7]) {
+            v_pixy.requestFrom(0x57, PIXY_SIGNATURE_BYTES);
+        }
+        if (v_signatureEnable[8]) {
+            v_pixy.writeLH(0x58, color_code);
+        }
+    }
+
+//    public int getColorCode(){
+//        return v_color_code;
+//    }
+//    public void setColorCode(int colorCode){
+//        v_color_code = colorCode;
+//    }
+    private Block v_signatureBlock;
 
 
     /**
-     * put this in your loop so its called over and over in the loop
-     */
-    boolean readingData = false;
-    Block v_emptyBlock = new Block();
-    // Signature 0 is Max Area Block 1-7 is Signatures 1-7
-    Block[] v_signatureBlocks = new Block[8];
-
-    private void beginrequests() {
-        if (v_signatureEnable[0]) {
-            v_pixy.requestFrom(0x50, 6);
-        }
-        if (v_signatureEnable[1]) {
-            v_pixy.requestFrom(0x51, 4);
-        }
-        if (v_signatureEnable[2]) {
-            v_pixy.requestFrom(0x52, 4);
-        }
-        if (v_signatureEnable[3]) {
-            v_pixy.requestFrom(0x53, 4);
-        }
-        if (v_signatureEnable[4]) {
-            v_pixy.requestFrom(0x54, 4);
-        }
-        if (v_signatureEnable[5]) {
-            v_pixy.requestFrom(0x55, 4);
-        }
-        if (v_signatureEnable[6]) {
-            v_pixy.requestFrom(0x56, 4);
-        }
-        if (v_signatureEnable[7]) {
-            v_pixy.requestFrom(0x57, 4);
-        }
-    }
-
-    private Block v_signatureBlock;
+     * put this in your state machine loop so its called over and over in the loop
+     **/
 
     public void loop() {
         if (v_pixy_enabled) {
@@ -162,14 +161,14 @@ public class PixyCamera {
                                 //ask for largestBlock again
                                 v_signatureBlocks[0] = v_signatureBlock;
                                 if (v_signatureEnable[0]) {
-                                    v_pixy.requestFrom(0x50, 6);
+                                    v_pixy.requestFrom(0x50, PIXY_LARGEST_SIGNATURE_BYTES);
                                 }
 
                             } else {
                                 debugPrint("largestBlock: Error  only " + regCount + " bytes");
                                 //ask for largestBlock again
                                 if (v_signatureEnable[0]) {
-                                    v_pixy.requestFrom(0x50, 6);
+                                    v_pixy.requestFrom(0x50, PIXY_LARGEST_SIGNATURE_BYTES);
                                 }
                             }
                             break;
@@ -193,17 +192,39 @@ public class PixyCamera {
                                 v_signatureBlocks[signum] = v_signatureBlock;
                                 //ask for SignatureBlock 1 again
                                 if (v_signatureEnable[signum]) {
-                                    v_pixy.requestFrom((0x50 | signum), 4);
+                                    v_pixy.requestFrom((0x50 | signum), PIXY_SIGNATURE_BYTES);
                                 }
                             } else {
                                 debugPrint("signature" + signum + ": Error  only " + regCount + " bytes");
                                 //ask for SignatureBlock again
                                 if (v_signatureEnable[signum]) {
-                                    v_pixy.requestFrom((0x50 | signum), 4);
+                                    v_pixy.requestFrom((0x50 | signum), PIXY_SIGNATURE_BYTES);
                                 }
                             }
                             break;
-
+                        case 0x58: //Color Code Query Signature  Block
+                            if (regCount == 5) {
+                                v_signatureBlock = new Block();
+                                v_signatureBlock.signature = color_code;
+                                v_signatureBlock.numBlocks = v_pixy.read();
+                                v_signatureBlock.x = v_pixy.read();
+                                v_signatureBlock.y = v_pixy.read();
+                                v_signatureBlock.width = v_pixy.read();
+                                v_signatureBlock.height = v_pixy.read();
+                                debugPrint("cc signature" + color_code + ":" + v_signatureBlock.print());
+                                v_signatureBlocks[8] = v_signatureBlock;
+                                //ask for SignatureBlock 1 again
+                                if (v_signatureEnable[8]) {
+                                    v_pixy.writeLH(0x58, color_code);
+                                }
+                            } else {
+                                debugPrint("cc signature" + color_code + ": Error  only " + regCount + " bytes");
+                                //ask for SignatureBlock again
+                                if (v_signatureEnable[8]) {
+                                    v_pixy.writeLH(0x58, color_code);
+                                }
+                            }
+                            break;
                     }
                 }
                 if (v_pixy.isWrite()) {
@@ -215,12 +236,24 @@ public class PixyCamera {
     }
 
 
-    //Signature 0 is max area Block request
+    //Signature 0 is max area Block request, Signature 8 is Color Code Query
     public void signature_enable(int signature, Boolean enable){
-        if(signature >= 0 && signature <=7) {
+        if(signature >= 0 && signature <=8) {
             v_signatureEnable[signature] = enable;
-            if(enable == false) {
+            //if we are already enabled we need to send the first request to set things in motion
+            if(v_pixy_enabled && enable == true) {
+                //make the intial request to set things in motion
+                if (signature == 0) {
+                    //Six bytes for the get Largest Blocks
+                    v_pixy.requestFrom(0x50, PIXY_LARGEST_SIGNATURE_BYTES);
+                }
+                if (signature >= 1 && signature <= 7 ) {
+                    v_pixy.requestFrom((0x50 & signature), PIXY_SIGNATURE_BYTES);
+                }
 
+                if (signature == 8) {
+                    v_pixy.writeLH(0x58, color_code);
+                }
             }
         }
     }
@@ -276,7 +309,7 @@ public class PixyCamera {
     }
 
     public Block largestSignatureBlock(int signature){
-        if(signature >= 0 && signature <=7) {
+        if(signature >= 0 && signature <=8) {
             return v_signatureBlocks[signature];
         }else{
             return v_emptyBlock;
@@ -309,6 +342,7 @@ public class PixyCamera {
 
     public void stop() {
         if(v_pixy != null) {
+            v_pixy_enabled = false;
             v_pixy.close();
         }
     }
@@ -379,117 +413,7 @@ public class PixyCamera {
         public int angle = -1;
     };
 
-    private boolean  skipStart = false;
-    private BlockType blockType;
-    private int blockCount = 0;
 
-    private boolean getStart()
-    {
-        int w, lastw;
 
-        lastw = 0xffff;
 
-        while(true)
-        {
-            w = v_pixy.readLH();
-            if (w==0 && lastw==0)
-            {
-                //delayMicroseconds(10);
-                return false;
-            }
-            else if (w==PIXY_START_WORD && lastw==PIXY_START_WORD)
-            {
-                blockType = BlockType.NORMAL_BLOCK;
-                return true;
-            }
-            else if (w==PIXY_START_WORD_CC && lastw==PIXY_START_WORD)
-            {
-                blockType = BlockType.CC_BLOCK;
-                return true;
-            }
-            else if (w==PIXY_START_WORDX)
-            {
-                debugPrint("reorder");
-                v_pixy.read();
-            }
-            lastw = w;
-        }
-    }
-
-    ArrayList<Block> blocks;
-    private int getBlocks(int maxBlocks) {
-        int i;
-        int w, checksum, sum;
-
-        blocks = new ArrayList<Block>();
-        if (!skipStart) {
-            if (getStart() == false)
-                return 0;
-        } else
-            skipStart = false;
-
-        for (blockCount = 0; blockCount < maxBlocks; ) {
-            checksum = v_pixy.readLH();
-            if (checksum == PIXY_START_WORD) // we've reached the beginning of the next frame
-            {
-                skipStart = true;
-                blockType = BlockType.NORMAL_BLOCK;
-                //Serial.println("skip");
-                return blockCount;
-            } else if (checksum == PIXY_START_WORD_CC) {
-                skipStart = true;
-                blockType = BlockType.CC_BLOCK;
-                return blockCount;
-            } else if (checksum == 0) {
-                return blockCount;
-            }
-            Block block = new Block();
-            for (i = 0, sum = 0; i < 6; i++) {
-                if (blockType == BlockType.NORMAL_BLOCK && i >= 5) // skip
-                {
-                    block.angle = 0;
-                    break;
-                }
-                w = v_pixy.readLH();
-                sum += w;
-                switch (i) {
-                    case 0:
-                        block.signature = w;
-                        break;
-                    case 1:
-                        block.x = w;
-                        break;
-                    case 2:
-                        block.y = w;
-                        break;
-                    case 3:
-                        block.width = w;
-                        break;
-                    case 4:
-                        block.height = w;
-                        break;
-                    case 5:
-                        block.angle = w;
-                        break;
-                }
-
-                if (checksum == sum) {
-                    blockCount++;
-                    blocks.add(block);
-                } else {
-                    debugPrint("cs error");
-                }
-
-                w = v_pixy.readLH();
-                if (w == PIXY_START_WORD) {
-                    blockType = BlockType.NORMAL_BLOCK;
-                } else if (w == PIXY_START_WORD_CC) {
-                    blockType = BlockType.CC_BLOCK;
-                } else {
-                    return blockCount;
-                }
-            }
-        }
-        return blockCount;
-    }
 }
