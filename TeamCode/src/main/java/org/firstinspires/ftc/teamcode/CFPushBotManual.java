@@ -71,8 +71,9 @@ public class CFPushBotManual extends LinearOpMode {
             //robot.vuforia_Init();
             // Wait for the game to start (driver presses PLAY)
             robot.led7seg_timer_init(120);
-            robot.run_without_encoders();
-
+            robot.run_using_encoders();
+            robot.lifter_step(-500); //reset the min on lifter as automonmouse moved us up and reinit reset min
+            robot.blockgrabber_open();
             waitForStart();
             robot.debugOff();
             robot.led7seg_timer_start(120);
@@ -124,7 +125,7 @@ public class CFPushBotManual extends LinearOpMode {
                     }
                     if(gamepad1.right_bumper){
                         if(buttonRightBumperReleased == true) {
-                            highspeedmode = !highspeedmode;
+                            //highspeedmode = !highspeedmode;
                             buttonRightBumperReleased = false;
                         }
                     }else{
@@ -213,7 +214,7 @@ public class CFPushBotManual extends LinearOpMode {
                     if(gamepad1.x ){
                         if(buttonXReleased == true) {
                             robot.blueled_toggle();
-                            highspeedmode = false;
+                            //highspeedmode = false;
                             buttonXReleased = false;
                         }
                     }else{
@@ -222,7 +223,7 @@ public class CFPushBotManual extends LinearOpMode {
                     if(gamepad1.b){
                         if(buttonBReleased == true) {
                             robot.redled_toggle();
-                            highspeedmode = true;
+                            //highspeedmode = true;
                             buttonBReleased = false;
                         }
                     }else{
@@ -233,7 +234,7 @@ public class CFPushBotManual extends LinearOpMode {
                             if(robot.debugMode()){
                                 robot.debugOff();
                             }else{
-                                robot.debugOn();
+                                //robot.debugOn();
                             }
                             buttonStartReleased = false;
                         }

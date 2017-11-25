@@ -23,6 +23,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
 import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -60,6 +61,7 @@ public class CFPushBotHardware {
     private String config_i2c_led7seg = "ledseg";
     private String config_i2c_colorsensor = "color";
     private String config_i2c_colorsensor_led = "color_led";
+    boolean hasRange = false;
     private String config_i2c_range = "range";
     private String config_i2c_pixy = "pixy";
     /*
@@ -148,7 +150,7 @@ public class CFPushBotHardware {
     private DcMotor v_motor_lifter;
     private static final double v_motor_lifter_power = 1.0;
     private static final DcMotor.Direction v_motor_lifter_direction = DcMotor.Direction.FORWARD;
-    private static final int v_motor_lifter_encoder_min = 30;
+    private int v_motor_lifter_encoder_min = 0;
     private static final int v_motor_lifter_encoder_max = 2250;
     private static final int v_motor_lifter_ExtendSlowdownTicks = 300;
     private int v_motor_lifter_Position = 0;
@@ -159,7 +161,7 @@ public class CFPushBotHardware {
     private static final DcMotor.Direction v_motor_slider_direction = DcMotor.Direction.FORWARD;
     private static final double v_motor_slider_SpeedSlowDown = 0.5f;
     private static final int v_motor_slider_encoder_min = 30;
-    private static final int v_motor_slider_encoder_max = 8750;
+    private static final int v_motor_slider_encoder_max = 8150; //8750;
     private static final int v_motor_slider_ExtendSlowdownTicks = 300;
     private int v_motor_slider_Position = 0;
 
@@ -167,7 +169,7 @@ public class CFPushBotHardware {
     private Servo v_servo_blockgrabber;
     private static final double v_servo_blockgrabber_MinPosition = 0.45;
     private static final double v_servo_blockgrabber_MaxPosition = 0.87;
-    private double v_servo_blockgrabber_position = 0.0D;  //init arm jewel Position
+    private double v_servo_blockgrabber_position = 0.87D;  //init arm jewel Position
     boolean v_servo_blockgrabber_is_extended = true;
     private Servo.Direction v_servo_blockgrabber_direction = Servo.Direction.FORWARD;
 
@@ -180,9 +182,9 @@ public class CFPushBotHardware {
     private Servo.Direction v_servo_blockslide_direction = Servo.Direction.FORWARD;
 
     private Servo v_servo_jewel;
-    private static final double v_servo_jewel_MinPosition = 0.00D;
-    private static final double v_servo_jewel_MaxPosition = 0.62D;
-    private double v_servo_jewel_position = 0.62D;  //init arm jewel Position
+    private static final double v_servo_jewel_MinPosition = 0.11D;
+    private static final double v_servo_jewel_MaxPosition = 0.73D;
+    private double v_servo_jewel_position = 0.73D;  //init arm jewel Position
     private Servo.Direction v_servo_jewel_direction = Servo.Direction.FORWARD;
     boolean v_servo_jewel_is_extending = false;
     boolean v_servo_jewel_is_retracting = false;
@@ -259,7 +261,7 @@ public class CFPushBotHardware {
     //Tone Generator to make noise
     ToneGenerator v_tone_generator;
     AudioEffects v_audio_effects;
-// (tone type, tone duration in ms)
+    // (tone type, tone duration in ms)
 // from a list of predefined tone types
     LinearOpMode opMode;
 
@@ -349,14 +351,14 @@ public class CFPushBotHardware {
             // calibrate the gyro.
             v_sensor_gyro.calibrate();
             // make sure the gyro is calibrated.
-            while (v_sensor_gyro.isCalibrating())  {
-                sleep(50);
-            }
+            //while (v_sensor_gyro.isCalibrating())  {
+            //    sleep(50);
+            //}
             //v_sensor_gyro_mr = (ModernRoboticsI2cGyro) v_sensor_gyro;
             //v_sensor_gyro_mr.setHeadingMode(ModernRoboticsI2cGyro.HeadingMode.HEADING_CARDINAL);
-            sleep(100);
+            //sleep(100);
             v_sensor_gyro.resetZAxisIntegrator();
-            sleep(200);
+            //sleep(200);
             //v_sensor_gyro_heading = v_sensor_gyro.getHeading();
             set_second_message("Gyro isCalibrated H:" + v_sensor_gyro.getHeading() );
         }catch(Exception p_exeception){
@@ -366,11 +368,13 @@ public class CFPushBotHardware {
 
 
         try {
-            // get a reference to our Rangesensor object.
-            //v_sensor_rangeSensor
-            v_sensor_rangeSensor = opMode.hardwareMap.get(ModernRoboticsI2cRangeSensor.class, config_i2c_range);
-            // calibrate the gyro.
-            set_third_message("Range Sensor Found" + v_sensor_rangeSensor.getDistance(DistanceUnit.INCH));
+            if(hasRange) {
+                // get a reference to our Rangesensor object.
+                //v_sensor_rangeSensor
+                v_sensor_rangeSensor = opMode.hardwareMap.get(ModernRoboticsI2cRangeSensor.class, config_i2c_range);
+                // calibrate the gyro.
+                set_third_message("Range Sensor Found" + v_sensor_rangeSensor.getDistance(DistanceUnit.INCH));
+            }
         }catch(Exception p_exeception){
             debugLogException(config_i2c_range,"missing",p_exeception);
             v_sensor_rangeSensor = null;
@@ -409,11 +413,11 @@ public class CFPushBotHardware {
             reset_drive_encoders();
             while (counter < 10 && have_drive_encoders_reset() == false){
                 counter++;
-                sleep(100);
-                debugLogException("init", "waiting on  rest_drive_encoders() complete r:" + v_motor_right_drive.getMode() + ",l:" + v_motor_left_drive.getMode(), null);
+                sleep(10);
+                //debugLogException("init", "waiting on  rest_drive_encoders() complete r:" + v_motor_right_drive.getMode() + ",l:" + v_motor_left_drive.getMode(), null);
             }
             run_using_encoders();
-            debugLogException("init", "run_using_encoders() and rest_drive_encoders() complete", null);
+            //debugLogException("init", "run_using_encoders() and rest_drive_encoders() complete", null);
         }catch (Exception p_exeception)
         {
             debugLogException("run_using encoders", "error", p_exeception);
@@ -422,8 +426,8 @@ public class CFPushBotHardware {
 
         try{
             v_tone_generator = new ToneGenerator(AudioManager.STREAM_RING, ToneGenerator.MAX_VOLUME);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_0, 500);
-            /*sleep(500);
+            /*v_tone_generator.startTone(ToneGenerator.TONE_DTMF_0, 500);
+            sleep(500);
             v_tone_generator.startTone(ToneGenerator.TONE_DTMF_9, 500);
             sleep(500);
             v_tone_generator.startTone(ToneGenerator.TONE_DTMF_0, 500);
@@ -431,11 +435,12 @@ public class CFPushBotHardware {
             v_tone_generator.startTone(ToneGenerator.TONE_DTMF_9, 500);
             sleep(500);
             v_tone_generator.startTone(ToneGenerator.TONE_DTMF_4, 500);
-            */
+
             sleep(200);
             v_tone_generator.startTone(ToneGenerator.TONE_DTMF_7, 500);
             sleep(200);
             v_tone_generator.startTone(ToneGenerator.TONE_DTMF_9, 500);
+            */
         }catch (Exception p_exeception)
         {
             debugLogException("toneGenerator", "missing", p_exeception);
@@ -444,7 +449,8 @@ public class CFPushBotHardware {
         }
 
         try{
-            v_audio_effects = new AudioEffects();
+            v_audio_effects = null;
+            //v_audio_effects = new AudioEffects();
         }catch (Exception p_exeception)
         {
             debugLogException("AudioEffects", "missing", p_exeception);
@@ -593,17 +599,17 @@ public class CFPushBotHardware {
             v_motor_slider.setDirection(v_motor_slider_direction);
             v_motor_slider.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             int counter = 0;
-            while (counter < 10 && v_motor_slider.getMode() != DcMotor.RunMode.STOP_AND_RESET_ENCODER){
+            while (counter < 5 && v_motor_slider.getMode() != DcMotor.RunMode.STOP_AND_RESET_ENCODER){
                 counter++;
                 sleep(10);
-                debugLogException("init", "waiting on slider motor Stop_and_rest complete",null);
+                //debugLogException("init", "waiting on slider motor Stop_and_rest complete",null);
             }
             v_motor_slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             counter = 0;
-            while (counter < 10 && v_motor_slider.getMode() != DcMotor.RunMode.RUN_TO_POSITION){
+            while (counter < 5 && v_motor_slider.getMode() != DcMotor.RunMode.RUN_TO_POSITION){
                 counter++;
                 sleep(10);
-                debugLogException("init", "waiting on slider motor RUN_TO_POSITION complete",null);
+                //debugLogException("init", "waiting on slider motor RUN_TO_POSITION complete",null);
             }
 
         }
@@ -620,17 +626,17 @@ public class CFPushBotHardware {
             v_motor_lifter.setDirection(v_motor_lifter_direction);
             v_motor_lifter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             int counter = 0;
-            while (counter < 10 && v_motor_lifter.getMode() != DcMotor.RunMode.STOP_AND_RESET_ENCODER){
+            while (counter < 5 && v_motor_lifter.getMode() != DcMotor.RunMode.STOP_AND_RESET_ENCODER){
                 counter++;
                 sleep(10);
-                debugLogException("init", "waiting on lifter motor Stop_and_rest complete",null);
+                //debugLogException("init", "waiting on lifter motor Stop_and_rest complete",null);
             }
             v_motor_lifter.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             counter = 0;
-            while (counter < 10 && v_motor_lifter.getMode() != DcMotor.RunMode.RUN_TO_POSITION){
+            while (counter < 5 && v_motor_lifter.getMode() != DcMotor.RunMode.RUN_TO_POSITION){
                 counter++;
                 sleep(10);
-                debugLogException("init", "waiting on lifter motor RUN_TO_Position complete",null);
+                //debugLogException("init", "waiting on lifter motor RUN_TO_Position complete",null);
             }
         }
         catch (Exception p_exeception)
@@ -775,9 +781,9 @@ public class CFPushBotHardware {
                 debugMessage = debugMessage + errMsg;
             }
         }
-        if (v_debug) {
-            //DbgLog.msg(debugMessage);
-        }
+        //if (v_debug) {
+        android.util.Log.d("CFPushBotHardware", debugMessage);
+        //}
     }
 
     public boolean sensor_pixy_init(){
@@ -1180,16 +1186,18 @@ public class CFPushBotHardware {
     // float l_right_drive_power = 0.0f;
     public void set_drive_power (float p_left_power, float p_right_power)
     {
-        float l_left_drive_power = Range.clip (p_left_power, -1, 1);
-        float l_right_drive_power = Range.clip (p_right_power, -1, 1);
+        try {
+            float l_left_drive_power = Range.clip(p_left_power, -1, 1);
+            float l_right_drive_power = Range.clip(p_right_power, -1, 1);
 
-        if (v_motor_left_drive != null)
-        {
-            v_motor_left_drive.setPower (l_left_drive_power);
-        }
-        if (v_motor_right_drive != null)
-        {
-            v_motor_right_drive.setPower(l_right_drive_power);
+            if (v_motor_left_drive != null) {
+                v_motor_left_drive.setPower(l_left_drive_power);
+            }
+            if (v_motor_right_drive != null) {
+                v_motor_right_drive.setPower(l_right_drive_power);
+            }
+        }catch(Exception ex) {
+            debugLogException("robot", "set_drive_power", ex );
         }
         //set_second_message("set_drive_power l" + p_left_power + ":r" + p_right_power + " cliped:l:" + l_left_drive_power +":r" + l_right_drive_power);
     } // set_drive_power
@@ -1205,6 +1213,7 @@ public class CFPushBotHardware {
     // float l_right_drive_power = 0.0f;
     public void set_drive_power_scaled (float p_left_power, float p_right_power)
     {
+        try{
         float l_left_drive_power = scale_motor_power(p_left_power);
         float l_right_drive_power = scale_motor_power(p_right_power);
 
@@ -1217,6 +1226,9 @@ public class CFPushBotHardware {
             v_motor_right_drive.setPower(l_right_drive_power);
         }
         //set_second_message("set_drive_power " + p_left_power + ":" + p_right_power + " " + l_left_drive_power +":" + l_right_drive_power);
+        }catch(Exception ex) {
+            debugLogException("robot", "set_drive_power_scaled", ex );
+        }
     } // set_drive_power
 
 
@@ -1355,10 +1367,10 @@ public class CFPushBotHardware {
     {
         if (v_motor_lifter != null)
         {
-            if (v_lifter_isExtended == true){
-                set_second_message("lifter already extended");
-                return;
-            }
+//            if (v_lifter_isExtended == true){
+//                set_second_message("lifter already extended");
+//                return;
+//            }
             v_lifter_state = 0;
             v_motor_lifter_Position = v_motor_lifter_Position + v_motor_lifter_encoder_max - v_motor_lifter_ExtendSlowdownTicks;
 
@@ -1412,6 +1424,12 @@ public class CFPushBotHardware {
             if (v_motor_lifter != null )
             {
                 v_motor_lifter_Position = v_motor_lifter.getCurrentPosition() + stepAmount;
+                if(v_motor_lifter_Position <= v_motor_lifter_encoder_min  ) {
+                    v_motor_lifter_Position = v_motor_lifter_encoder_min;
+                }
+                if(v_motor_lifter_Position >= v_motor_lifter_encoder_max  ) {
+                    v_motor_lifter_Position = v_motor_lifter_encoder_max;
+                }
                 if(v_motor_lifter_Position >= v_motor_lifter_encoder_min && v_motor_lifter_Position <= v_motor_lifter_encoder_max ) {
                     v_motor_lifter.setTargetPosition(v_motor_lifter_Position);
                     v_motor_lifter.setPower(v_motor_lifter_power);
@@ -1440,15 +1458,19 @@ public class CFPushBotHardware {
         }
     }
 
+    public void lifter_stepmin(int steps){
+        v_motor_lifter_encoder_min = v_motor_lifter_encoder_min + steps;
+    }
+
     public void lifter_retract ()
     {
 
         if (v_motor_lifter != null )
         {
-            if (v_lifter_isExtended == false){
-                set_second_message("lifter not loaded");
-                return;
-            }
+//            if (v_lifter_isExtended == false){
+//                set_second_message("lifter not loaded");
+//                return;
+//            }
             v_motor_lifter.setTargetPosition(v_motor_lifter_encoder_min);
             set_second_message("Retracting lifter");
             v_motor_lifter.setPower(v_motor_lifter_power);
@@ -2244,12 +2266,12 @@ public class CFPushBotHardware {
             int v_left_position =  a_left_encoder_count();
             int v_right_position =  a_right_encoder_count();
             //if (inches >= 0 ){
-                //we are going forward
-                v_drive_inches_ticks_target_right = v_right_position +  (int)Math.round(inches * v_drive_inches_ticksPerInch);
-                v_drive_inches_ticks_target_left = v_left_position +  (int)Math.round(inches * v_drive_inches_ticksPerInch);
+            //we are going forward
+            v_drive_inches_ticks_target_right = v_right_position +  (int)Math.round(inches * v_drive_inches_ticksPerInch);
+            v_drive_inches_ticks_target_left = v_left_position +  (int)Math.round(inches * v_drive_inches_ticksPerInch);
 
             //}else{
-                //we are going backward
+            //we are going backward
             //    v_drive_inches_ticks_target_right = v_right_position - (int) Math.round(inches * v_drive_inches_ticksPerInch);
             //    v_drive_inches_ticks_target_left = v_left_position - (int) Math.round(inches * v_drive_inches_ticksPerInch);
             //    v_drive_inches_power = 0 -v_drive_inches_power;  //run in reverse
@@ -2519,7 +2541,7 @@ public class CFPushBotHardware {
         }
 
 
-            //Turn using just encoder ticks
+        //Turn using just encoder ticks
         int ticks = Math.round(Math.abs(degrees) * v_drive_turn_ticks_per_degree);
         if (v_turn_degrees_iscwturn) {
             v_turn_degrees_ticks_target_left = v_motor_left_drive.getCurrentPosition() + ticks;
@@ -2601,17 +2623,17 @@ public class CFPushBotHardware {
                     v_turn_degrees_state++;
                     break;
                 case 1:
-                        if (v_motor_left_drive.isBusy() == false
-                                &&  v_motor_right_drive.isBusy() == false) {
-                            set_drive_power(0.0f, 0.0f);
-                            set_second_message("turn_complete: encoders reached value lt:" + v_turn_degrees_ticks_target_left + " rt:" + v_turn_degrees_ticks_target_right + ", re:" + v_motor_right_drive.getCurrentPosition() + ", le:" + v_motor_left_drive.getCurrentPosition() + ", rp:" + v_motor_right_drive.getPower() + ", lp:" + v_motor_left_drive.getPower());
-                            v_turn_degrees_state++;
-                            return true;
-                        }else {
-                            if (is_slow_tick()){
-                                set_second_message("turn_complete: Waiting on encoders lt:" + v_turn_degrees_ticks_target_left + " rt:" + v_turn_degrees_ticks_target_right + ", re:" + v_motor_right_drive.getCurrentPosition() + ", le:" + v_motor_left_drive.getCurrentPosition() + ", rp:" + v_motor_right_drive.getPower() + ", lp:" + v_motor_left_drive.getPower() );
-                            }
+                    if (v_motor_left_drive.isBusy() == false
+                            &&  v_motor_right_drive.isBusy() == false) {
+                        set_drive_power(0.0f, 0.0f);
+                        set_second_message("turn_complete: encoders reached value lt:" + v_turn_degrees_ticks_target_left + " rt:" + v_turn_degrees_ticks_target_right + ", re:" + v_motor_right_drive.getCurrentPosition() + ", le:" + v_motor_left_drive.getCurrentPosition() + ", rp:" + v_motor_right_drive.getPower() + ", lp:" + v_motor_left_drive.getPower());
+                        v_turn_degrees_state++;
+                        return true;
+                    }else {
+                        if (is_slow_tick()){
+                            set_second_message("turn_complete: Waiting on encoders lt:" + v_turn_degrees_ticks_target_left + " rt:" + v_turn_degrees_ticks_target_right + ", re:" + v_motor_right_drive.getCurrentPosition() + ", le:" + v_motor_left_drive.getCurrentPosition() + ", rp:" + v_motor_right_drive.getPower() + ", lp:" + v_motor_left_drive.getPower() );
                         }
+                    }
 
                     break;
                 default:
@@ -3196,71 +3218,71 @@ public class CFPushBotHardware {
         }
     }
     public void vuforia_Init(){
-            try{
-                VuforiaLocalizer.Parameters parameters;
-                if(v_debug) {
-                     parameters = new VuforiaLocalizer.Parameters(com.qualcomm.ftcrobotcontroller.R.id.cameraMonitorViewId);
-                }else{
-                    parameters = new VuforiaLocalizer.Parameters();
-                }
-                parameters.vuforiaLicenseKey = "ARr2v+H/////AAAAGbhUuRSeZUkynkK8ae61PIdjct7sVAoB5ItOs7Txvqsc9KlYRYHyftgUouhc+2Db+lSdUHCFdKp/CTYa3oWdQO3Bt3jkFplXQThhCFPnq0urXzwO0Mm5Jj1tYYuGZIU0anvdpA6DZVP95tL/FwRVO1BatviHrgurUy3L/TL7lPse5gI30PNKjgraalsKhmTxd13leA3dg+i/kqaTz3ot4iAmHEV6HBzsa3WUFSo1b6ig4Eo44j/O5J3CEQLWJYqRjlQwLUWB5QJi84YmhK2i+dSwdAXBc14Nb2QwsCjbbZA+XbSNxdDMKOTvCbVxHj+wL5Xare3nDZsPNTpEbKJ7ozaI7dcRJYCJK71X4Nv3fKn0";
-                parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
-                v_vuforia = ClassFactory.createVuforiaLocalizer(parameters);
+        try{
+            VuforiaLocalizer.Parameters parameters;
+            if(v_debug) {
+                parameters = new VuforiaLocalizer.Parameters(com.qualcomm.ftcrobotcontroller.R.id.cameraMonitorViewId);
+            }else{
+                parameters = new VuforiaLocalizer.Parameters();
+            }
+            parameters.vuforiaLicenseKey = "ARr2v+H/////AAAAGbhUuRSeZUkynkK8ae61PIdjct7sVAoB5ItOs7Txvqsc9KlYRYHyftgUouhc+2Db+lSdUHCFdKp/CTYa3oWdQO3Bt3jkFplXQThhCFPnq0urXzwO0Mm5Jj1tYYuGZIU0anvdpA6DZVP95tL/FwRVO1BatviHrgurUy3L/TL7lPse5gI30PNKjgraalsKhmTxd13leA3dg+i/kqaTz3ot4iAmHEV6HBzsa3WUFSo1b6ig4Eo44j/O5J3CEQLWJYqRjlQwLUWB5QJi84YmhK2i+dSwdAXBc14Nb2QwsCjbbZA+XbSNxdDMKOTvCbVxHj+wL5Xare3nDZsPNTpEbKJ7ozaI7dcRJYCJK71X4Nv3fKn0";
+            parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
+            v_vuforia = ClassFactory.createVuforiaLocalizer(parameters);
 
-                // only care about 1 at the moment so commented this line
-                // for performance Vuforia.setHint(HINT.HINT_MAX_SIMULTANEOUS_IMAGE_TARGETS, 4);
-                /** For convenience, gather together all the trackable objects in one easily-iterable collection */
-                v_vuforia_allTrackables = new ArrayList<VuforiaTrackable>();
+            // only care about 1 at the moment so commented this line
+            // for performance Vuforia.setHint(HINT.HINT_MAX_SIMULTANEOUS_IMAGE_TARGETS, 4);
+            /** For convenience, gather together all the trackable objects in one easily-iterable collection */
+            v_vuforia_allTrackables = new ArrayList<VuforiaTrackable>();
+            /**
+             * Load the data sets that for the trackable objects we wish to track. These particular data
+             * sets are stored in the 'assets' part of our application (you'll see them in the Android
+             * Studio 'Project' view over there on the left of the screen). You can make your own datasets
+             * with the Vuforia Target Manager: https://developer.vuforia.com/target-manager. PDFs for the
+             * example "StonesAndChips", datasets can be found in in this project in the
+             * documentation directory.
+             */
+            VuforiaTrackables ftc = v_vuforia.loadTrackablesFromAsset("FTC_2016-17");
+
+            /**
+             * Create a transformation matrix describing where the phone is on the robot. Here, we
+             * put the phone on the right hand side of the robot with the screen facing in (see our
+             * choice of BACK camera above) and in landscape mode. Starting from alignment between the
+             * robot's and phone's axes, this is a rotation of -90deg along the Y axis.
+             *
+             * When determining whether a rotation is positive or negative, consider yourself as looking
+             * down the (positive) axis of rotation from the positive towards the origin. Positive rotations
+             * are then CCW, and negative rotations CW. An example: consider looking down the positive Z
+             * axis towards the origin. A positive rotation about Z (ie: a rotation parallel to the the X-Y
+             * plane) is then CCW, as one would normally expect from the usual classic 2D geometry.
+             */
+            OpenGLMatrix phoneLocationOnRobot = OpenGLMatrix
+                    .translation(0,0,0)
+                    .multiplied(Orientation.getRotationMatrix(
+                            AxesReference.EXTRINSIC, AxesOrder.YZY,
+                            AngleUnit.DEGREES, 180, 0, 0));
+
+            int trackableIndex = 0;
+            for (VuforiaTrackable trackable : ftc) {
                 /**
-                 * Load the data sets that for the trackable objects we wish to track. These particular data
-                 * sets are stored in the 'assets' part of our application (you'll see them in the Android
-                 * Studio 'Project' view over there on the left of the screen). You can make your own datasets
-                 * with the Vuforia Target Manager: https://developer.vuforia.com/target-manager. PDFs for the
-                 * example "StonesAndChips", datasets can be found in in this project in the
-                 * documentation directory.
+                 * getUpdatedRobotLocation() will return null if no new information is available since
+                 * the last time that call was made, or if the trackable is not currently visible.
+                 * getRobotLocation() will return null if the trackable is not currently visible.
                  */
-                VuforiaTrackables ftc = v_vuforia.loadTrackablesFromAsset("FTC_2016-17");
-
+                vuforia_targets myTarget = vuforia_targets.getEnum(trackableIndex);
+                trackable.setName(myTarget.name);
+                VuforiaTrackableDefaultListener myListener = (VuforiaTrackableDefaultListener)trackable.getListener();
                 /**
-                 * Create a transformation matrix describing where the phone is on the robot. Here, we
-                 * put the phone on the right hand side of the robot with the screen facing in (see our
-                 * choice of BACK camera above) and in landscape mode. Starting from alignment between the
-                 * robot's and phone's axes, this is a rotation of -90deg along the Y axis.
-                 *
-                 * When determining whether a rotation is positive or negative, consider yourself as looking
-                 * down the (positive) axis of rotation from the positive towards the origin. Positive rotations
-                 * are then CCW, and negative rotations CW. An example: consider looking down the positive Z
-                 * axis towards the origin. A positive rotation about Z (ie: a rotation parallel to the the X-Y
-                 * plane) is then CCW, as one would normally expect from the usual classic 2D geometry.
+                 * Let the trackable listeners we care about know where the phone is. We know that each
+                 * listener is a {@link VuforiaTrackableDefaultListener} and can so safely cast because
+                 * we have not ourselves installed a listener of a different type.
                  */
-                OpenGLMatrix phoneLocationOnRobot = OpenGLMatrix
-                        .translation(0,0,0)
-                        .multiplied(Orientation.getRotationMatrix(
-                                AxesReference.EXTRINSIC, AxesOrder.YZY,
-                                AngleUnit.DEGREES, 180, 0, 0));
-
-                int trackableIndex = 0;
-                for (VuforiaTrackable trackable : ftc) {
-                    /**
-                     * getUpdatedRobotLocation() will return null if no new information is available since
-                     * the last time that call was made, or if the trackable is not currently visible.
-                     * getRobotLocation() will return null if the trackable is not currently visible.
-                     */
-                    vuforia_targets myTarget = vuforia_targets.getEnum(trackableIndex);
-                    trackable.setName(myTarget.name);
-                    VuforiaTrackableDefaultListener myListener = (VuforiaTrackableDefaultListener)trackable.getListener();
-                    /**
-                     * Let the trackable listeners we care about know where the phone is. We know that each
-                     * listener is a {@link VuforiaTrackableDefaultListener} and can so safely cast because
-                     * we have not ourselves installed a listener of a different type.
-                     */
-                    myListener.setPhoneInformation(phoneLocationOnRobot, parameters.cameraDirection);
-                    //trackable.setListener(myListener);
-                    v_vuforia_allTrackables.add(trackable);
-                    trackableIndex++;
-                }
-                /** Start tracking the FTC targets. */
-                ftc.activate();
+                myListener.setPhoneInformation(phoneLocationOnRobot, parameters.cameraDirection);
+                //trackable.setListener(myListener);
+                v_vuforia_allTrackables.add(trackable);
+                trackableIndex++;
+            }
+            /** Start tracking the FTC targets. */
+            ftc.activate();
 
 //                /*//Get our custom beacon trackables
 //                ftc = v_vuforia.loadTrackablesFromAsset("FTC_Beacons");
@@ -3286,7 +3308,7 @@ public class CFPushBotHardware {
 //                *//** Start tracking our  FTC targets. *//*
 //                ftc.activate();*/
 
-                //Vuforia.setFrameFormat(PIXEL_FORMAT.RGB565, true); //enables RGB565 format for the image
+            //Vuforia.setFrameFormat(PIXEL_FORMAT.RGB565, true); //enables RGB565 format for the image
 
 //               v_vuforia..setFrameQueueCapacity(1); //tells VuforiaLocalizer to only store one frame at a time
 //
@@ -3306,7 +3328,7 @@ public class CFPushBotHardware {
 //                }//for
 
 
-                v_vuforia_inited = true;
+            v_vuforia_inited = true;
         }catch (Exception p_exeception)
         {
             debugLogException("vuforia_init", "Error", p_exeception);
@@ -3352,7 +3374,7 @@ public class CFPushBotHardware {
         v_vuforia_driveToTarget_power = .35f; //was .5f 12/16/2016
         v_vuforia_driveToTarget_power_slow = .15f;
         v_vuforia_driveToTarget_slowDownFactorClose = .009f;
-         v_vuforia_driveToTarget_slowDownFactor = .020f;
+        v_vuforia_driveToTarget_slowDownFactor = .020f;
         v_vuforia_findTargetSpeed = -.07f;
         v_drive_use_slowdown = false;
         v_drive_inches_slowdown = 24;
@@ -3398,7 +3420,7 @@ public class CFPushBotHardware {
         return false;
     }*/
 
-//    public void drive_setMaxSpeed(int tickPerSecond){
+    //    public void drive_setMaxSpeed(int tickPerSecond){
 //        v_motor_left_drive.setMaxSpeed(tickPerSecond);
 //        v_motor_right_drive.setMaxSpeed(tickPerSecond);
 //    }
@@ -3410,64 +3432,64 @@ public class CFPushBotHardware {
     static float v_vuforia_findTargetSpeed = -.1f;
 
     public boolean vuforia_driveToTargetComplete(){
-            if(v_vuforia_inited == true){
+        if(v_vuforia_inited == true){
 
-                VuforiaTrackable trackable = v_vuforia_allTrackables.get(v_vuforia_driveToTarget_Index);
-                if (((VuforiaTrackableDefaultListener)trackable.getListener()).isVisible() == false){
-                    if(v_vuforia_driveToTarget_elapsedtime.seconds() > 1 && v_vuforia_driveToTarget_elapsedtime.seconds() < 2) {
-                        v_motor_right_drive.setPower(v_vuforia_findTargetSpeed);
-                        v_motor_left_drive.setPower(0);
-                    }else if(v_vuforia_driveToTarget_elapsedtime.seconds() > 2 && v_vuforia_driveToTarget_elapsedtime.seconds() < 4) {
-                        v_motor_right_drive.setPower(0);
-                        v_motor_left_drive.setPower(v_vuforia_findTargetSpeed);
-                    }else {
-                        set_drive_power(0f, 0f);
+            VuforiaTrackable trackable = v_vuforia_allTrackables.get(v_vuforia_driveToTarget_Index);
+            if (((VuforiaTrackableDefaultListener)trackable.getListener()).isVisible() == false){
+                if(v_vuforia_driveToTarget_elapsedtime.seconds() > 1 && v_vuforia_driveToTarget_elapsedtime.seconds() < 2) {
+                    v_motor_right_drive.setPower(v_vuforia_findTargetSpeed);
+                    v_motor_left_drive.setPower(0);
+                }else if(v_vuforia_driveToTarget_elapsedtime.seconds() > 2 && v_vuforia_driveToTarget_elapsedtime.seconds() < 4) {
+                    v_motor_right_drive.setPower(0);
+                    v_motor_left_drive.setPower(v_vuforia_findTargetSpeed);
+                }else {
+                    set_drive_power(0f, 0f);
+                }
+                //set_first_message("Target Not Visable stoping");
+            }else{
+                OpenGLMatrix pose = ((VuforiaTrackableDefaultListener) trackable.getListener()).getPose();
+
+                if (pose != null) {
+                    VectorF translation = pose.getTranslation();
+                    double degreesToTurn = Math.toDegrees(Math.atan2(translation.get(0), translation.get(2)));
+                    float v_motorpower_left ;
+                    float v_motorpower_right;
+                    float v_motorpower_slowDownFactor;
+                    float distanceX = translation.get(2);
+                    if(distanceX > v_vuforia_driveToTarget_xmin){
+                        set_drive_power(0.0f,0.0f);
+                        //set_first_message("Target: " + trackable.getName() + ":" + distanceX  + ":" + degreesToTurn + ":" + translation.toString());
+                        return true;
                     }
-                    //set_first_message("Target Not Visable stoping");
-                }else{
-                    OpenGLMatrix pose = ((VuforiaTrackableDefaultListener) trackable.getListener()).getPose();
-
-                    if (pose != null) {
-                        VectorF translation = pose.getTranslation();
-                        double degreesToTurn = Math.toDegrees(Math.atan2(translation.get(0), translation.get(2)));
-                        float v_motorpower_left ;
-                        float v_motorpower_right;
-                        float v_motorpower_slowDownFactor;
-                        float distanceX = translation.get(2);
-                        if(distanceX > v_vuforia_driveToTarget_xmin){
-                            set_drive_power(0.0f,0.0f);
-                            //set_first_message("Target: " + trackable.getName() + ":" + distanceX  + ":" + degreesToTurn + ":" + translation.toString());
-                            return true;
-                        }
-                        if(distanceX > v_vuforia_driveToTarget_xmin_slow){
-                            v_motorpower_left = v_vuforia_driveToTarget_power_slow;
-                            v_motorpower_right = v_vuforia_driveToTarget_power_slow;
-                            v_motorpower_slowDownFactor = v_vuforia_driveToTarget_slowDownFactorClose;
-                        }else{
-                            v_motorpower_left = v_vuforia_driveToTarget_power;
-                            v_motorpower_right = v_vuforia_driveToTarget_power;
-                            v_motorpower_slowDownFactor = v_vuforia_driveToTarget_slowDownFactor;
-                        }
-                        if(degreesToTurn < 0 ){
-                            float rightPowerAdjust = (180f - (float)(0-degreesToTurn)) * v_motorpower_slowDownFactor;
+                    if(distanceX > v_vuforia_driveToTarget_xmin_slow){
+                        v_motorpower_left = v_vuforia_driveToTarget_power_slow;
+                        v_motorpower_right = v_vuforia_driveToTarget_power_slow;
+                        v_motorpower_slowDownFactor = v_vuforia_driveToTarget_slowDownFactorClose;
+                    }else{
+                        v_motorpower_left = v_vuforia_driveToTarget_power;
+                        v_motorpower_right = v_vuforia_driveToTarget_power;
+                        v_motorpower_slowDownFactor = v_vuforia_driveToTarget_slowDownFactor;
+                    }
+                    if(degreesToTurn < 0 ){
+                        float rightPowerAdjust = (180f - (float)(0-degreesToTurn)) * v_motorpower_slowDownFactor;
                             /*if(rightPowerAdjust > v_vuforia_maxslowDownFactor){
                                 rightPowerAdjust = v_vuforia_maxslowDownFactor;
                             }*/
-                            v_motorpower_right = (v_motorpower_right -rightPowerAdjust);
-                        }else {
-                            float leftPowerAdjust = (180f - (float)degreesToTurn) * v_motorpower_slowDownFactor;
+                        v_motorpower_right = (v_motorpower_right -rightPowerAdjust);
+                    }else {
+                        float leftPowerAdjust = (180f - (float)degreesToTurn) * v_motorpower_slowDownFactor;
                             /*if(leftPowerAdjust > v_vuforia_maxslowDownFactor){
                                 leftPowerAdjust = v_vuforia_maxslowDownFactor;
                             }*/
-                            v_motorpower_left = (v_motorpower_left - leftPowerAdjust);
-                        }
-                        set_drive_power ( v_motorpower_left,v_motorpower_right);
-                        //set_first_message("searching: " + trackable.getName() + ":" + distanceX  + ":" + degreesToTurn + ":" + translation.toString() );
+                        v_motorpower_left = (v_motorpower_left - leftPowerAdjust);
                     }
+                    set_drive_power ( v_motorpower_left,v_motorpower_right);
+                    //set_first_message("searching: " + trackable.getName() + ":" + distanceX  + ":" + degreesToTurn + ":" + translation.toString() );
                 }
-
             }
-            return false;
+
+        }
+        return false;
 
     }
 
@@ -3740,12 +3762,15 @@ public class CFPushBotHardware {
                 return -1;
             }
 
-            if (cRed > cBlue) {
+            if (cRed > cBlue && ((cRed - cBlue) > 50)) {
                 set_third_message("Red is Greater then Blue");
                 return 0;
-            } else {
+            } else if(cBlue > cRed && ((cBlue - cRed) > 50))  {
                 set_third_message("Blue is Greater then Red");
                 return 2;
+            }else{
+                set_third_message("Difference Under Min " + myRGBA[0] + ":" + myRGBA[1] + ":" + myRGBA[2]);
+                return -1;
             }
 
         }
@@ -3815,7 +3840,7 @@ public class CFPushBotHardware {
      * Enable the Legecy Color Sensor
      * @return returns true is successfull returns false on error
      */
-     public boolean sensor_color_enable(boolean enable){
+    public boolean sensor_color_enable(boolean enable){
         try{
             // convert the RGB values to HSV values.
             if(v_sensor_color_i2c !=null) {
@@ -4170,7 +4195,7 @@ public class CFPushBotHardware {
             //do stuff
         }
     }
-    
+
     //Below are The Telmetry Code to Write Debug to the Phones
 
     String secondMessage = "N/A";
