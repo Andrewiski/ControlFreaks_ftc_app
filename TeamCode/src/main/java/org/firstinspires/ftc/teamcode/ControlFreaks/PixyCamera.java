@@ -124,6 +124,7 @@ public class PixyCamera {
         }
         if (v_signatureEnable[8]) {
             v_pixy.writeLH(0x58, color_code);
+            v_pixy.requestFrom(0x58, PIXY_CC_SIGNATURE_BYTES);
         }
     }
 
@@ -215,7 +216,8 @@ public class PixyCamera {
                                 v_signatureBlocks[8] = v_signatureBlock;
                                 //ask for SignatureBlock 1 again
                                 if (v_signatureEnable[8]) {
-                                    v_pixy.writeLH(0x58, color_code);
+                                    //v_pixy.writeLH(0x58, color_code);
+                                    v_pixy.requestFrom(0x58, PIXY_CC_SIGNATURE_BYTES);
                                 }
                             } else {
                                 debugPrint("cc signature" + color_code + ": Error  only " + regCount + " bytes");
@@ -253,6 +255,7 @@ public class PixyCamera {
 
                 if (signature == 8) {
                     v_pixy.writeLH(0x58, color_code);
+                    v_pixy.requestFrom(0x58, PIXY_CC_SIGNATURE_BYTES);
                 }
             }
         }

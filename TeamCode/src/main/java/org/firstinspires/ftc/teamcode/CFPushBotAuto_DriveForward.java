@@ -10,8 +10,8 @@ import org.firstinspires.ftc.teamcode.ControlFreaks.CFPushBotHardware;
 /**
  * Created by adevries on 11/6/2015.
  */
-@Autonomous(name="Drive Forward 67 Inch", group="BlueRed")
-@Disabled
+@Autonomous(name="Drive Forward 120 Inch", group="BlueRed")
+//@Disabled
 public class CFPushBotAuto_DriveForward extends LinearOpMode
 {
     /* Declare OpMode members. */
@@ -68,7 +68,7 @@ public class CFPushBotAuto_DriveForward extends LinearOpMode
                     // drive Forward  inches
                     //
                     //robot.led7seg_timer_start(30);
-                    robot.drive_inches(67, v_useGyro);
+                    robot.drive_inches(120, v_useGyro);
 
                     v_state++;
                     break;

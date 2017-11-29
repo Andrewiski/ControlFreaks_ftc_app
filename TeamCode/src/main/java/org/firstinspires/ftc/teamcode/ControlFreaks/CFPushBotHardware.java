@@ -53,7 +53,8 @@ public class CFPushBotHardware {
     private String config_servo_jewel = "jewel";
     private String config_servo_blockgrabber = "blockgrabber";
     private String config_servo_blockslide = "blockslide";
-
+    private String config_motor_bgright = "bg_right";
+    private String config_motor_bgleft = "bg_left";
 
     private String config_servo_shoulder = "shoulder";
     private String config_dim = "dim";
@@ -115,9 +116,8 @@ public class CFPushBotHardware {
 
     private  float v_turn_motorspeed = .5f;
     private  float v_turn_motorspeed_slow = .25f;
-
-    private static final DcMotor.Direction v_drive_leftDirection = DcMotor.Direction.FORWARD;
-    private static final DcMotor.Direction v_drive_rightDirection = DcMotor.Direction.REVERSE;
+    private static final DcMotor.Direction v_drive_leftDirection = DcMotor.Direction.REVERSE;
+    private static final DcMotor.Direction v_drive_rightDirection = DcMotor.Direction.FORWARD;
 
     //old treads
     //private static final double driveInches_ticksPerInch = 182.35;
@@ -161,7 +161,7 @@ public class CFPushBotHardware {
     private static final DcMotor.Direction v_motor_slider_direction = DcMotor.Direction.FORWARD;
     private static final double v_motor_slider_SpeedSlowDown = 0.5f;
     private static final int v_motor_slider_encoder_min = 30;
-    private static final int v_motor_slider_encoder_max = 8150; //8750;
+    private static final int v_motor_slider_encoder_max =  3600; //8150; //8750;
     private static final int v_motor_slider_ExtendSlowdownTicks = 300;
     private int v_motor_slider_Position = 0;
 
@@ -182,13 +182,13 @@ public class CFPushBotHardware {
     private Servo.Direction v_servo_blockslide_direction = Servo.Direction.FORWARD;
 
     private Servo v_servo_jewel;
-    private static final double v_servo_jewel_MinPosition = 0.11D;
+    private static final double v_servo_jewel_MinPosition = 0.0D;
     private static final double v_servo_jewel_MaxPosition = 0.73D;
     private double v_servo_jewel_position = 0.73D;  //init arm jewel Position
     private Servo.Direction v_servo_jewel_direction = Servo.Direction.FORWARD;
     boolean v_servo_jewel_is_extending = false;
     boolean v_servo_jewel_is_retracting = false;
-    private static final double v_servo_jewel_retract_ease = .1;
+    private static final double v_servo_jewel_retract_ease = .2;
 
     private Servo v_servo_hand;
     private static final double v_servo_hand_MinPosition = 0.00;
@@ -287,6 +287,11 @@ public class CFPushBotHardware {
 
     private DcMotor v_motor_left_drive;
     private DcMotor v_motor_right_drive;
+
+    private DcMotor v_motor_bgleft;
+    private DcMotor v_motor_bgright;
+    private static final DcMotor.Direction v_drive_bgleftDirection = DcMotor.Direction.FORWARD;
+    private static final DcMotor.Direction v_drive_bgrightDirection = DcMotor.Direction.REVERSE;
 
     /**
      * Indicate whether a message is a available to the class user.
@@ -408,6 +413,33 @@ public class CFPushBotHardware {
             debugLogException(config_motor_rightdrive, "missing", p_exeception);
             v_motor_right_drive = null;
         }
+
+
+        try
+        {
+            v_motor_bgleft = opMode.hardwareMap.dcMotor.get (config_motor_bgleft);
+
+            v_motor_bgleft.setDirection (v_drive_bgleftDirection);
+            v_motor_bgleft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        }
+        catch (Exception p_exeception)
+        {
+            debugLogException(config_motor_bgleft,"missing",p_exeception);
+            v_motor_bgleft = null;
+        }
+
+        try
+        {
+            v_motor_bgright = opMode.hardwareMap.dcMotor.get (config_motor_bgright);
+            v_motor_bgright.setDirection (v_drive_bgrightDirection);
+            v_motor_bgleft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        }
+        catch (Exception p_exeception)
+        {
+            debugLogException(config_motor_bgright, "missing", p_exeception);
+            v_motor_bgright = null;
+        }
+
         try {
             int counter = 0;
             reset_drive_encoders();
@@ -1035,10 +1067,19 @@ public class CFPushBotHardware {
         }
         //if vuforia is inited then we need to update our positions etc
 
+
+
         if(v_loop_ticks_slow){
             //heartbeat_tick();
             if(v_ledseg != null){
                 v_ledseg.loop();
+            }
+            if(v_sensor_color_i2c != null && v_sensor_color_i2c_enabled == true){
+                v_sensor_color_i2c_rgbaValues[0] = v_sensor_color_i2c.red();
+                v_sensor_color_i2c_rgbaValues[1] = v_sensor_color_i2c.green();
+                v_sensor_color_i2c_rgbaValues[2] = v_sensor_color_i2c.blue();
+                v_sensor_color_i2c_rgbaValues[3] = v_sensor_color_i2c.alpha();
+                set_first_message("color:" + v_sensor_color_i2c_rgbaValues[0] + ":" + v_sensor_color_i2c_rgbaValues[1] + ":" + v_sensor_color_i2c_rgbaValues[2] + ":" + v_sensor_color_i2c_rgbaValues[3]);
             }
             // get the heading info.
             // the Modern Robotics' gyro sensor keeps
@@ -1050,13 +1091,7 @@ public class CFPushBotHardware {
 //                v_sensor_gyro_z = v_sensor_gyro.rawZ();
 //            }
             //the i2c color sensor uses a memory lock that is taxing so we only do this if we are using the color sensor and ever slow loop count
-            if(v_sensor_color_i2c != null && v_sensor_color_i2c_enabled == true){
-                v_sensor_color_i2c_rgbaValues[0] = v_sensor_color_i2c.red();
-                v_sensor_color_i2c_rgbaValues[1] = v_sensor_color_i2c.green();
-                v_sensor_color_i2c_rgbaValues[2] = v_sensor_color_i2c.blue();
-                v_sensor_color_i2c_rgbaValues[3] = v_sensor_color_i2c.alpha();
-                set_first_message("color:" + v_sensor_color_i2c_rgbaValues[0] + ":" + v_sensor_color_i2c_rgbaValues[1] + ":" + v_sensor_color_i2c_rgbaValues[2] + ":" + v_sensor_color_i2c_rgbaValues[3]);
-            }
+
 
             if(v_sensor_rangeSensor != null && v_sensor_rangeSensor_enabled == true){
                 v_sensor_rangeSensor_distance = v_sensor_rangeSensor.getDistance(DistanceUnit.INCH);
@@ -1073,7 +1108,7 @@ public class CFPushBotHardware {
                 }
             }
 
-            vuforia_hardwareLoop();
+
             if(v_debug) {
                 update_telemetry();
                 opMode.updateTelemetry(opMode.telemetry);
@@ -1081,7 +1116,7 @@ public class CFPushBotHardware {
         }
 
         opMode.idle();
-        waitForTick(5);
+        //waitForTick(5);
     }
 
     public long hardware_loop_slowtime_milliseconds(){
@@ -1266,10 +1301,7 @@ public class CFPushBotHardware {
     {
         if (v_motor_slider != null)
         {
-            if (v_slider_isExtended == true){
-                set_second_message("slider already extended");
-                return;
-            }
+
             v_slider_state = 0;
             v_motor_slider_Position = v_motor_slider_Position + v_motor_slider_encoder_max - v_motor_slider_ExtendSlowdownTicks;
 
@@ -1361,10 +1393,7 @@ public class CFPushBotHardware {
 
         if (v_motor_slider != null )
         {
-            if (v_slider_isExtended == false){
-                set_second_message("slider not loaded");
-                return;
-            }
+
             v_motor_slider.setTargetPosition(v_motor_slider_encoder_min);
             set_second_message("Retracting slider");
             v_motor_slider.setPower(v_motor_slider_power);
@@ -1375,10 +1404,7 @@ public class CFPushBotHardware {
     {
         if (v_motor_slider != null )
         {
-            if (v_slider_isExtended == false){
-                set_second_message("slider not Extended");
-                return true;
-            }
+
             if (v_motor_slider.isBusy()== false) {
                 v_motor_slider.setPower(0.0F);
                 v_slider_isExtended = false;
@@ -1485,6 +1511,20 @@ public class CFPushBotHardware {
         }
     }
 
+    public void lifter_testbot_reverse(){
+        try{
+            if (v_motor_lifter != null )
+            {
+                v_motor_lifter.setDirection(DcMotorSimple.Direction.REVERSE);
+
+            }
+            set_second_message("lifter testbot Reverse ");
+        }catch (Exception p_exeception)
+        {
+            debugLogException("lifter_testbot_reverse", "error", p_exeception);
+        }
+    }
+
     public void lifter_stepmin(int steps){
         v_motor_lifter_encoder_min = v_motor_lifter_encoder_min + steps;
     }
@@ -1508,10 +1548,7 @@ public class CFPushBotHardware {
     {
         if (v_motor_lifter != null )
         {
-            if (v_lifter_isExtended == false){
-                set_second_message("lifter not Extended");
-                return true;
-            }
+
             if (v_motor_lifter.isBusy()== false) {
                 v_motor_lifter.setPower(0.0F);
                 v_lifter_isExtended = false;
@@ -1755,8 +1792,12 @@ public class CFPushBotHardware {
             while (counter < 10 &&isInDriveMode(DcMotor.RunMode.RUN_USING_ENCODER)==false){
                 counter++;
                 sleep(100);
-                debugLogException("init", "waiting on  DcMotor.RunMode.RUN_USING_ENCODER) complete r:" + v_motor_right_drive.getMode() + ",l:" + v_motor_left_drive.getMode(), null);
+                //debugLogException("init", "waiting on  DcMotor.RunMode.RUN_USING_ENCODER) complete r:" + v_motor_right_drive.getMode() + ",l:" + v_motor_left_drive.getMode(), null);
             }
+            if(counter > 1){
+                debugLogException("init", "waiting on  DcMotor.RunMode.RUN_USING_ENCODER) complete. Counter: " + counter, null);
+            }
+
 
         }
 
@@ -1767,10 +1808,13 @@ public class CFPushBotHardware {
             set_drive_power(0.0f,0.0f);
             run_using_encoders();
             int counter = 0;
-            while (counter < 10 && isInDriveMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER)==false){
+            while (counter < 5 && isInDriveMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER)==false){
                 counter++;
-                sleep(100);
-                debugLogException("init", "waiting on  DcMotor.RunMode.RUN_WITHOUT_ENCODER) complete r:" + v_motor_right_drive.getMode() + ",l:" + v_motor_left_drive.getMode(), null);
+                sleep(50);
+                //debugLogException("init", "waiting on  DcMotor.RunMode.RUN_WITHOUT_ENCODER) complete r:" + v_motor_right_drive.getMode() + ",l:" + v_motor_left_drive.getMode(), null);
+            }
+            if(counter > 1){
+                debugLogException("init", "waiting on  DcMotor.RunMode.RUN_WITHOUT_ENCODER) complete. Counter: " + counter, null);
             }
         }
 
@@ -1789,10 +1833,12 @@ public class CFPushBotHardware {
             }*/
             v_motor_left_drive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             v_motor_right_drive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            while (counter < 10 && isInDriveMode(DcMotor.RunMode.RUN_TO_POSITION)==false){
+            while (counter < 5 && isInDriveMode(DcMotor.RunMode.RUN_TO_POSITION)==false){
                 counter++;
-                sleep(100);
-                debugLogException("init", "waiting on  DcMotor.RunMode.RUN_TO_POSITION) complete r:" + v_motor_right_drive.getMode() + ",l:" + v_motor_left_drive.getMode(), null);
+                sleep(50);
+            }
+            if(counter > 1){
+                debugLogException("init", "waiting on  DcMotor.RunMode.RUN_TO_POSITION) complete. Counter: " + counter, null);
             }
         }
 
@@ -2709,6 +2755,50 @@ public class CFPushBotHardware {
 //
 //    } // m_winch_power
 //
+    private boolean v_motors_blockgrabbers_on = false;
+    public void blockgrabbers_start ()
+    {
+        try {
+            if (v_motor_bgleft != null && v_motor_bgright != null ) {
+                v_motor_bgleft.setPower(1.0f);
+                v_motor_bgright.setPower(1.0f);
+                v_motors_blockgrabbers_on = true;
+            }
+            set_third_message("blockgrabbers_start");
+        }catch (Exception p_exeception)
+        {
+            debugLogException("blockgrabbers_start", "error", p_exeception);
+        }
+    }
+
+    public void blockgrabbers_stop ()
+    {
+        try {
+            if (v_motor_bgleft != null && v_motor_bgright != null ) {
+                v_motor_bgleft.setPower(0.0f);
+                v_motor_bgright.setPower(0.0f);
+                v_motors_blockgrabbers_on = false;
+            }
+            set_third_message("blockgrabbers_start");
+        }catch (Exception p_exeception)
+        {
+            debugLogException("blockgrabbers_start", "error", p_exeception);
+        }
+    }
+
+    public void blockgrabbers_toggle()
+    {
+        try {
+            if (v_motors_blockgrabbers_on) {
+                blockgrabbers_stop();
+            }else{
+                blockgrabbers_start();
+            }
+        }catch (Exception p_exeception)
+        {
+            debugLogException("blockgrabbers_toggle", "error", p_exeception);
+        }
+    }
 
     public void blockgrabber_toggle ()
     {
@@ -3384,12 +3474,12 @@ public class CFPushBotHardware {
 
     public void setup_am20(){
         //am20 run in reverse as am40 so swap reversed motor
-        if(v_motor_right_drive != null) {
+        /*if(v_motor_right_drive != null) {
             v_motor_right_drive.setDirection(DcMotor.Direction.FORWARD);
         }
         if(v_motor_left_drive != null) {
             v_motor_left_drive.setDirection(DcMotor.Direction.REVERSE);
-        }
+        }*/
         v_drive_power = 0.8f;
         //we have to move slower backing up to prevent a wheely
         v_drive_power_reverse = 0.5f;
@@ -3583,9 +3673,7 @@ public class CFPushBotHardware {
     }
 */
 
-    private void vuforia_hardwareLoop(){
-        //doing nothing in here now but maybe update xyz later if we get that to work;
-    }
+
 
     /**
      * Turn on the red led located in the Device Interface Module
@@ -4454,7 +4542,7 @@ public class CFPushBotHardware {
     } // set_error_message
 
 
-    private ElapsedTime period  = new ElapsedTime();
+    //private ElapsedTime period  = new ElapsedTime();
     /***
      *
      * waitForTick implements a periodic delay. However, this acts like a metronome with a regular
@@ -4464,7 +4552,7 @@ public class CFPushBotHardware {
      * @param periodMs  Length of wait cycle in mSec.
      * @throws InterruptedException
      */
-    private void waitForTick(long periodMs) throws InterruptedException {
+    /*private void waitForTick(long periodMs) throws InterruptedException {
 
         long  remaining = periodMs - (long)period.milliseconds();
 
@@ -4474,5 +4562,5 @@ public class CFPushBotHardware {
 
         // Reset the cycle clock for the next pass.
         period.reset();
-    }
+    }*/
 }

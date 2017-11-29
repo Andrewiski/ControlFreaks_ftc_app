@@ -174,7 +174,8 @@ public class CFPushBotAuto_Red2 extends LinearOpMode
                     }
                     break;
                 case 14:
-                    robot.drive_inches(14,v_useGyro);
+                    robot.drive_power_override(.2f, .2f, .2f);
+                    robot.drive_inches(9,v_useGyro);
                     robot.timewait(2);
                     v_state++;
                     break;
@@ -186,6 +187,7 @@ public class CFPushBotAuto_Red2 extends LinearOpMode
                     break;
                 case 16:
                     robot.blockgrabber_open();
+                    robot.timewait(1);
                     v_state++;
                     break;
                 case 17:
@@ -193,33 +195,50 @@ public class CFPushBotAuto_Red2 extends LinearOpMode
                         v_state++;
                     }
                     break;
-//                case 18:
-//                    robot.drive_inches(-6,v_useGyro);
-//                    robot.timewait(1);
-//                    v_state++;
-//                    break;
-//                case 19:
-//                    if(robot.drive_inches_complete() || robot.timewait_Complete()){
-//                        v_state++;
-//                    }
-//                    break;
-//                case 20:
-//                    robot.lifter_retract();
-//                    robot.timewait(2);
-//                    //robot.play_jingle_bells();
-//                    v_state++;
-//                    break;
-//                case 21:
-//                    if(robot.lifter_retract_complete()|| robot.timewait_Complete()) {
-//                        robot.drive_inches(3, v_useGyro);
-//                        robot.timewait(2);
-//                        v_state++;
-//                    }
-//                case 22:
-//                    if(robot.drive_inches_complete()|| robot.timewait_Complete()){
-//                        robot.set_message("Drive Comptete");
-//                        v_state++;
-//                    }
+                case 18:
+                    robot.drive_inches(-3,v_useGyro);
+                    robot.timewait(1);
+                    v_state++;
+                    break;
+                case 19:
+                    if(robot.drive_inches_complete() || robot.timewait_Complete()){
+                        robot.set_message("Drive Backwards Complete");
+                        v_state++;
+                    }
+                    break;
+                case 20:
+                    robot.lifter_retract();
+                    robot.timewait(1);
+                    //robot.play_jingle_bells();
+                    v_state++;
+                    break;
+                case 21:
+                    if(robot.lifter_retract_complete()|| robot.timewait_Complete()) {
+                        robot.drive_power_override(.15f, .15f, .15f);
+                        robot.drive_inches(7, v_useGyro);
+                        robot.timewait(2);
+                        v_state++;
+                    }
+                    break;
+                case 22:
+                    if(robot.drive_inches_complete()|| robot.timewait_Complete()){
+                        robot.set_message("Drive 7 Forward Complete");
+                        v_state++;
+                    }
+                    break;
+                case 23:
+                    robot.drive_power_override(.2f, .2f, .2f);
+                    robot.drive_inches(-2,v_useGyro);
+                    robot.timewait(2);
+                    v_state++;
+                    break;
+                case 24:
+                    if(robot.drive_inches_complete() || robot.timewait_Complete()){
+                        robot.set_message("Drive 2 Backwards Complete");
+                        v_state++;
+
+                    }
+                    break;
 
                 default:
                     //

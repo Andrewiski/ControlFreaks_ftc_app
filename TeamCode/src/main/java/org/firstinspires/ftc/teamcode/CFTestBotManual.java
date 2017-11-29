@@ -1,20 +1,18 @@
 package org.firstinspires.ftc.teamcode;
 
-import android.os.CountDownTimer;
-
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.ControlFreaks.*;
+import org.firstinspires.ftc.teamcode.ControlFreaks.CFPushBotHardware;
+
 /**
  * Created by adevries on 11/6/2015.
  */
-@TeleOp(name="CF Tank", group="Manual")  // @Autonomous(...) is the other common choice
-//@Disabled
-public class CFPushBotManual extends LinearOpMode {
+@TeleOp(name="TestBot", group="Manual")  // @Autonomous(...) is the other common choice
+@Disabled
+public class CFTestBotManual extends LinearOpMode {
 
     /* Declare OpMode members. */
     CFPushBotHardware robot;   // Use a Pushbot's hardware
@@ -72,7 +70,8 @@ public class CFPushBotManual extends LinearOpMode {
             // Wait for the game to start (driver presses PLAY)
             robot.led7seg_timer_init(120);
             robot.run_using_encoders();
-           // robot.lifter_step(-500); //reset the min on lifter as automonmouse moved us up and reinit reset min
+            robot.lifter_testbot_reverse();
+            //robot.lifter_step(-500); //reset the min on lifter as automonmouse moved us up and reinit reset min
             robot.blockgrabber_open();
             waitForStart();
             robot.debugOff();
@@ -87,7 +86,6 @@ public class CFPushBotManual extends LinearOpMode {
                     if(highspeedmode || gamepad1.left_trigger > .2 || gamepad1.right_trigger > .2 ) {
                         robot.set_drive_power(-gamepad1.left_stick_y, -gamepad1.right_stick_y);
                     }else{
-                        //robot.set_drive_power(-gamepad1.left_stick_y/2.7f, -gamepad1.right_stick_y/2.7f);
                         float left = -gamepad1.left_stick_y ;
                         float right = -gamepad1.right_stick_y;
                         if((left > 0 && right < 0)
@@ -95,7 +93,7 @@ public class CFPushBotManual extends LinearOpMode {
                                 || ((left > 0 || left < 0) && right == 0)
                                 || ((right > 0 || right < 0) && left == 0)
                                 ){
-                            //we are turning so slow down the motors
+                                //we are turning so slow down the motors
                             left = left/4f;
                             right = right/4f;
                         }else{
@@ -212,7 +210,7 @@ public class CFPushBotManual extends LinearOpMode {
 
                     if(gamepad2.dpad_left){
                         if(buttonG2DpadleftReleased == true) {
-                            robot.blockslide_left();
+                            robot.wrist_step(.01);
                             buttonG2DpadleftReleased = false;
                         }
                     }else {
@@ -220,7 +218,7 @@ public class CFPushBotManual extends LinearOpMode {
                     }
                     if(gamepad2.dpad_right){
                         if(buttonG2DpadrightReleased == true) {
-                            robot.blockslide_right();
+                            robot.wrist_step(-.01);
                             buttonG2DpadrightReleased = false;
                         }
                     }else {
@@ -259,7 +257,7 @@ public class CFPushBotManual extends LinearOpMode {
 
                     if(gamepad2.a){
                             if(buttonG2AReleased == true) {
-                                robot.blockgrabber_toggle();
+                                robot.blockgrabbers_toggle();
                                 buttonG2AReleased = false;
                             }
                     }else{
