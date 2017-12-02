@@ -6,6 +6,7 @@ package org.firstinspires.ftc.teamcode.ControlFreaks;
 
 import android.media.AudioManager;
 import android.media.ToneGenerator;
+import android.util.Log;
 
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
@@ -18,6 +19,7 @@ import com.qualcomm.robotcore.hardware.DeviceInterfaceModule;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DigitalChannelController;
 import com.qualcomm.robotcore.hardware.GyroSensor;
+import com.qualcomm.robotcore.hardware.LED;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
@@ -65,6 +67,7 @@ public class CFPushBotHardware {
     boolean hasRange = false;
     private String config_i2c_range = "range";
     private String config_i2c_pixy = "pixy";
+    private String config_pixy_led = "pixy_led";
     /*
         Motor Encoder Vars
      */
@@ -273,6 +276,7 @@ public class CFPushBotHardware {
     private DeviceInterfaceModule v_dim;
 
     private PixyCamera v_pixy;
+    private LED v_pixy_led;
 
     private AdafruitLEDBackpack7Seg v_ledseg;
 
@@ -812,23 +816,36 @@ public class CFPushBotHardware {
             if (errMsg != null) {
                 debugMessage = debugMessage + errMsg;
             }
+
+            String stackTrace = Log.getStackTraceString(ex);
+            if (stackTrace != null) {
+                debugMessage = debugMessage + "\n" + stackTrace;
+            }
         }
         //if (v_debug) {
-        android.util.Log.d("CFPushBotHardware", debugMessage);
+        android.util.Log.e("CFPushBotHardware", debugMessage);
         //}
     }
 
     public boolean sensor_pixy_init(){
+        boolean retval = true;
         try{
-
             v_pixy = new PixyCamera(opMode.hardwareMap, config_i2c_pixy);
-            return true;
         }catch (Exception p_exeception)
         {
             debugLogException(config_i2c_pixy, "missing", p_exeception);
             v_pixy = null;
-            return false;
+            retval = false;
         }
+        try{
+            v_pixy_led = opMode.hardwareMap.get(LED.class, config_pixy_led);
+        }catch (Exception p_exeception)
+        {
+            debugLogException(config_pixy_led, "missing", p_exeception);
+            v_pixy_led = null;
+            retval = false;
+        }
+        return retval;
     }
 
     public boolean sensor_pixy_set_servos(int s0, int s1){
@@ -865,6 +882,20 @@ public class CFPushBotHardware {
         }catch (Exception p_exeception)
         {
             debugLogException(config_i2c_pixy, "sensor_pixy_signature_enable", p_exeception);
+            return false;
+        }
+    }
+
+    public boolean sensor_pixy_led_external(boolean enable){
+        try{
+            if(v_pixy_led != null) {
+
+                v_pixy_led.enable(enable);
+            }
+            return true;
+        }catch (Exception p_exeception)
+        {
+            debugLogException(config_pixy_led, "sensor_pixy_led_external", p_exeception);
             return false;
         }
     }

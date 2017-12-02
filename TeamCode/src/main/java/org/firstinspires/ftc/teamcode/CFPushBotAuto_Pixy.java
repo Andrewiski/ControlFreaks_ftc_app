@@ -41,6 +41,7 @@ public class CFPushBotAuto_Pixy extends LinearOpMode
         robot.blueled_on();
         robot.setupAutoDrive();
         robot.setup_am20();
+        robot.sensor_pixy_init();
         waitForStart();
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
@@ -51,7 +52,7 @@ public class CFPushBotAuto_Pixy extends LinearOpMode
                 //
                 case 0:
                     //v_state = 100;
-                    robot.sensor_pixy_init();
+
                     v_state++;
                     break;
                 case 1:
@@ -68,13 +69,14 @@ public class CFPushBotAuto_Pixy extends LinearOpMode
                     break;
                 case 2:
                     robot.set_message("Pixy Enabled");
+                    robot.sensor_pixy_led_external(true);
                     //enable Largest Object
                     robot.sensor_pixy_signature_enable(0,true);
                     //Enable Signature 1
 
                     robot.sensor_pixy_signature_enable(1,true);
                     //Set Color Code query to Sig 3 & 4  34 in Octal converted to Dec is 28
-                    robot.sensor_pixy_signature_colorcode_set(28);
+                    robot.sensor_pixy_signature_colorcode_set(12);  //14 octal red & White
                     //Enable Color Code Querys
                     robot.sensor_pixy_signature_enable(8,true);
 
@@ -92,11 +94,11 @@ public class CFPushBotAuto_Pixy extends LinearOpMode
                         dbg ="lb: null\n" ;
                     }
                     PixyCamera.Block sigBlock1;
-                    sigBlock1 = robot.sensor_pixy_signatureBlock(1);
+                    sigBlock1 = robot.sensor_pixy_signatureBlock(3);
                     if(sigBlock1 != null) {
-                        dbg = dbg + " s1:" + sigBlock1.print() + "\n";
+                        dbg = dbg + " s3:" + sigBlock1.print() + "\n";
                     }else{
-                        dbg =dbg + " s1: null\n" ;
+                        dbg =dbg + " s3: null\n" ;
                     }
 
                     PixyCamera.Block sigBlock8;

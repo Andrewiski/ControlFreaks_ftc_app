@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.ControlFreaks;
 
 //import com.qualcomm.ftccommon.DbgLog;
+import android.util.Log;
+
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.internal.android.dx.rop.cst.CstArray;
@@ -26,7 +28,7 @@ public class PixyCamera {
     private Block[] v_signatureBlocks = new Block[9];
     //This is Used to enable querys for a particular Signature
     //Call Signature
-    private Boolean[] v_signatureEnable = new Boolean[7];
+    private Boolean[] v_signatureEnable = new Boolean[9];
     //83 in decimal converted to Oct is 123 so we are looking for sig 1 next to sig 2 next to sig 3
     //In windows open calculator click view then programmer
     public int color_code = 83;
@@ -93,39 +95,53 @@ public class PixyCamera {
         for (int i = 0; i < v_signatureBlocks.length; i++) {
             v_signatureBlocks[i] = v_emptyBlock;
         }
+        for (int i = 0; i < v_signatureEnable.length; i++) {
+            v_signatureEnable[i] = false;
+        }
     }
 
     //When the Pixy is Enabled we start the i2c request to get the data we care about
     private void beginrequests() {
-        if (v_signatureEnable[0]) {
-            //Six bytes for the get Largest Blocks
-            v_pixy.requestFrom(0x50, PIXY_LARGEST_SIGNATURE_BYTES);
+        try {
+            if(v_pixy != null) {
+                if (v_signatureEnable[0] == true) {
+                    //Six bytes for the get Largest Blocks
+                    v_pixy.requestFrom(0x50, PIXY_LARGEST_SIGNATURE_BYTES);
+                }
+                if (v_signatureEnable[1] == true) {
+                    v_pixy.requestFrom(0x51, PIXY_SIGNATURE_BYTES);
+                }
+                if (v_signatureEnable[2] == true) {
+                    v_pixy.requestFrom(0x52, PIXY_SIGNATURE_BYTES);
+                }
+                if (v_signatureEnable[3] == true) {
+                    v_pixy.requestFrom(0x53, PIXY_SIGNATURE_BYTES);
+                }
+                if (v_signatureEnable[4] == true) {
+                    v_pixy.requestFrom(0x54, PIXY_SIGNATURE_BYTES);
+                }
+                if (v_signatureEnable[5] == true) {
+                    v_pixy.requestFrom(0x55, PIXY_SIGNATURE_BYTES);
+                }
+                if (v_signatureEnable[6] == true) {
+                    v_pixy.requestFrom(0x56, PIXY_SIGNATURE_BYTES);
+                }
+                if (v_signatureEnable[7] == true) {
+                    v_pixy.requestFrom(0x57, PIXY_SIGNATURE_BYTES);
+                }
+                if (v_signatureEnable[8] == true) {
+                    v_pixy.writeLH(0x58, color_code);
+                    v_pixy.requestFrom(0x58, PIXY_CC_SIGNATURE_BYTES);
+                }
+            }else{
+                debugPrint("v_pixy is null");
+            }
+        }catch (Exception p_exeception)
+        {
+            debugLogException("Error beginrequests()", p_exeception);
+            throw p_exeception;
         }
-        if (v_signatureEnable[1]) {
-            v_pixy.requestFrom(0x51, PIXY_SIGNATURE_BYTES);
-        }
-        if (v_signatureEnable[2]) {
-            v_pixy.requestFrom(0x52, PIXY_SIGNATURE_BYTES);
-        }
-        if (v_signatureEnable[3]) {
-            v_pixy.requestFrom(0x53, PIXY_SIGNATURE_BYTES);
-        }
-        if (v_signatureEnable[4]) {
-            v_pixy.requestFrom(0x54, PIXY_SIGNATURE_BYTES);
-        }
-        if (v_signatureEnable[5]) {
-            v_pixy.requestFrom(0x55, PIXY_SIGNATURE_BYTES);
-        }
-        if (v_signatureEnable[6]) {
-            v_pixy.requestFrom(0x56, PIXY_SIGNATURE_BYTES);
-        }
-        if (v_signatureEnable[7]) {
-            v_pixy.requestFrom(0x57, PIXY_SIGNATURE_BYTES);
-        }
-        if (v_signatureEnable[8]) {
-            v_pixy.writeLH(0x58, color_code);
-            v_pixy.requestFrom(0x58, PIXY_CC_SIGNATURE_BYTES);
-        }
+
     }
 
 //    public int getColorCode(){
@@ -142,7 +158,7 @@ public class PixyCamera {
      **/
 
     public void loop() {
-        if (v_pixy_enabled) {
+        if (v_pixy_enabled && v_pixy != null) {
             if (v_pixy.responseCount() > 0) {
                 v_pixy.getResponse();
                 int regNumber = v_pixy.registerNumber();
@@ -338,8 +354,8 @@ public class PixyCamera {
             return true;
         }catch (Exception p_exeception)
         {
-            debugLogException("Error Init", p_exeception);
-            return false;
+            debugLogException("Error enabled()", p_exeception);
+            throw p_exeception;
         }
     }
 
@@ -353,16 +369,20 @@ public class PixyCamera {
 
         String debugMessage = logId + msg;
         if (ex != null) {
-            String errMsg = ex.getLocalizedMessage();
+            String errMsg = ex.getMessage();
             if (errMsg != null) {
                 debugMessage = debugMessage + errMsg;
             }else{
-                debugMessage = debugMessage + " error. is null";
+                debugMessage = debugMessage + " error. is null\n";
+            }
+            String stackTrace = Log.getStackTraceString(ex);
+            if (stackTrace != null) {
+                debugMessage = debugMessage + "\n" + stackTrace;
             }
         }else{
             debugMessage = debugMessage + " error is null";
         }
-        android.util.Log.d("pixyCamera",debugMessage);
+        android.util.Log.e("pixyCamera",debugMessage);
         //DbgLog.msg(debugMessage);
         //telemetry.addData(line, debugMessage);
     }
@@ -370,6 +390,13 @@ public class PixyCamera {
 
         String debugMessage = logId + msg;
         android.util.Log.d("pixyCamera",debugMessage);
+        //DbgLog.msg(debugMessage);
+        //telemetry.addData(line, debugMessage);
+    }
+    void warnibgPrint( String msg){
+
+        String debugMessage = logId + msg;
+        android.util.Log.e("pixyCamera",debugMessage);
         //DbgLog.msg(debugMessage);
         //telemetry.addData(line, debugMessage);
     }
