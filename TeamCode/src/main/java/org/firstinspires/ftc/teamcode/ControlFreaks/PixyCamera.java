@@ -18,6 +18,7 @@ import java.util.List;
  */
 public class PixyCamera {
     static final String logId = "Pixy:";       // Tag identifier in FtcRobotController.LogCat
+    private Boolean debug = true;
     private String v_deviceName = "Not Set";
     //Put the Pixy in Lego Mode running my special firmware
     private byte I2CAddress = 0x54;
@@ -86,6 +87,7 @@ public class PixyCamera {
         } catch (Exception p_exeception) {
             debugLogException("Error Creating Wire", p_exeception);
             v_pixy = null;
+            throw p_exeception;
         }
 
     }
@@ -134,10 +136,9 @@ public class PixyCamera {
                     v_pixy.requestFrom(0x58, PIXY_CC_SIGNATURE_BYTES);
                 }
             }else{
-                debugPrint("v_pixy is null");
+                warningPrint("beginrequests v_pixy is null");
             }
-        }catch (Exception p_exeception)
-        {
+        }catch (Exception p_exeception) {
             debugLogException("Error beginrequests()", p_exeception);
             throw p_exeception;
         }
@@ -239,7 +240,7 @@ public class PixyCamera {
                                 debugPrint("cc signature" + color_code + ": Error  only " + regCount + " bytes");
                                 //ask for SignatureBlock again
                                 if (v_signatureEnable[8]) {
-                                    v_pixy.writeLH(0x58, color_code);
+                                    v_pixy.requestFrom(0x58, PIXY_CC_SIGNATURE_BYTES);
                                 }
                             }
                             break;
@@ -342,7 +343,7 @@ public class PixyCamera {
     public boolean isEnabled(){
         return v_pixy_enabled;
     }
-    public boolean enabled(boolean enable){
+    public void enabled(boolean enable){
         try{
             if (v_pixy_enabled != enable) {
                 v_pixy_enabled = enable;
@@ -351,7 +352,7 @@ public class PixyCamera {
                     beginrequests();
                 }
             }
-            return true;
+
         }catch (Exception p_exeception)
         {
             debugLogException("Error enabled()", p_exeception);
@@ -387,13 +388,14 @@ public class PixyCamera {
         //telemetry.addData(line, debugMessage);
     }
     void debugPrint( String msg){
-
-        String debugMessage = logId + msg;
-        android.util.Log.d("pixyCamera",debugMessage);
-        //DbgLog.msg(debugMessage);
-        //telemetry.addData(line, debugMessage);
+        if(debug) {
+            String debugMessage = logId + msg;
+            android.util.Log.i("pixyCamera", debugMessage);
+            //DbgLog.msg(debugMessage);
+            //telemetry.addData(line, debugMessage);
+        }
     }
-    void warnibgPrint( String msg){
+    void warningPrint( String msg){
 
         String debugMessage = logId + msg;
         android.util.Log.e("pixyCamera",debugMessage);

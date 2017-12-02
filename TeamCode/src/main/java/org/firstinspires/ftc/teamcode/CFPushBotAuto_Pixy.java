@@ -71,12 +71,12 @@ public class CFPushBotAuto_Pixy extends LinearOpMode
                     robot.set_message("Pixy Enabled");
                     robot.sensor_pixy_led_external(true);
                     //enable Largest Object
-                    robot.sensor_pixy_signature_enable(0,true);
+                    //robot.sensor_pixy_signature_enable(0,true);
                     //Enable Signature 1
 
-                    robot.sensor_pixy_signature_enable(1,true);
+                    //robot.sensor_pixy_signature_enable(1,true);
                     //Set Color Code query to Sig 3 & 4  34 in Octal converted to Dec is 28
-                    robot.sensor_pixy_signature_colorcode_set(12);  //14 octal red & White
+                    robot.sensor_pixy_signature_colorcode_set(12);  //14 octal red & White = 12 dec
                     //Enable Color Code Querys
                     robot.sensor_pixy_signature_enable(8,true);
 
@@ -108,7 +108,7 @@ public class CFPushBotAuto_Pixy extends LinearOpMode
                     }else{
                         dbg =dbg + " s8: null\n" ;
                     }
-                    robot.set_message(dbg);
+                    //robot.set_message(dbg);
                     //v_state++;
                     break;
                 default:

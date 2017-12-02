@@ -827,10 +827,23 @@ public class CFPushBotHardware {
         //}
     }
 
+    void debugPrint(String msg){
+        String debugMessage = msg;
+        android.util.Log.d("CFPushBotHardware", debugMessage);
+    }
+
+    void warningPrint(String msg){
+        android.util.Log.w("CFPushBotHardware", msg);
+    }
+
     public boolean sensor_pixy_init(){
         boolean retval = true;
         try{
             v_pixy = new PixyCamera(opMode.hardwareMap, config_i2c_pixy);
+            if(v_pixy == null){
+                warningPrint("v_pixy is null");
+            }
+
         }catch (Exception p_exeception)
         {
             debugLogException(config_i2c_pixy, "missing", p_exeception);
@@ -877,6 +890,8 @@ public class CFPushBotHardware {
         try{
             if(v_pixy != null) {
                 v_pixy.signature_enable(signature, enable);
+            }else{
+                warningPrint("sensor_pixy_signature_enable: v_pixy is null");
             }
             return true;
         }catch (Exception p_exeception)
@@ -1093,14 +1108,15 @@ public class CFPushBotHardware {
         if(v_sensor_rangeSensor != null && v_sensor_rangeSensor_enabled == true){
             v_sensor_rangeSensor_distance = v_sensor_rangeSensor.getDistance(DistanceUnit.INCH);
         }
-        if(v_pixy != null){
-            v_pixy.loop();
-        }
-        //if vuforia is inited then we need to update our positions etc
+
+
 
 
 
         if(v_loop_ticks_slow){
+            if(v_pixy != null){
+                v_pixy.loop();
+            }
             //heartbeat_tick();
             if(v_ledseg != null){
                 v_ledseg.loop();
