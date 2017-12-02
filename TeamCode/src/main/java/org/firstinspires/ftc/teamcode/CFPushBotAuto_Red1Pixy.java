@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.ControlFreaks.CFPushBotHardware;
@@ -10,7 +11,7 @@ import org.firstinspires.ftc.teamcode.ControlFreaks.CFPushBotHardware;
  * Created by adevries on 11/6/2015.
  */
 @Autonomous(name="Red1 Pixy", group="PixyRed")
-//@Disabled
+@Disabled
 public class CFPushBotAuto_Red1Pixy extends LinearOpMode
 {
     /* Declare OpMode members. */

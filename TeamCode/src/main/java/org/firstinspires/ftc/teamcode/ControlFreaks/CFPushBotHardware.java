@@ -122,6 +122,7 @@ public class CFPushBotHardware {
     private static final DcMotor.Direction v_drive_leftDirection = DcMotor.Direction.REVERSE;
     private static final DcMotor.Direction v_drive_rightDirection = DcMotor.Direction.FORWARD;
 
+    private boolean v_zeromessage_set = false;
     //old treads
     //private static final double driveInches_ticksPerInch = 182.35;
 
@@ -132,7 +133,7 @@ public class CFPushBotHardware {
     //private static final float v_drive_power_slowdown2 = .30f;
 
 
-    private boolean v_debug = true;  //set this to false to prevent writing to log makes loop lots shorter
+    private boolean v_debug = false;  //set this to false to prevent writing to log makes loop lots shorter
 
     //We Increment the v_loop_ticks each time through our loop
     private long v_loop_ticks = 0;
@@ -418,7 +419,7 @@ public class CFPushBotHardware {
             v_motor_right_drive = null;
         }
 
-
+        /*
         try
         {
             v_motor_bgleft = opMode.hardwareMap.dcMotor.get (config_motor_bgleft);
@@ -443,7 +444,7 @@ public class CFPushBotHardware {
             debugLogException(config_motor_bgright, "missing", p_exeception);
             v_motor_bgright = null;
         }
-
+        */
         try {
             int counter = 0;
             reset_drive_encoders();
@@ -1156,7 +1157,7 @@ public class CFPushBotHardware {
             }
 
 
-            if(v_debug) {
+            if(v_debug || v_zeromessage_set) {
                 update_telemetry();
                 opMode.updateTelemetry(opMode.telemetry);
             }
@@ -4376,14 +4377,17 @@ public class CFPushBotHardware {
         try {
             opMode.telemetry.addData("00", loopCounter() + ":" + hardware_loop_slowtime_milliseconds() + ":"+ a_warning_message());
             opMode.telemetry.addData("01", zeroMessage);
-            opMode.telemetry.addData("02", firstMessage);
-            opMode.telemetry.addData("03", secondMessage);
-            opMode.telemetry.addData("04",  thirdMessage);
-            opMode.telemetry.addData("05", "Gyro: H:" + sensor_gyro_get_heading() + ",X:" + sensor_gyro_get_rawX() + ",Y:" + sensor_gyro_get_rawY() + ",Z:" + sensor_gyro_get_rawZ());
+
+            v_zeromessage_set = false;
             if (v_debug) {
+                opMode.telemetry.addData("02", firstMessage);
+                opMode.telemetry.addData("03", secondMessage);
+                opMode.telemetry.addData("04",  thirdMessage);
                 //
                 // Send telemetry data to the driver station.
                 //
+                opMode.telemetry.addData("05", "Gyro: H:" + sensor_gyro_get_heading() + ",X:" + sensor_gyro_get_rawX() + ",Y:" + sensor_gyro_get_rawY() + ",Z:" + sensor_gyro_get_rawZ());
+
                 opMode.telemetry.addData
                         ("06"
                                 , "Left Drive: "
@@ -4513,6 +4517,7 @@ public class CFPushBotHardware {
     public void set_message (String p_message)
 
     {
+        v_zeromessage_set = true;
         zeroMessage = p_message;
         if (v_debug) {
             //DbgLog.msg(loopCounter() + ":0:" + p_message);
