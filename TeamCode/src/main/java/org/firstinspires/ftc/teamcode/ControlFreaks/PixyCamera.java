@@ -179,6 +179,8 @@ public class PixyCamera {
                                 //ask for largestBlock again
                                 v_signatureBlocks[0] = v_signatureBlock;
                                 if (v_signatureEnable[0]) {
+                                    //v_pixy.beginWrite(0x50);
+                                    //v_pixy.endWrite();
                                     v_pixy.requestFrom(0x50, PIXY_LARGEST_SIGNATURE_BYTES);
                                 }
 
@@ -186,6 +188,8 @@ public class PixyCamera {
                                 debugPrint("largestBlock: Error  only " + regCount + " bytes");
                                 //ask for largestBlock again
                                 if (v_signatureEnable[0]) {
+                                    //v_pixy.beginWrite(0x50);
+                                    //v_pixy.endWrite();
                                     v_pixy.requestFrom(0x50, PIXY_LARGEST_SIGNATURE_BYTES);
                                 }
                             }
@@ -210,6 +214,8 @@ public class PixyCamera {
                                 v_signatureBlocks[signum] = v_signatureBlock;
                                 //ask for SignatureBlock 1 again
                                 if (v_signatureEnable[signum]) {
+                                    //v_pixy.beginWrite((0x50 | signum));
+                                    //v_pixy.endWrite();
                                     v_pixy.requestFrom((0x50 | signum), PIXY_SIGNATURE_BYTES);
                                 }
                             } else {
@@ -240,6 +246,7 @@ public class PixyCamera {
                                 debugPrint("cc signature" + color_code + ": Error  only " + regCount + " bytes");
                                 //ask for SignatureBlock again
                                 if (v_signatureEnable[8]) {
+                                    v_pixy.writeLH(0x58, color_code);
                                     v_pixy.requestFrom(0x58, PIXY_CC_SIGNATURE_BYTES);
                                 }
                             }
