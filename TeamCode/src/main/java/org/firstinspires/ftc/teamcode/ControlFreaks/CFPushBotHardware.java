@@ -928,30 +928,31 @@ public class CFPushBotHardware {
             return false;
         }
     }
-    public PixyCamera.Block sensor_pixy_largestBlock(){
-        try{
-            if(v_pixy != null) {
-                return v_pixy.largestBlock();
-            }else {
-                return v_pixy.emptyBlock();
-            }
-        }catch (Exception p_exeception)
-        {
-            debugLogException(config_i2c_pixy, "sensor_pixy_largestBlock", p_exeception);
-            return v_pixy.emptyBlock();
-        }
-    }
+
     public PixyCamera.Block sensor_pixy_signatureBlock(int signature){
         try{
             if(v_pixy != null) {
                 return v_pixy.largestSignatureBlock(signature);
             }else {
-                return v_pixy.emptyBlock();
+                return null;
             }
         }catch (Exception p_exeception)
         {
             debugLogException(config_i2c_pixy, "sensor_pixy_signatureBlock", p_exeception);
-            return v_pixy.emptyBlock();
+            return null;
+        }
+    }
+    public PixyCamera.BlockList sensor_pixy_maxSignatureBlocks(int signature){
+        try{
+            if(v_pixy != null) {
+                return v_pixy.maxSignatureBlocks(signature);
+            }else {
+                return null;
+            }
+        }catch (Exception p_exeception)
+        {
+            debugLogException(config_i2c_pixy, "sensor_pixy_maxSignatureBlocks", p_exeception);
+            return null;
         }
     }
 

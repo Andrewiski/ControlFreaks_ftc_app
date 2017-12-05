@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.ControlFreaks.PixyCamera;
  * Created by adevries on 11/6/2015.
  */
 @Autonomous(name="Pixy", group="MrD")
-@Disabled
+//@Disabled
 public class CFPushBotAuto_Pixy extends LinearOpMode
 {
     /* Declare OpMode members. */
@@ -76,7 +76,7 @@ public class CFPushBotAuto_Pixy extends LinearOpMode
 
                     //robot.sensor_pixy_signature_enable(1,true);
                     //Set Color Code query to Sig 3 & 4  34 in Octal converted to Dec is 28
-                    robot.sensor_pixy_signature_colorcode_set(12);  //14 octal red & White = 12 dec
+                    robot.sensor_pixy_signature_colorcode_set(81);  //14 octal red & White = 12 dec
                     //Enable Color Code Querys
                     robot.sensor_pixy_signature_enable(8,true);
 
@@ -85,9 +85,10 @@ public class CFPushBotAuto_Pixy extends LinearOpMode
                     v_state++;
                     break;
                 case 3:
-                    PixyCamera.Block largestBlock;
-                    largestBlock = robot.sensor_pixy_largestBlock();
                     String dbg = "";
+                    /*PixyCamera.Block largestBlock;
+                    largestBlock = robot.sensor_pixy_signatureBlock(0);
+
                     if(largestBlock != null) {
                         dbg = "lb:" + largestBlock.print()+ "\n";
                     }else{
@@ -99,12 +100,12 @@ public class CFPushBotAuto_Pixy extends LinearOpMode
                         dbg = dbg + " s3:" + sigBlock1.print() + "\n";
                     }else{
                         dbg =dbg + " s3: null\n" ;
-                    }
+                    }*/
 
                     PixyCamera.Block sigBlock8;
                     sigBlock8 = robot.sensor_pixy_signatureBlock(8);
                     if(sigBlock8 != null) {
-                        dbg = dbg + " s8:" + sigBlock1.print() + "\n";
+                        dbg = dbg + " s8:" + sigBlock8.print() + "\n";
                     }else{
                         dbg =dbg + " s8: null\n" ;
                     }
