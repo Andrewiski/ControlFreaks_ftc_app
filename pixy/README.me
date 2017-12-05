@@ -1,16 +1,47 @@
+The CMUcam5 Pixy (http://cmucam.org/projects/cmucam5) 
+
+Pixy is Legal For FTC 2017 
+
+Official Q & A #5 - https://ftcforum.usfirst.org/forum/i-first-i-tech-challenge-game-q-and-a-forum-this-is-a-moderated-forum/first-relic-recovery-presented-by-qualcomm-game-q-a-forum/robot-inspection-rules/answers-electrical-materials/50464-sensors-answers
+
+
 
  The summary of the changes were to add an FTC mode which is an enhanced version of the Lego mode with an assignable
  I2C address as Lego is hard coded to 1 and to allow the request of mulitple blocks per signature but keeping
  the Modern Robotics Core Device Interface Module I2C 27 byte hardware limit in mind.
+ 
+Added I2C Registers for 
+ 0x70 top 5 Largest Areas Blocks of Signature 1-7 	26 Bytes 	byte Total Visable BlockCount, 5 x [byte signature, byte x, byte y, byte width, byte height]
+ 0x71 top 6 Largest Areas Blocks of Signature 1 	25 Bytes 	byte Total Visable BlockCount, 6 x [byte x, byte y, byte width, byte height]
+ 0x72 top 6 Largest Areas Blocks of Signature 1 	25 Bytes  	byte Total Visable BlockCount, 6 x [byte x, byte y, byte width, byte height]
+ 0x73 top 6 Largest Areas Blocks of Signature 1 	25 Bytes  	byte Total Visable BlockCount, 6 x [byte x, byte y, byte width, byte height]
+ 0x74 top 6 Largest Areas Blocks of Signature 1 	25 Bytes  	byte Total Visable BlockCount, 6 x [byte x, byte y, byte width, byte height]
+ 0x75 top 6 Largest Areas Blocks of Signature 1 	25 Bytes  	byte Total Visable BlockCount, 6 x [byte x, byte y, byte width, byte height]
+ 0x76 top 6 Largest Areas Blocks of Signature 1 	25 Bytes	byte Total Visable BlockCount, 6 x [byte x, byte y, byte width, byte height]
+ 0x77 top 6 Largest Areas Blocks of Signature 1 	25 Bytes	byte Total Visable BlockCount, 6 x [byte x, byte y, byte width, byte height]
+ 0x78 top 4 Largest Areas Blocks of All CC Signatures 25 Bytes	byte Total Visable BlockCount, 4 x [word signature, byte x, byte y, byte width, byte height]
 
- Future enhancments I plan to work on is
- 1. Add top 6 largest objects for a signature not just the largest.
- 2. Add top 5 largest objects for Color Code Querys
- 3. Support mulitple Color Code Querys at the Same Time
- 4. Allow setting of Pixy Params via I2C
+Steps to Use Pixy FTC Firmware
+ Upload Custom Firmware to Pixy found in this Folder. 
+	Hold White Button, Plug in USB, Open PixyMon, upload Hex File in this Folder.
+ Using PixyMon Set Interface to Lego I2c.  Not I2C Address will use the Address set in PixyMon not 0x01 used for Lego hack tell I get time to add FTC I2C to PixyMon.
+	Please Note that Lego/FTC I2C mode will not give valid results until pixymon is closed. 
+	You can tell I2C is working as Pixy front LED color changes to largest detected object color.
+ 
+	FTC Wiring do not use 10 pin header for Power use JP1 as it has polarity protection and a protective Diod not to power Dim from Pixy Usb. 
+		I used an AndyMark Encoder Cable an lifted the little black tabs and pressed the silver tabs down to rearanged the colors as a quick solid cable. 
+		Correct part numbers for Connectors can be found on CharmLabs Wiki 
+
+
+ Future enhancments I plan to work on are
+ 1. Add top 6 largest objects for a signature not just the largest. Complete 12/4/2017
+ 2. Add top 5 largest objects for Color Code Querys. Complete 12/4/2017
+ 3. Add top 4 Color Code Querys. Complete 12/4/2017
+ 4. Add top 4 of Specific Color Code.
+ 5. Allow setting of Pixy Params via I2C
     It has been reported that Pixy will drop its parameters in a brown out ie low voltage state
     The would also allow FTC program to set colors its looking for at run time removing the need for a pc
-
+ 6. Add "FTC I2C" to PixyMon Interface so not to break Lego I2C as I change I2C address so it is not 0x01.
 
 
 To use the Color Code Querys
@@ -21,7 +52,7 @@ Type in Signatures numbers in the lowest to highest you want stacked  ie I want 
 
  Special thanks to Olavi Kamppari and his FTC Wire Library https://github.com/OliviliK/FTC_Library made I2C a lot easier.
 
- Control Freaks FTC 5618 and FTC 6494, Put It Together! Take It Apart!
+ Control Freaks Vicksburg Middle School, Michigan FTC 5618 and FTC 6494, Put It Together! Take It Apart!
 
 
  This is a modified version of the Pixy firmware and our modifications to the pixy source can be found
