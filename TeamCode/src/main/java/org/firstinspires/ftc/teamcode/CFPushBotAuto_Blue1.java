@@ -204,7 +204,7 @@ public class CFPushBotAuto_Blue1 extends LinearOpMode
                     break;
                 case 19:
                     if(robot.drive_inches_complete() || robot.timewait_Complete()){
-                        robot.set_message("Drive Backwards Complete");
+                        //robot.set_message("Drive Backwards Complete");
                         v_state++;
                     }
                     break;
@@ -224,7 +224,7 @@ public class CFPushBotAuto_Blue1 extends LinearOpMode
                     break;
                 case 22:
                     if(robot.drive_inches_complete()|| robot.timewait_Complete()){
-                        robot.set_message("Drive 7 Forward Complete");
+                        //robot.set_message("Drive 7 Forward Complete");
                         v_state++;
                     }
                     break;
@@ -236,7 +236,7 @@ public class CFPushBotAuto_Blue1 extends LinearOpMode
                     break;
                 case 24:
                     if(robot.drive_inches_complete() || robot.timewait_Complete()){
-                        robot.set_message("Drive 2 Backwards Complete");
+                        //robot.set_message("Drive 2 Backwards Complete");
                         v_state++;
 
                     }

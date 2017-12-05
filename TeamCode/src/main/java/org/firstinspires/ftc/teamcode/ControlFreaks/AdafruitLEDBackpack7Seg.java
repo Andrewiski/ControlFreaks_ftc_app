@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.ControlFreaks;
 
 //import com.qualcomm.ftccommon.DbgLog;
+import android.util.Log;
+
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import java.util.Calendar;
@@ -119,7 +121,7 @@ public class AdafruitLEDBackpack7Seg {
      * put this in your loop so its called over and over in the loop
      */
     public void loop(){
-        if (v_timer_mode == true){
+        if (v_timer_mode == true && v_ledseg != null){
             long enddateSecs = v_timer_enddate.getTimeInMillis()/1000;
             long nowSecs =  Calendar.getInstance().getTimeInMillis() / 1000;
             int currentSeconds = (int) (enddateSecs - nowSecs);
@@ -206,7 +208,7 @@ public class AdafruitLEDBackpack7Seg {
             //v_timer_startdate = Calendar.getInstance();
             v_timer_enddate = Calendar.getInstance();
             v_timer_enddate.add(Calendar.SECOND, seconds);
-            debugLogException("startTimer():" + v_timer_enddate.toString(), null);
+            debugPrint("startTimer():" + v_timer_enddate.toString());
             writeDigits(secondsToMinutesSeconds(seconds), true);
             v_timer_mode = true;
             return true;
@@ -354,17 +356,31 @@ public class AdafruitLEDBackpack7Seg {
 
         String debugMessage = logId + msg;
         if (ex != null) {
-            String errMsg = ex.getLocalizedMessage();
+            String errMsg = ex.getMessage();
             if (errMsg != null) {
                 debugMessage = debugMessage + errMsg;
             }else{
                 debugMessage = debugMessage + " error. is null";
             }
+            String stackTrace = Log.getStackTraceString(ex);
+            if (stackTrace != null) {
+                debugMessage = debugMessage + "\n" + stackTrace;
+            }
         }else{
             debugMessage = debugMessage + " error is null";
         }
-        android.util.Log.d("AdafruitLEDBackpack7Seg",debugMessage);
+
+
+        android.util.Log.e("AdafruitLEDBackpack7Seg",debugMessage);
         //DbgLog.msg(debugMessage);
         //telemetry.addData(line, debugMessage);
+    }
+    void debugPrint(String msg){
+        String debugMessage = msg;
+        android.util.Log.d("CFPushBotHardware", debugMessage);
+    }
+
+    void warningPrint(String msg){
+        android.util.Log.w("CFPushBotHardware", msg);
     }
 }

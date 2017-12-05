@@ -813,7 +813,7 @@ public class CFPushBotHardware {
         }
         String debugMessage = type + ":" + msg;
         if (ex != null) {
-            String errMsg = ex.getLocalizedMessage();
+            String errMsg = ex.getMessage();
             if (errMsg != null) {
                 debugMessage = debugMessage + errMsg;
             }
