@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.ControlFreaks.PixyCamera;
  * Created by adevries on 11/6/2015.
  */
 @Autonomous(name="Pixy", group="MrD")
-//@Disabled
+@Disabled
 public class CFPushBotAuto_Pixy extends LinearOpMode
 {
     /* Declare OpMode members. */

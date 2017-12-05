@@ -244,7 +244,7 @@ public class CFPushBotManual extends LinearOpMode {
                     }else{
                         buttonBReleased = true;
                     }
-                    if(gamepad1.start ){
+                    if(gamepad1.start && gamepad1.left_trigger > .2 ){
                         if(buttonStartReleased == true) {
                             if(robot.debugMode()){
                                 robot.debugOff();
