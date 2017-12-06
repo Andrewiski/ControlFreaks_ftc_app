@@ -257,6 +257,17 @@ public class CFPushBotManual extends LinearOpMode {
                         buttonStartReleased = true;
                     }
 
+                    if(gamepad2.left_trigger > .2 ){
+                            robot.bgtilt_step(30);
+
+                    }else if(gamepad2.right_trigger > .2 ){
+                        robot.bgtilt_step(-30);
+
+                    }else if(gamepad2.left_trigger > .1 || gamepad2.left_trigger > .1  ){
+                        robot.bgtilt_stop();
+
+                    }
+
                     if(gamepad2.a){
                             if(buttonG2AReleased == true) {
                                 robot.blockgrabber_toggle();

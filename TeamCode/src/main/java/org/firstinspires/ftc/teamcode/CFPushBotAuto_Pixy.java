@@ -43,6 +43,7 @@ public class CFPushBotAuto_Pixy extends LinearOpMode
         robot.setup_am20();
         robot.sensor_pixy_init();
         waitForStart();
+        robot.debugOn();
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
             robot.hardware_loop();
@@ -76,10 +77,10 @@ public class CFPushBotAuto_Pixy extends LinearOpMode
 
                     //robot.sensor_pixy_signature_enable(1,true);
                     //Set Color Code query to Sig 3 & 4  34 in Octal converted to Dec is 28
-                    robot.sensor_pixy_signature_colorcode_set(81);  //14 octal red & White = 12 dec
+                    //robot.sensor_pixy_signature_colorcode_set(81);  //14 octal red & White = 12 dec
                     //Enable Color Code Querys
-                    robot.sensor_pixy_signature_enable(8,true);
-
+                    //robot.sensor_pixy_signature_enable(8,true);
+                    robot.sensor_pixy_maxsignature_enable(8,true);
                     //Enable Pixy witch will start the i2c queries
                     robot.sensor_pixy_enable(true);
                     v_state++;
@@ -100,7 +101,7 @@ public class CFPushBotAuto_Pixy extends LinearOpMode
                         dbg = dbg + " s3:" + sigBlock1.print() + "\n";
                     }else{
                         dbg =dbg + " s3: null\n" ;
-                    }*/
+                    }
 
                     PixyCamera.Block sigBlock8;
                     sigBlock8 = robot.sensor_pixy_signatureBlock(8);
@@ -109,7 +110,15 @@ public class CFPushBotAuto_Pixy extends LinearOpMode
                     }else{
                         dbg =dbg + " s8: null\n" ;
                     }
-                    //robot.set_message(dbg);
+                    */
+                    PixyCamera.BlockList sigMaxBlock8;
+                    sigMaxBlock8 = robot.sensor_pixy_maxSignatureBlocks(8);
+                    if(sigMaxBlock8 != null) {
+                        dbg = dbg + " smcc:" + sigMaxBlock8.print() + "\n";
+                    }else{
+                        dbg =dbg + " smcc: null\n" ;
+                    }
+                    robot.set_message(dbg);
                     //v_state++;
                     break;
                 default:

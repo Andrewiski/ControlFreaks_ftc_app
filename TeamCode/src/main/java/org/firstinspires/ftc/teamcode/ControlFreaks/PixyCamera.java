@@ -245,7 +245,7 @@ public class PixyCamera {
                                 }
 
                             } else {
-                                debugPrint("largestBlock: Error  only " + regCount + " bytes");
+                                warningPrint("largestBlock: Error  only " + regCount + " bytes");
                                 //ask for largestBlock again
                                 if (v_signatureEnable[0]) {
                                     //v_pixy.beginWrite(0x50);
@@ -279,7 +279,7 @@ public class PixyCamera {
                                     v_pixy.requestFrom((0x50 | signum), PIXY_SIGNATURE_BYTES);
                                 }
                             } else {
-                                debugPrint("signature" + signum + ": Error  only " + regCount + " bytes");
+                                warningPrint("signature" + signum + ": Error  only " + regCount + " bytes");
                                 //ask for SignatureBlock again
                                 if (v_signatureEnable[signum]) {
                                     v_pixy.requestFrom((0x50 | signum), PIXY_SIGNATURE_BYTES);
@@ -289,8 +289,8 @@ public class PixyCamera {
                         case 0x58: //Color Code Query Signature  Block
                             if (regCount == PIXY_CC_SIGNATURE_BYTES) {
                                 v_signatureBlock = new Block();
-                                v_signatureBlock.signature = v_pixy.readLH();;
                                 v_signatureBlock.numBlocks = v_pixy.read();
+                                v_signatureBlock.signature = color_code; // v_pixy.readLH();;
                                 v_signatureBlock.x = v_pixy.read();
                                 v_signatureBlock.y = v_pixy.read();
                                 v_signatureBlock.width = v_pixy.read();
@@ -303,7 +303,7 @@ public class PixyCamera {
                                     v_pixy.requestFrom(0x58, PIXY_CC_SIGNATURE_BYTES);
                                 }
                             } else {
-                                debugPrint("cc signature" + color_code + ": Error  only " + regCount + " bytes");
+                                warningPrint("cc signature" + color_code + ": Error  only " + regCount + " bytes");
                                 //ask for SignatureBlock again
                                 if (v_signatureEnable[8]) {
                                     v_pixy.writeLH(0x58, color_code);
@@ -330,7 +330,7 @@ public class PixyCamera {
                                     }
                                 }
                             } else {
-                                debugPrint("largestBlock: Error  only " + regCount + " bytes");
+                                warningPrint("largestBlock: Error  only " + regCount + " bytes");
                                 //ask for largestBlock again
                                 if (v_signatureEnable[0]) {
                                     //v_pixy.beginWrite(0x50);
@@ -367,7 +367,7 @@ public class PixyCamera {
                                     }
                                 }
                             } else {
-                                debugPrint("signature" + signum + ": Error  only " + regCount + " bytes");
+                                warningPrint("signature" + signum + ": Error  only " + regCount + " bytes");
                                 //ask for SignatureBlock again
                                 if (v_signatureEnable[signum]) {
                                     v_pixy.requestFrom((0x70 | signum), PIXY_MAXSIGNATURE_BYTES);
@@ -379,8 +379,7 @@ public class PixyCamera {
                                 v_signatureMaxBlocks[8].BlockCount = v_pixy.read();
                                 for(int i = 0; i < 4; i++) {
                                     Block v_signatureBlock = v_signatureMaxBlocks[8].Blocks[i];
-                                    v_signatureBlock.signature = color_code;
-                                    v_signatureBlock.numBlocks = v_pixy.read();
+                                    v_signatureBlock.signature = v_pixy.readLH();;
                                     v_signatureBlock.x = v_pixy.read();
                                     v_signatureBlock.y = v_pixy.read();
                                     v_signatureBlock.width = v_pixy.read();
@@ -392,7 +391,7 @@ public class PixyCamera {
                                     v_pixy.requestFrom(0x78, PIXY_MAXCCSIGNATURE_BYTES);
                                 }
                             } else {
-                                debugPrint("cc signature" + color_code + ": Error  only " + regCount + " bytes");
+                                warningPrint("cc signature" + color_code + ": Error  only " + regCount + " bytes");
                                 //ask for SignatureBlock again
                                 if (v_signatureEnable[8]) {
                                     v_pixy.writeLH(0x58, color_code);

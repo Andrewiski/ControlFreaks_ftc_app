@@ -55,6 +55,7 @@ public class CFPushBotHardware {
     private String config_servo_jewel = "jewel";
     private String config_servo_blockgrabber = "blockgrabber";
     private String config_servo_blockslide = "blockslide";
+    private String config_motor_bgtilt = "ssg";
     private String config_motor_bgright = "bg_right";
     private String config_motor_bgleft = "bg_left";
 
@@ -150,6 +151,14 @@ public class CFPushBotHardware {
 
     //Global Vars to the class
     private static final double ServoErrorResultPosition = -0.0000000001;
+
+    private DcMotor v_motor_bgtilt;
+    private static final double v_motor_bgtilt_power = 1.0;
+    private static final DcMotor.Direction v_motor_bgtilt_direction = DcMotor.Direction.FORWARD;
+    private int v_motor_bgtilt_encoder_min = 0;
+    private static final int v_motor_bgtilt_encoder_max = 420;
+    private static final int v_motor_bgtilt_ExtendSlowdownTicks = 50;
+    private int v_motor_bgtilt_Position = 0;
 
     private DcMotor v_motor_lifter;
     private static final double v_motor_lifter_power = 1.0;
@@ -514,6 +523,7 @@ public class CFPushBotHardware {
                 // turn the LED on in the beginning, just so user will know that the sensor is active.
                 v_sensor_color_i2c_led.setMode(DigitalChannel.Mode.OUTPUT);
                 v_sensor_color_i2c_led.setState( v_sensor_color_i2c_led_enabled);
+
             }
         } catch (Exception p_exeception)
         {
@@ -655,6 +665,35 @@ public class CFPushBotHardware {
             debugLogException(config_motor_slider,"missing",p_exeception);
             v_motor_slider = null;
         }
+
+        //v_motor_bgtilt
+
+        try
+        {
+            v_motor_bgtilt = opMode.hardwareMap.dcMotor.get (config_motor_bgtilt);
+            v_motor_bgtilt.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            v_motor_bgtilt.setDirection(v_motor_bgtilt_direction);
+            v_motor_bgtilt.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            int counter = 0;
+            while (counter < 5 && v_motor_bgtilt.getMode() != DcMotor.RunMode.STOP_AND_RESET_ENCODER){
+                counter++;
+                sleep(10);
+                //debugLogException("init", "waiting on lifter motor Stop_and_rest complete",null);
+            }
+            v_motor_bgtilt.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            counter = 0;
+            while (counter < 5 && v_motor_bgtilt.getMode() != DcMotor.RunMode.RUN_TO_POSITION){
+                counter++;
+                sleep(10);
+                //debugLogException("init", "waiting on lifter motor RUN_TO_Position complete",null);
+            }
+        }
+        catch (Exception p_exeception)
+        {
+            debugLogException(config_motor_bgtilt,"missing",p_exeception);
+            v_motor_bgtilt = null;
+        }
+
 
         try
         {
@@ -898,6 +937,21 @@ public class CFPushBotHardware {
         }catch (Exception p_exeception)
         {
             debugLogException(config_i2c_pixy, "sensor_pixy_signature_enable", p_exeception);
+            return false;
+        }
+    }
+
+    public boolean sensor_pixy_maxsignature_enable(int signature, boolean enable){
+        try{
+            if(v_pixy != null) {
+                v_pixy.maxSignature_enable(signature, enable);
+            }else{
+                warningPrint("sensor_pixy_maxsignature_enable: v_pixy is null");
+            }
+            return true;
+        }catch (Exception p_exeception)
+        {
+            debugLogException(config_i2c_pixy, "sensor_pixy_maxsignature_enable", p_exeception);
             return false;
         }
     }
@@ -1608,6 +1662,131 @@ public class CFPushBotHardware {
         return false;
     }
 
+
+    //BGTilt Begin
+
+    public void bgtilt_extend () throws InterruptedException
+    {
+        if (v_motor_bgtilt != null)
+        {
+
+            v_bgtilt_state = 0;
+            v_motor_bgtilt_Position = v_motor_bgtilt_Position + v_motor_bgtilt_encoder_max - v_motor_bgtilt_ExtendSlowdownTicks;
+
+            v_motor_bgtilt.setTargetPosition(v_motor_bgtilt_Position);
+            set_second_message("extendinging bgtilt");
+            v_motor_bgtilt.setPower(v_motor_bgtilt_power);
+
+        }
+    }
+
+    private int v_bgtilt_state = 0;
+    public boolean bgtilt_extend_complete () {
+        if (v_motor_bgtilt != null) {
+            switch (v_bgtilt_state) {
+                case 0:
+                    if (v_motor_bgtilt.isBusy() == false) {
+                        v_motor_bgtilt_Position = v_motor_bgtilt_Position + v_motor_bgtilt_ExtendSlowdownTicks;
+                        v_motor_bgtilt.setPower(0.0F);
+                        v_motor_bgtilt.setTargetPosition(v_motor_bgtilt_Position);
+                        set_second_message("bgtilt almost extended");
+                        v_motor_bgtilt.setPower(0.5F);
+
+                        v_lifter_state++;
+                    }
+                    break;
+                case 1:
+                    if (v_motor_bgtilt.isBusy() == false) {
+                        v_motor_bgtilt.setPower(0.0F);
+                        v_bgtilt_isExtended = true;
+                        set_second_message("bgtilt loaded");
+                        return true;
+                    }
+                    break;
+            }
+            return false;
+
+        }else{
+            return true;
+        }
+    }
+
+
+
+    private boolean v_bgtilt_isExtended = false;
+    public void bgtilt_step (int stepAmount)
+    {
+        try{
+            if (v_motor_bgtilt != null )
+            {
+                v_motor_bgtilt_Position = v_motor_bgtilt.getCurrentPosition() + stepAmount;
+                if(v_motor_bgtilt_Position <= v_motor_bgtilt_encoder_min  ) {
+                    v_motor_bgtilt_Position = v_motor_bgtilt_encoder_min;
+                }
+                if(v_motor_bgtilt_Position >= v_motor_bgtilt_encoder_max  ) {
+                    v_motor_bgtilt_Position = v_motor_bgtilt_encoder_max;
+                }
+                if(v_motor_bgtilt_Position >= v_motor_bgtilt_encoder_min && v_motor_bgtilt_Position <= v_motor_bgtilt_encoder_max ) {
+                    v_motor_bgtilt.setTargetPosition(v_motor_bgtilt_Position);
+                    v_motor_bgtilt.setPower(v_motor_bgtilt_power);
+                }
+            }
+            set_second_message("bgtilt Step " + v_motor_bgtilt_Position);
+        }catch (Exception p_exeception)
+        {
+            debugLogException("bgtilt_step", "error", p_exeception);
+        }
+    }
+
+    public void bgtilt_stop ()
+    {
+        try{
+            if (v_motor_bgtilt != null )
+            {
+                v_motor_bgtilt.setPower(0);
+                v_motor_bgtilt_Position = v_motor_bgtilt.getCurrentPosition();
+                v_motor_bgtilt.setTargetPosition(v_motor_bgtilt_Position);
+            }
+            set_second_message("bgtilt Stop " + v_motor_bgtilt_Position);
+        }catch (Exception p_exeception)
+        {
+            debugLogException("bgtilt_stop", "error", p_exeception);
+        }
+    }
+
+
+
+    public void bgtilt_stepmin(int steps){
+        v_motor_bgtilt_encoder_min = v_motor_bgtilt_encoder_min + steps;
+    }
+
+    public void bgtilt_retract ()
+    {
+
+        if (v_motor_bgtilt != null )
+        {
+            v_motor_bgtilt.setTargetPosition(v_motor_bgtilt_encoder_min);
+            set_second_message("Retracting bgtilt");
+            v_motor_bgtilt.setPower(v_motor_bgtilt_power);
+        }
+
+    }
+    public boolean bgtilt_retract_complete ()
+    {
+        if (v_motor_bgtilt != null )
+        {
+
+            if (v_motor_bgtilt.isBusy()== false) {
+                v_motor_bgtilt.setPower(0.0F);
+                v_bgtilt_isExtended = false;
+                set_second_message("Retracted bgtilt");
+                return true;
+            }
+        }
+        return false;
+    }
+
+    //BGTilt End
 
     public void run_to_position(float power, float inches ) throws InterruptedException{
         //setupDriveToPosition();
