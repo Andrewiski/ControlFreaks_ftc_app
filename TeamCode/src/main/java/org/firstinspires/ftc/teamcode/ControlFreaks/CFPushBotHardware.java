@@ -17,7 +17,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DeviceInterfaceModule;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
-import com.qualcomm.robotcore.hardware.DigitalChannelController;
 import com.qualcomm.robotcore.hardware.GyroSensor;
 import com.qualcomm.robotcore.hardware.LED;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -25,7 +24,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
 import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -37,6 +35,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
+import org.firstinspires.ftc.teamcode.ControlFreaks.Pixy.PixyBlock;
+import org.firstinspires.ftc.teamcode.ControlFreaks.Pixy.PixyBlockList;
+import org.firstinspires.ftc.teamcode.ControlFreaks.Pixy.PixyCamera;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -65,7 +66,7 @@ public class CFPushBotHardware {
     private String config_i2c_led7seg = "ledseg";
     private String config_i2c_colorsensor = "color";
     private String config_i2c_colorsensor_led = "color_led";
-    boolean hasRange = false;
+
     private String config_i2c_range = "range";
     private String config_i2c_pixy = "pixy";
     private String config_pixy_led = "pixy_led";
@@ -174,15 +175,16 @@ public class CFPushBotHardware {
     private static final DcMotor.Direction v_motor_slider_direction = DcMotor.Direction.FORWARD;
     private static final double v_motor_slider_SpeedSlowDown = 0.5f;
     private static final int v_motor_slider_encoder_min = 30;
+    private static final int v_motor_slider_encoder_min2 = 815;
     private static final int v_motor_slider_encoder_max =  3600; //8150; //8750;
     private static final int v_motor_slider_ExtendSlowdownTicks = 300;
     private int v_motor_slider_Position = 0;
 
 
     private Servo v_servo_blockgrabber;
-    private static final double v_servo_blockgrabber_MinPosition = 0.45;
-    private static final double v_servo_blockgrabber_MaxPosition = 0.87;
-    private double v_servo_blockgrabber_position = 0.87D;  //init arm jewel Position
+    private static final double v_servo_blockgrabber_MinPosition = 0.45D;
+    private static final double v_servo_blockgrabber_MaxPosition = 0.97D; // 0.87;
+    private double v_servo_blockgrabber_position = 0.97D;  //init arm jewel Position
     boolean v_servo_blockgrabber_is_extended = true;
     private Servo.Direction v_servo_blockgrabber_direction = Servo.Direction.FORWARD;
 
@@ -220,7 +222,7 @@ public class CFPushBotHardware {
 
     private Servo v_servo_shoulder;
     private static final double v_servo_shoulder_MinPosition = 0.00;
-    private static final double v_servo_shoulder_MaxPosition = 0.131;
+    private static final double v_servo_shoulder_MaxPosition = 0.141; // 0.131;
     private double v_servo_shoulder_position = 0.05D;  //init arm shoulder Position
     private Servo.Direction v_servo_shoulder_direction = Servo.Direction.FORWARD;
     boolean v_servo_shoulder_is_extended = false;
@@ -360,43 +362,6 @@ public class CFPushBotHardware {
             debugLogException(config_dim,"missing",p_exeception);
 
             v_dim = null;
-        }
-
-
-
-        try {
-            // get a reference to our GyroSensor object.
-            v_sensor_gyro = opMode.hardwareMap.gyroSensor.get(config_i2c_gyro);
-            // calibrate the gyro.
-            v_sensor_gyro.calibrate();
-            // make sure the gyro is calibrated.
-            //while (v_sensor_gyro.isCalibrating())  {
-            //    sleep(50);
-            //}
-            //v_sensor_gyro_mr = (ModernRoboticsI2cGyro) v_sensor_gyro;
-            //v_sensor_gyro_mr.setHeadingMode(ModernRoboticsI2cGyro.HeadingMode.HEADING_CARDINAL);
-            //sleep(100);
-            v_sensor_gyro.resetZAxisIntegrator();
-            //sleep(200);
-            //v_sensor_gyro_heading = v_sensor_gyro.getHeading();
-            set_second_message("Gyro isCalibrated H:" + v_sensor_gyro.getHeading() );
-        }catch(Exception p_exeception){
-            debugLogException(config_i2c_gyro,"missing",p_exeception);
-            v_sensor_gyro = null;
-        }
-
-
-        try {
-            if(hasRange) {
-                // get a reference to our Rangesensor object.
-                //v_sensor_rangeSensor
-                v_sensor_rangeSensor = opMode.hardwareMap.get(ModernRoboticsI2cRangeSensor.class, config_i2c_range);
-                // calibrate the gyro.
-                set_third_message("Range Sensor Found" + v_sensor_rangeSensor.getDistance(DistanceUnit.INCH));
-            }
-        }catch(Exception p_exeception){
-            debugLogException(config_i2c_range,"missing",p_exeception);
-            v_sensor_rangeSensor = null;
         }
         //
         // Connect the drive wheel motors.
@@ -836,7 +801,30 @@ public class CFPushBotHardware {
         }
     }
 
-
+    public boolean sensor_gyro_init(){
+        try {
+            // get a reference to our GyroSensor object.
+            v_sensor_gyro = opMode.hardwareMap.gyroSensor.get(config_i2c_gyro);
+            // calibrate the gyro.
+            v_sensor_gyro.calibrate();
+            // make sure the gyro is calibrated.
+            //while (v_sensor_gyro.isCalibrating())  {
+            //    sleep(50);
+            //}
+            //v_sensor_gyro_mr = (ModernRoboticsI2cGyro) v_sensor_gyro;
+            //v_sensor_gyro_mr.setHeadingMode(ModernRoboticsI2cGyro.HeadingMode.HEADING_CARDINAL);
+            //sleep(100);
+            v_sensor_gyro.resetZAxisIntegrator();
+            //sleep(200);
+            //v_sensor_gyro_heading = v_sensor_gyro.getHeading();
+            set_second_message("Gyro isCalibrated H:" + v_sensor_gyro.getHeading() );
+            return true;
+        }catch(Exception p_exeception){
+            debugLogException(config_i2c_gyro,"missing",p_exeception);
+            v_sensor_gyro = null;
+            return false;
+        }
+    }
 
     /**
      * Used to retrive the total loop count
@@ -983,7 +971,7 @@ public class CFPushBotHardware {
         }
     }
 
-    public PixyCamera.Block sensor_pixy_signatureBlock(int signature){
+    public PixyBlock sensor_pixy_signatureBlock(int signature){
         try{
             if(v_pixy != null) {
                 return v_pixy.largestSignatureBlock(signature);
@@ -996,7 +984,7 @@ public class CFPushBotHardware {
             return null;
         }
     }
-    public PixyCamera.BlockList sensor_pixy_maxSignatureBlocks(int signature){
+    public PixyBlockList sensor_pixy_maxSignatureBlocks(int signature){
         try{
             if(v_pixy != null) {
                 return v_pixy.maxSignatureBlocks(signature);
@@ -1457,31 +1445,48 @@ public class CFPushBotHardware {
      * Retract the slider
      */
     private boolean v_slider_isExtended = false;
-    public void slider_step (int stepAmount)
+    public void slider_step (int stepAmount, boolean min2Override)
     {
         try{
             if (v_motor_slider != null )
             {
-                v_motor_slider_Position = v_motor_slider.getCurrentPosition() + stepAmount;
-                if(v_motor_slider_Position >= v_motor_slider_encoder_min && v_motor_slider_Position <= v_motor_slider_encoder_max ) {
-                    v_motor_slider.setTargetPosition(v_motor_slider_Position);
-                    v_motor_slider.setPower(v_motor_slider_power);
+                int cPosition = v_motor_slider.getCurrentPosition();
+                v_motor_slider_Position =  cPosition + stepAmount;
+                if(min2Override ==false && v_motor_slider_Position < v_motor_slider_encoder_min2 && cPosition > v_motor_slider_encoder_min2  ){
+                    v_motor_slider_Position = v_motor_slider_encoder_min2;
+
+                }else if(v_motor_slider_Position < v_motor_slider_encoder_min && min2Override ==true){
+                    v_motor_slider_Position = v_motor_slider_encoder_min;
+
+                }else if(v_motor_slider_Position > v_motor_slider_encoder_max) {
+                    v_motor_slider_Position = v_motor_slider_encoder_max;
                 }
+
+                v_motor_slider.setTargetPosition(v_motor_slider_Position);
+                v_motor_slider.setPower(v_motor_slider_power);
             }
-            set_second_message("Slider Step " + v_motor_slider_Position);
+            set_second_message("Slider Step " + v_motor_slider_Position + " minOverride:" + min2Override);
         }catch (Exception p_exeception)
         {
             debugLogException("slider_step", "error", p_exeception);
         }
     }
-    public void slider_stop ()
+    public void slider_stop (boolean min2Override)
     {
         try{
             if (v_motor_slider != null )
             {
                 v_motor_slider.setPower(0);
                 v_motor_slider_Position = v_motor_slider.getCurrentPosition();
-                v_motor_slider.setTargetPosition(v_motor_slider_Position);
+                if(min2Override ==false && v_motor_slider_Position < v_motor_slider_encoder_min2 && v_motor_slider_Position > v_motor_slider_encoder_min2  ){
+                    v_motor_slider_Position = v_motor_slider_encoder_min2;
+
+                }else if(v_motor_slider_Position < v_motor_slider_encoder_min && min2Override ==true){
+                    v_motor_slider_Position = v_motor_slider_encoder_min;
+
+                }else if(v_motor_slider_Position > v_motor_slider_encoder_max) {
+                    v_motor_slider_Position = v_motor_slider_encoder_max;
+                }
             }
             set_second_message("Slider Stop " + v_motor_slider_Position);
         }catch (Exception p_exeception)
@@ -1490,6 +1495,20 @@ public class CFPushBotHardware {
         }
     }
 
+    public void slider_hold ()
+    {
+        try{
+            if (v_motor_slider != null )
+            {
+                v_motor_slider.setTargetPosition(v_motor_slider_Position);
+                v_motor_slider.setPower(.2);
+            }
+            set_second_message("Slider Stop " + v_motor_slider_Position);
+        }catch (Exception p_exeception)
+        {
+            debugLogException("slider_stop", "error", p_exeception);
+        }
+    }
 
     public void slider_retract ()
     {
@@ -2683,6 +2702,24 @@ public class CFPushBotHardware {
         return false;
     }
 
+    public boolean drive_inches_stop(){
+        if (v_motor_left_drive == null || v_motor_right_drive == null){
+            return true;
+        }
+        set_drive_power(0, 0);
+        int v_drive_inches_ticks_left = v_motor_left_drive.getCurrentPosition();
+        int v_drive_inches_ticks_right = v_motor_right_drive.getCurrentPosition();
+        v_motor_left_drive.setTargetPosition(v_drive_inches_ticks_left);
+        v_motor_right_drive.setTargetPosition(v_drive_inches_ticks_right);
+        set_second_message("drive_inches_stop: "
+                        + "gyro th:" + v_drive_inches_heading
+                        +  " p: " + v_drive_inches_power
+                        + ",tl:" + v_drive_inches_ticks_target_left + ",tr:" + v_drive_inches_ticks_target_right
+                        + ",l:" + v_drive_inches_ticks_left + ",r:" + v_drive_inches_ticks_right
+                        + ",lp:" + v_motor_left_drive.getPower() + ",rp:" + v_motor_right_drive.getPower()
+                );
+        return false;
+    }
 
     /**
      * Inits the led 7 segment counter to start a count down in seconds
@@ -4200,6 +4237,20 @@ public class CFPushBotHardware {
         }
     }
 
+    public boolean sensor_range_init(){
+        try {
+            // get a reference to our Rangesensor object.
+            //v_sensor_rangeSensor
+            v_sensor_rangeSensor = opMode.hardwareMap.get(ModernRoboticsI2cRangeSensor.class, config_i2c_range);
+            // calibrate the gyro.
+            set_third_message("Range Sensor Found" + v_sensor_rangeSensor.getDistance(DistanceUnit.INCH));
+            return true;
+        }catch(Exception p_exeception){
+            debugLogException(config_i2c_range,"missing",p_exeception);
+            v_sensor_rangeSensor = null;
+            return false;
+        }
+    }
 
     /**
      * Enable the Range Sensor

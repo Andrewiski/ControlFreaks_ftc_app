@@ -113,16 +113,18 @@ public class CFPushBotManual extends LinearOpMode {
                     }
 
                     if(gamepad2.right_stick_y > .2 ) {
-                        robot.slider_step(-100);
+                        robot.slider_step(-100, gamepad2.left_bumper);
                         button_rightstick_deadzone = false;
                     }else if(gamepad2.right_stick_y < -.2)
                     {
-                        robot.slider_step(100);
+                        robot.slider_step(100, false);
                         button_rightstick_deadzone = false;
                     }else{
                         if(button_rightstick_deadzone == false) {
-                            robot.slider_stop();
+                            robot.slider_stop(gamepad2.left_bumper);
                             button_rightstick_deadzone = true;
+                        }else{
+                            robot.slider_hold();
                         }
                     }
 

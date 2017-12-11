@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.ControlFreaks.CFPushBotHardware;
@@ -111,15 +112,15 @@ public class CFTestBotManual extends LinearOpMode {
                     }
 
                     if(gamepad2.right_stick_y > .2 ) {
-                        robot.slider_step(-100);
+                        robot.slider_step(-100, gamepad2.left_bumper);
                         button_rightstick_deadzone = false;
                     }else if(gamepad2.right_stick_y < -.2)
                     {
-                        robot.slider_step(100);
+                        robot.slider_step(100,false);
                         button_rightstick_deadzone = false;
                     }else{
                         if(button_rightstick_deadzone == false) {
-                            robot.slider_stop();
+                            robot.slider_stop(gamepad2.left_bumper);
                             button_rightstick_deadzone = true;
                         }
                     }

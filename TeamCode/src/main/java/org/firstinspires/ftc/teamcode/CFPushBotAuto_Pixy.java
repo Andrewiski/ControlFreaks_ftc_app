@@ -5,14 +5,15 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.ControlFreaks.CFPushBotHardware;
-import org.firstinspires.ftc.teamcode.ControlFreaks.PixyCamera;
+import org.firstinspires.ftc.teamcode.ControlFreaks.Pixy.PixyBlockList;
+import org.firstinspires.ftc.teamcode.ControlFreaks.Pixy.PixyCamera;
 
 
 /**
  * Created by adevries on 11/6/2015.
  */
 @Autonomous(name="Pixy", group="MrD")
-//@Disabled
+@Disabled
 public class CFPushBotAuto_Pixy extends LinearOpMode
 {
     /* Declare OpMode members. */
@@ -41,8 +42,10 @@ public class CFPushBotAuto_Pixy extends LinearOpMode
         robot.blueled_on();
         robot.setupAutoDrive();
         robot.setup_am20();
+        robot.sensor_range_init();
         robot.sensor_pixy_init();
         waitForStart();
+        PixyBlockList sigMaxBlockList1_Red;
         robot.debugOn();
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
@@ -80,8 +83,9 @@ public class CFPushBotAuto_Pixy extends LinearOpMode
                     //robot.sensor_pixy_signature_colorcode_set(81);  //14 octal red & White = 12 dec
                     //Enable Color Code Querys
                     //robot.sensor_pixy_signature_enable(8,true);
-                    robot.sensor_pixy_maxsignature_enable(8,true);
+                    robot.sensor_pixy_maxsignature_enable(3,true);
                     //Enable Pixy witch will start the i2c queries
+                    robot.sensor_range_enable(true);
                     robot.sensor_pixy_enable(true);
                     v_state++;
                     break;
@@ -111,12 +115,28 @@ public class CFPushBotAuto_Pixy extends LinearOpMode
                         dbg =dbg + " s8: null\n" ;
                     }
                     */
-                    PixyCamera.BlockList sigMaxBlock8;
-                    sigMaxBlock8 = robot.sensor_pixy_maxSignatureBlocks(8);
-                    if(sigMaxBlock8 != null) {
-                        dbg = dbg + " smcc:" + sigMaxBlock8.print() + "\n";
+
+                    //we are assuming we are pointed toward the crypto box
+
+
+                    sigMaxBlockList1_Red = robot.sensor_pixy_maxSignatureBlocks(1);
+                    double range = robot.sensor_range_get_distance();
+                    if( range > 20) {
+                        dbg = dbg + "range:" + range;
+                        if (sigMaxBlockList1_Red != null) {
+                            dbg = dbg + " smcc:" + sigMaxBlockList1_Red.print() + "\n";
+                            if (sigMaxBlockList1_Red.BlockCount > 4) {
+                                //we need to find the red blocks on near y sort by x less then 100 ie bottom half of screen
+                                sigMaxBlockList1_Red.SortBottomLeftTopRight(20); //sort them on Y then X with X Fudge of 20 to handle Tilt
+                                // we assume that in order to be a valid CryptoCube the distance between Blocks should be the same as the height ie square cubes
+                                dbg = dbg + " sorted:" + sigMaxBlockList1_Red.print() + "\n";
+
+                            }
+                        } else {
+
+                        }
                     }else{
-                        dbg =dbg + " smcc: null\n" ;
+
                     }
                     robot.set_message(dbg);
                     //v_state++;
