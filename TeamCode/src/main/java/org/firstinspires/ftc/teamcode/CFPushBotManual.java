@@ -96,8 +96,8 @@ public class CFPushBotManual extends LinearOpMode {
                                 || ((right > 0 || right < 0) && left == 0)
                                 ){
                             //we are turning so slow down the motors
-                            left = left/4f;
-                            right = right/4f;
+                            left = left/3.2f;
+                            right = right/3.2f;
                         }else{
                             left = left/2.5f;
                             right = right/2.5f;

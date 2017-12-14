@@ -56,9 +56,10 @@ public class CFPushBotHardware {
     private String config_servo_jewel = "jewel";
     private String config_servo_blockgrabber = "blockgrabber";
     private String config_servo_blockslide = "blockslide";
-    private String config_motor_bgtilt = "ssg";
-    private String config_motor_bgright = "bg_right";
-    private String config_motor_bgleft = "bg_left";
+    //private String config_motor_bgtilt = "ssg";
+    private String config_motor_leftfrontdrive = "front_left";
+    private String config_motor_rightfrontdrive = "front_right";
+    private boolean IsMechDrive = false;
 
     private String config_servo_shoulder = "shoulder";
     private String config_dim = "dim";
@@ -123,6 +124,9 @@ public class CFPushBotHardware {
     private  float v_turn_motorspeed_slow = .25f;
     private static final DcMotor.Direction v_drive_leftDirection = DcMotor.Direction.REVERSE;
     private static final DcMotor.Direction v_drive_rightDirection = DcMotor.Direction.FORWARD;
+
+    private static final DcMotor.Direction v_drive_leftfrontDirection = DcMotor.Direction.REVERSE;
+    private static final DcMotor.Direction v_drive_rightfrontDirection = DcMotor.Direction.FORWARD;
 
     private boolean v_zeromessage_set = false;
     //old treads
@@ -304,10 +308,13 @@ public class CFPushBotHardware {
     private DcMotor v_motor_left_drive;
     private DcMotor v_motor_right_drive;
 
-    private DcMotor v_motor_bgleft;
-    private DcMotor v_motor_bgright;
-    private static final DcMotor.Direction v_drive_bgleftDirection = DcMotor.Direction.FORWARD;
-    private static final DcMotor.Direction v_drive_bgrightDirection = DcMotor.Direction.REVERSE;
+    private DcMotor v_motor_leftfront_drive;
+    private DcMotor v_motor_rightfront_drive;
+
+//    private DcMotor v_motor_bgleft;
+//    private DcMotor v_motor_bgright;
+//    private static final DcMotor.Direction v_drive_bgleftDirection = DcMotor.Direction.FORWARD;
+//    private static final DcMotor.Direction v_drive_bgrightDirection = DcMotor.Direction.REVERSE;
 
     /**
      * Indicate whether a message is a available to the class user.
@@ -393,6 +400,32 @@ public class CFPushBotHardware {
             v_motor_right_drive = null;
         }
 
+
+        if (IsMechDrive){
+            try
+            {
+                v_motor_leftfront_drive = opMode.hardwareMap.dcMotor.get (config_motor_leftfrontdrive);
+
+                v_motor_leftfront_drive.setDirection (v_drive_leftfrontDirection);
+            }
+            catch (Exception p_exeception)
+            {
+                debugLogException(config_motor_leftfrontdrive,"missing",p_exeception);
+                v_motor_leftfront_drive = null;
+            }
+
+            try
+            {
+                v_motor_rightfront_drive = opMode.hardwareMap.dcMotor.get (config_motor_rightfrontdrive);
+
+                v_motor_rightfront_drive.setDirection (v_drive_rightfrontDirection);
+            }
+            catch (Exception p_exeception)
+            {
+                debugLogException(config_motor_rightfrontdrive, "missing", p_exeception);
+                v_motor_rightfront_drive = null;
+            }
+        }
         /*
         try
         {
@@ -633,31 +666,31 @@ public class CFPushBotHardware {
 
         //v_motor_bgtilt
 
-        try
-        {
-            v_motor_bgtilt = opMode.hardwareMap.dcMotor.get (config_motor_bgtilt);
-            v_motor_bgtilt.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            v_motor_bgtilt.setDirection(v_motor_bgtilt_direction);
-            v_motor_bgtilt.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            int counter = 0;
-            while (counter < 5 && v_motor_bgtilt.getMode() != DcMotor.RunMode.STOP_AND_RESET_ENCODER){
-                counter++;
-                sleep(10);
-                //debugLogException("init", "waiting on lifter motor Stop_and_rest complete",null);
-            }
-            v_motor_bgtilt.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            counter = 0;
-            while (counter < 5 && v_motor_bgtilt.getMode() != DcMotor.RunMode.RUN_TO_POSITION){
-                counter++;
-                sleep(10);
-                //debugLogException("init", "waiting on lifter motor RUN_TO_Position complete",null);
-            }
-        }
-        catch (Exception p_exeception)
-        {
-            debugLogException(config_motor_bgtilt,"missing",p_exeception);
-            v_motor_bgtilt = null;
-        }
+//        try
+//        {
+//            v_motor_bgtilt = opMode.hardwareMap.dcMotor.get (config_motor_bgtilt);
+//            v_motor_bgtilt.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+//            v_motor_bgtilt.setDirection(v_motor_bgtilt_direction);
+//            v_motor_bgtilt.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//            int counter = 0;
+//            while (counter < 5 && v_motor_bgtilt.getMode() != DcMotor.RunMode.STOP_AND_RESET_ENCODER){
+//                counter++;
+//                sleep(10);
+//                //debugLogException("init", "waiting on lifter motor Stop_and_rest complete",null);
+//            }
+//            v_motor_bgtilt.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//            counter = 0;
+//            while (counter < 5 && v_motor_bgtilt.getMode() != DcMotor.RunMode.RUN_TO_POSITION){
+//                counter++;
+//                sleep(10);
+//                //debugLogException("init", "waiting on lifter motor RUN_TO_Position complete",null);
+//            }
+//        }
+//        catch (Exception p_exeception)
+//        {
+//            debugLogException(config_motor_bgtilt,"missing",p_exeception);
+//            v_motor_bgtilt = null;
+//        }
 
 
         try
@@ -3020,50 +3053,50 @@ public class CFPushBotHardware {
 //
 //    } // m_winch_power
 //
-    private boolean v_motors_blockgrabbers_on = false;
-    public void blockgrabbers_start ()
-    {
-        try {
-            if (v_motor_bgleft != null && v_motor_bgright != null ) {
-                v_motor_bgleft.setPower(1.0f);
-                v_motor_bgright.setPower(1.0f);
-                v_motors_blockgrabbers_on = true;
-            }
-            set_third_message("blockgrabbers_start");
-        }catch (Exception p_exeception)
-        {
-            debugLogException("blockgrabbers_start", "error", p_exeception);
-        }
-    }
-
-    public void blockgrabbers_stop ()
-    {
-        try {
-            if (v_motor_bgleft != null && v_motor_bgright != null ) {
-                v_motor_bgleft.setPower(0.0f);
-                v_motor_bgright.setPower(0.0f);
-                v_motors_blockgrabbers_on = false;
-            }
-            set_third_message("blockgrabbers_start");
-        }catch (Exception p_exeception)
-        {
-            debugLogException("blockgrabbers_start", "error", p_exeception);
-        }
-    }
-
-    public void blockgrabbers_toggle()
-    {
-        try {
-            if (v_motors_blockgrabbers_on) {
-                blockgrabbers_stop();
-            }else{
-                blockgrabbers_start();
-            }
-        }catch (Exception p_exeception)
-        {
-            debugLogException("blockgrabbers_toggle", "error", p_exeception);
-        }
-    }
+//    private boolean v_motors_blockgrabbers_on = false;
+//    public void blockgrabbers_start ()
+//    {
+//        try {
+//            if (v_motor_bgleft != null && v_motor_bgright != null ) {
+//                v_motor_bgleft.setPower(1.0f);
+//                v_motor_bgright.setPower(1.0f);
+//                v_motors_blockgrabbers_on = true;
+//            }
+//            set_third_message("blockgrabbers_start");
+//        }catch (Exception p_exeception)
+//        {
+//            debugLogException("blockgrabbers_start", "error", p_exeception);
+//        }
+//    }
+//
+//    public void blockgrabbers_stop ()
+//    {
+//        try {
+//            if (v_motor_bgleft != null && v_motor_bgright != null ) {
+//                v_motor_bgleft.setPower(0.0f);
+//                v_motor_bgright.setPower(0.0f);
+//                v_motors_blockgrabbers_on = false;
+//            }
+//            set_third_message("blockgrabbers_start");
+//        }catch (Exception p_exeception)
+//        {
+//            debugLogException("blockgrabbers_start", "error", p_exeception);
+//        }
+//    }
+//
+//    public void blockgrabbers_toggle()
+//    {
+//        try {
+//            if (v_motors_blockgrabbers_on) {
+//                blockgrabbers_stop();
+//            }else{
+//                blockgrabbers_start();
+//            }
+//        }catch (Exception p_exeception)
+//        {
+//            debugLogException("blockgrabbers_toggle", "error", p_exeception);
+//        }
+//    }
 
     public void blockgrabber_toggle ()
     {
