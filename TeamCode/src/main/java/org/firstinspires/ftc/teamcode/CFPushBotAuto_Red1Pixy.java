@@ -58,6 +58,7 @@ public class CFPushBotAuto_Red1Pixy extends LinearOpMode
         int Sig1X = -1;//Sig 1 is red
         int Sig2X = -1; //Sig 2 is Blue
         robot.init(this);
+        robot.debugOn();
         robot.drive_power_override(.3F,.3F, .3F);
         robot.turn_power_override(.3F, .3F);
         robot.setupDriveToPosition();
@@ -66,9 +67,10 @@ public class CFPushBotAuto_Red1Pixy extends LinearOpMode
         robot.led7seg_timer_init(30);
         robot.blockgrabber_close();
         robot.sensor_range_init();
-        robot.sensor_pixy_init();
+
         robot.sensor_color_enable(true);
         robot.sensor_color_led(true);
+        robot.sensor_pixy_init();
         robot.sensor_pixy_maxsignature_enable(0,true);
         //Enable Pixy witch will start the i2c queries
         robot.sensor_pixy_enable(true);
@@ -84,30 +86,6 @@ public class CFPushBotAuto_Red1Pixy extends LinearOpMode
                 // Synchronize the state machine and hardware.
                 //
                 case 0:
-                    //
-                    // drive Forward  inches
-                    //
-                    //robot.led7seg_timer_start(30);
-
-                    robot.jewel_lower();
-
-                    v_state++;
-                    break;
-                case 1:
-                    //enable color sensor
-                    robot.blockgrabber_close();
-                    robot.timewait(.5f);
-                    // Transition to the next state when this method is called again.
-                    v_state++;
-                    break;
-                case 2:
-                    if(robot.timewait_Complete()){
-                        robot.lifter_step(v_lifter_step);
-                        robot.timewait(2);
-                        v_state++;
-                    }
-                    break;
-                case 3:
                     sigMaxBlockList_All = robot.sensor_pixy_maxSignatureBlocks(0);
                     String dbg = "Blocks:";
                     if(sigMaxBlockList_All.BlockCount > 0){
@@ -127,9 +105,9 @@ public class CFPushBotAuto_Red1Pixy extends LinearOpMode
                         //The Block we care abount is always on the Left so lowest X value
                         if(Sig1X > 0 && Sig2X > 0) {
                             if (Sig1X < Sig2X) {
-                                blockcolor = 2;  //Ball on Left is Signature 1 Red
+                                blockcolor = 0;  //Ball on Left is Signature 1 Red
                             } else {
-                                blockcolor = 0;  //Ball on Left is Signature 2 Blue
+                                blockcolor = 2;  //Ball on Left is Signature 2 Blue
                             }
                         }
                         robot.set_error_message(dbg);
@@ -137,6 +115,31 @@ public class CFPushBotAuto_Red1Pixy extends LinearOpMode
                     robot.sensor_pixy_enable(false);
                     v_state++;
                     break;
+                case 1:
+                    //
+                    // drive Forward  inches
+                    //
+                    //robot.led7seg_timer_start(30);
+
+                    robot.jewel_lower();
+
+                    v_state++;
+                    break;
+                case 2:
+                    //enable color sensor
+                    robot.blockgrabber_close();
+                    robot.timewait(.5f);
+                    // Transition to the next state when this method is called again.
+                    v_state++;
+                    break;
+                case 3:
+                    if(robot.timewait_Complete()){
+                        robot.lifter_step(v_lifter_step);
+                        robot.timewait(2);
+                        v_state++;
+                    }
+                    break;
+
                 case 4:
                     color = robot.sensor_color_GreatestColor();
 

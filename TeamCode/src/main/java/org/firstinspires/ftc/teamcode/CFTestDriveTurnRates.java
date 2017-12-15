@@ -9,8 +9,8 @@ import org.firstinspires.ftc.teamcode.ControlFreaks.CFPushBotHardware;
 /**
  * Created by adevries on 11/6/2015.
  */
-@TeleOp(name="Test Run To Position", group="Manual")  // @Autonomous(...) is the other common choice
-@Disabled
+@TeleOp(name="Mech Test Run To Position", group="Manual")  // @Autonomous(...) is the other common choice
+//@Disabled
 public class CFTestDriveTurnRates extends LinearOpMode {
 
     /* Declare OpMode members. */
@@ -37,13 +37,18 @@ public class CFTestDriveTurnRates extends LinearOpMode {
         try {
             /* Declare OpMode members. */
             robot           = new CFPushBotHardware();   // Use a Pushbot's hardware
+            robot.isDriveAndyMark20 = false;
+            robot.isMechDrive = true;
+            robot.debugOn();
             robot.init(this);
-            robot.run_without_encoders();
+            robot.set_message("left stick button for manual, dpad 36 inch, bumper strife");
+            robot.setupManualDrive();
             // Wait for the game to start (driver presses PLAY)
             waitForStart();
             boolean isDriveInchesInProgress = false;
             boolean isTurnInProgress = false;
             boolean isManualMode = true;
+
             // run until the end of the match (driver presses STOP)
             while (opModeIsActive()) {
                 robot.hardware_loop();
@@ -59,7 +64,7 @@ public class CFTestDriveTurnRates extends LinearOpMode {
                     }
                 }else{
                     if(isManualMode == true){
-                        robot.set_drive_power(-gamepad1.left_stick_y, -gamepad1.right_stick_y);
+                        robot.drive_set_power(-gamepad1.left_stick_y, -gamepad1.right_stick_y);
                     }else {
                         //robot.update_gamepad_telemetry();
                         if (gamepad1.dpad_up) {
@@ -77,7 +82,21 @@ public class CFTestDriveTurnRates extends LinearOpMode {
                             robot.turn_degrees(90, gamepad1.right_bumper, true);
                             isTurnInProgress = true;
                         }
-
+                        if (gamepad1.dpad_down) {
+                            robot.setupAutoDrive();
+                            robot.drive_inches( -36, true);
+                            isDriveInchesInProgress = true;
+                        }
+                        if(gamepad1.left_bumper){
+                            robot.setupAutoDrive();
+                            robot.drive_inches_strife( -36, true);
+                            isDriveInchesInProgress = true;
+                        }
+                        if(gamepad1.right_bumper){
+                            robot.setupAutoDrive();
+                            robot.drive_inches_strife( 36, true);
+                            isDriveInchesInProgress = true;
+                        }
                     }
 
 
@@ -96,7 +115,6 @@ public class CFTestDriveTurnRates extends LinearOpMode {
                         robot.set_message("in Auto Mode");
 
                     }
-
                 }
                 //robot.waitForTick(5);
             } // loop

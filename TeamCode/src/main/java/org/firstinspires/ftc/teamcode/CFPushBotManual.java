@@ -85,7 +85,7 @@ public class CFPushBotManual extends LinearOpMode {
                     robot.hardware_loop();
 //
                     if(highspeedmode || gamepad1.left_trigger > .2 || gamepad1.right_trigger > .2 ) {
-                        robot.set_drive_power(-gamepad1.left_stick_y, -gamepad1.right_stick_y);
+                        robot.drive_set_power(-gamepad1.left_stick_y, -gamepad1.right_stick_y);
                     }else{
                         //robot.set_drive_power(-gamepad1.left_stick_y/2.7f, -gamepad1.right_stick_y/2.7f);
                         float left = -gamepad1.left_stick_y ;
@@ -102,7 +102,7 @@ public class CFPushBotManual extends LinearOpMode {
                             left = left/2.5f;
                             right = right/2.5f;
                         }
-                        robot.set_drive_power(left, right);
+                        robot.drive_set_power(left, right);
                     }
 
                     if(gamepad2.left_stick_y > .2 ) {

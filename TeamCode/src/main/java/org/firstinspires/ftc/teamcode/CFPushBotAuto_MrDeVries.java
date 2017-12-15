@@ -36,7 +36,6 @@ public class CFPushBotAuto_MrDeVries extends LinearOpMode
         robot.init(this);
         robot.blueled_on();
         robot.setupAutoDrive();
-        robot.setup_am20();
         waitForStart();
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {

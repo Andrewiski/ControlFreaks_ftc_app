@@ -9,6 +9,8 @@ import android.media.ToneGenerator;
 import android.util.Log;
 
 
+import com.qualcomm.hardware.adafruit.AdafruitBNO055IMU;
+import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cColorSensor;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -57,9 +59,10 @@ public class CFPushBotHardware {
     private String config_servo_blockgrabber = "blockgrabber";
     private String config_servo_blockslide = "blockslide";
     //private String config_motor_bgtilt = "ssg";
-    private String config_motor_leftfrontdrive = "front_left";
-    private String config_motor_rightfrontdrive = "front_right";
-    private boolean IsMechDrive = false;
+    private String config_motor_leftfrontdrive = "leftfront_drive";
+    private String config_motor_rightfrontdrive = "rightfront_drive";
+    public boolean isMechDrive = false;
+    public boolean isDriveAndyMark20 = true;
 
     private String config_servo_shoulder = "shoulder";
     private String config_dim = "dim";
@@ -70,7 +73,9 @@ public class CFPushBotHardware {
 
     private String config_i2c_range = "range";
     private String config_i2c_pixy = "pixy";
-    private String config_pixy_led = "pixy_led";
+    //private String config_pixy_led = "pixy_led";
+    private String config_adafruitimu = "imu";
+    private String config_mrcolorsensor = "mrcolor";
     /*
         Motor Encoder Vars
      */
@@ -79,49 +84,22 @@ public class CFPushBotHardware {
         AndyMark 40 1120 Pulses per 360
         AndyMark 60 1680 Pulses per 360
      */
-/*
-    //Andy Mark 20 motors
-    private static final float v_drive_turn_ticks_per_degree = 5.0f;
-    private static final double v_drive_inches_ticksPerInch = 42.00;
-    //This is the value used to stop before reaching target to account for delay in stop command being processed
-    private static final int v_drive_inches_ticksStop = 300;
-    //ticks before target to slow to slowdown 1 speed hapens before slowdown 2
-    private static final int v_drive_inches_ticksSlowDown1 = 1000;
-    private static final float v_turn_motorspeed = .3f;
-    private static final float v_turn_motorspeed_slow = .2f;
-    private static final int v_turn_degrees_heading_drift_error = 5;
 
-    //old treads
-    //private static final double driveInches_ticksPerInch = 182.35;
 
-    //new Treads
-    //ticks before target to slow to slowdown 2 speed
-    //private static final double v_drive_inches_ticksSlowDown2 = 1000;
-    private static final float v_drive_power_slowdown1 = .2f;
-    //private static final float v_drive_power_slowdown2 = .30f;
-    private static final float v_drive_power_slowdown1 = .2f;
-*/
-
-    //Andy Mark 40 motors
-    //private static final float v_drive_turn_ticks_per_degree = 10.83f;  //10
-    //private static final double v_drive_inches_ticksPerInch = 88.00;
-    private float v_drive_turn_ticks_per_degree = 10.83f;  //10
-    private double v_drive_inches_ticksPerInch = 88.00;
+    private float v_drive_turn_ticks_per_degree;
+    private double v_drive_inches_ticksPerInch;
+    private double v_drive_inches_strife_ticksPerInch;
 
     //This is the value used to stop before reaching target to account for delay in stop command being processed
-    private static final int v_drive_inches_ticksStop = 150;
-    //ticks before target to slow to slowdown 1 speed happens before slowdown 2
-    //private static final int v_drive_inches_ticksSlowDown1 = 1000;
-    private float v_drive_power = 1f;
-    private float v_drive_power_reverse = .5f;
-    private float v_drive_power_slowdown = .3f;
-    //Motor speed for turns
-    //Am40
-    //private static final float v_turn_motorspeed = .8f;
-    //private static final float v_turn_motorspeed_slow = .5f;
+    //private static final int v_drive_inches_ticksStop = 150;
 
-    private  float v_turn_motorspeed = .5f;
-    private  float v_turn_motorspeed_slow = .25f;
+    private float v_drive_power;
+    private float v_drive_power_reverse;
+    private float v_drive_power_slowdown;
+
+
+    private  float v_turn_motorspeed;
+    private  float v_turn_motorspeed_slow;
     private static final DcMotor.Direction v_drive_leftDirection = DcMotor.Direction.REVERSE;
     private static final DcMotor.Direction v_drive_rightDirection = DcMotor.Direction.FORWARD;
 
@@ -146,13 +124,9 @@ public class CFPushBotHardware {
     // each time through the loop we check to see if v_loop_ticks % v_loop_ticks_slow_count == 0 is so then slow loop = true
     private int v_loop_ticks_slow_count = 60;  //20
     private boolean v_loop_ticks_slow = false;
-    private boolean v_drive_use_slowdown = true;
-    private int v_drive_inches_slowdown = 24;  //slowdown inches before target
+    private boolean v_drive_use_slowdown;
+    private int v_drive_inches_slowdown;  //slowdown inches before target
     private int v_drive_inches_slowdown_ticks; //do not set this the inches above is used to calc this on init
-    //old treads
-    //private static final float v_turn_ticks_per_degree = 18.8f;
-    //new treads
-
 
     //Global Vars to the class
     private static final double ServoErrorResultPosition = -0.0000000001;
@@ -173,7 +147,7 @@ public class CFPushBotHardware {
     private static final int v_motor_lifter_ExtendSlowdownTicks = 300;
     private int v_motor_lifter_Position = 0;
 
-    //Slider is a AndyMark 40 1120 Pulses per 360 10 rotation to fully extend 11200
+    //Slider is a AndyMark 20
     private DcMotor v_motor_slider;
     private static final double v_motor_slider_power = 1.0f;
     private static final DcMotor.Direction v_motor_slider_direction = DcMotor.Direction.FORWARD;
@@ -273,7 +247,10 @@ public class CFPushBotHardware {
 */
     //Modern Robotics gyro1
     ModernRoboticsI2cGyro v_sensor_gyro_mr;
-    GyroSensor v_sensor_gyro;
+    //GyroSensor v_sensor_gyro;
+    ModernRoboticsI2cColorSensor v_sensor_mrcolor;
+
+    AdafruitBNO055IMU v_sensor_adafruitimu;
     //private int v_sensor_gyro_x, v_sensor_gyro_y, v_sensor_gyro_z = 0;
     //private int v_sensor_gyro_heading = 0;
 
@@ -401,7 +378,7 @@ public class CFPushBotHardware {
         }
 
 
-        if (IsMechDrive){
+        if (isMechDrive){
             try
             {
                 v_motor_leftfront_drive = opMode.hardwareMap.dcMotor.get (config_motor_leftfrontdrive);
@@ -718,56 +695,7 @@ public class CFPushBotHardware {
             debugLogException(config_motor_lifter,"missing",p_exeception);
             v_motor_lifter = null;
         }
-        /*try
-        {
-            // get a reference to our ColorSensor object.
-            v_sensor_colorLegecy = hardwareMap.colorSensor.get(v_sensor_colorLegecy_name);
-            // bEnabled represents the state of the LED.
-            boolean v_sensor_colorLegecy_led_enabled = true;
-            // turn the LED on in the beginning, just so user will know that the sensor is active.
-            v_sensor_colorLegecy.enableLed(false);
 
-        }
-        catch (Exception p_exeception)
-        {
-            debugLogException(v_sensor_colorLegecy_name, "missing", p_exeception);
-            v_sensor_colorLegecy = null;
-        }*/
-
-       /* try
-        {
-            v_sensor_odsLegecy = hardwareMap.opticalDistanceSensor.get ("ods1");
-
-        }
-        catch (Exception p_exeception)
-        {
-            debugLogException("ods1", "missing", p_exeception);
-            v_sensor_odsLegecy = null;
-
-        }*/
-       /* try
-        {
-            v_sensor_lightLegecy = hardwareMap.lightSensor.get (v_sensor_lightLegecy_name);
-
-        }
-        catch (Exception p_exeception)
-        {
-            debugLogException(v_sensor_lightLegecy_name, "missing", p_exeception);
-            v_sensor_lightLegecy = null;
-
-        }*/
-
-        /*try
-        {
-            v_sensor_ultraLegecy = hardwareMap.ultrasonicSensor.get (v_sensor_ultraLegecy_name);
-
-        }
-        catch (Exception p_exeception)
-        {
-            debugLogException(v_sensor_ultraLegecy_name, "missing", p_exeception);
-            v_sensor_ultraLegecy = null;
-
-        }*/
 
         try{
 
@@ -800,9 +728,11 @@ public class CFPushBotHardware {
             v_neopixels = null;
         }*/
 
-
-        setup_am20();  //chad comment this line for am40 motors
-
+        if(isDriveAndyMark20) {
+            drive_setup_am20();
+        }else{
+            drive_setup_am40();
+        }
         //update our telmentry after init so we know if we are missing anything
 
         update_telemetry();
@@ -834,12 +764,12 @@ public class CFPushBotHardware {
         }
     }
 
-    public boolean sensor_gyro_init(){
+    public boolean sensor_gyro_mr_init(){
         try {
             // get a reference to our GyroSensor object.
-            v_sensor_gyro = opMode.hardwareMap.gyroSensor.get(config_i2c_gyro);
+            v_sensor_gyro_mr = new ModernRoboticsI2cGyro(opMode.hardwareMap.i2cDeviceSynch.get(config_i2c_gyro));
             // calibrate the gyro.
-            v_sensor_gyro.calibrate();
+            v_sensor_gyro_mr.calibrate();
             // make sure the gyro is calibrated.
             //while (v_sensor_gyro.isCalibrating())  {
             //    sleep(50);
@@ -847,14 +777,27 @@ public class CFPushBotHardware {
             //v_sensor_gyro_mr = (ModernRoboticsI2cGyro) v_sensor_gyro;
             //v_sensor_gyro_mr.setHeadingMode(ModernRoboticsI2cGyro.HeadingMode.HEADING_CARDINAL);
             //sleep(100);
-            v_sensor_gyro.resetZAxisIntegrator();
+            v_sensor_gyro_mr.resetZAxisIntegrator();
             //sleep(200);
             //v_sensor_gyro_heading = v_sensor_gyro.getHeading();
-            set_second_message("Gyro isCalibrated H:" + v_sensor_gyro.getHeading() );
+            set_second_message("Gyro isCalibrated H:" + v_sensor_gyro_mr.getHeading() );
             return true;
         }catch(Exception p_exeception){
             debugLogException(config_i2c_gyro,"missing",p_exeception);
-            v_sensor_gyro = null;
+            v_sensor_gyro_mr = null;
+            return false;
+        }
+    }
+
+    public boolean sensor_color_mr_init(){
+        try {
+            v_sensor_mrcolor = new ModernRoboticsI2cColorSensor(opMode.hardwareMap.i2cDeviceSynch.get(config_mrcolorsensor));
+            v_sensor_mrcolor.enableLight(false);
+            set_second_message("sensor_color_mr_init");
+            return true;
+        }catch(Exception p_exeception){
+            debugLogException(config_mrcolorsensor,"missing",p_exeception);
+            v_sensor_mrcolor = null;
             return false;
         }
     }
@@ -911,14 +854,14 @@ public class CFPushBotHardware {
             v_pixy = null;
             retval = false;
         }
-        try{
-            v_pixy_led = opMode.hardwareMap.get(LED.class, config_pixy_led);
-        }catch (Exception p_exeception)
-        {
-            debugLogException(config_pixy_led, "missing", p_exeception);
-            v_pixy_led = null;
-            retval = false;
-        }
+//        try{
+//            v_pixy_led = opMode.hardwareMap.get(LED.class, config_pixy_led);
+//        }catch (Exception p_exeception)
+//        {
+//            debugLogException(config_pixy_led, "missing", p_exeception);
+//            v_pixy_led = null;
+//            retval = false;
+//        }
         return retval;
     }
 
@@ -977,19 +920,19 @@ public class CFPushBotHardware {
         }
     }
 
-    public boolean sensor_pixy_led_external(boolean enable){
-        try{
-            if(v_pixy_led != null) {
-
-                v_pixy_led.enable(enable);
-            }
-            return true;
-        }catch (Exception p_exeception)
-        {
-            debugLogException(config_pixy_led, "sensor_pixy_led_external", p_exeception);
-            return false;
-        }
-    }
+//    public boolean sensor_pixy_led_external(boolean enable){
+//        try{
+//            if(v_pixy_led != null) {
+//
+//                v_pixy_led.enable(enable);
+//            }
+//            return true;
+//        }catch (Exception p_exeception)
+//        {
+//            debugLogException(config_pixy_led, "sensor_pixy_led_external", p_exeception);
+//            return false;
+//        }
+//    }
 
     public boolean sensor_pixy_set_leds(byte red, byte green, byte blue){
         try{
@@ -1159,7 +1102,8 @@ public class CFPushBotHardware {
     } // stop
 
 
-
+    //We use this to throttle methods that get called each hardware loop but only need to service rutine every so many loops.
+    //We can keep our loop performance up and still use high latency calls like get color etc.
     public boolean is_slow_tick(){
         return  v_loop_ticks_slow;
     }
@@ -1233,7 +1177,7 @@ public class CFPushBotHardware {
             }
 
 
-            if(v_debug || v_zeromessage_set) {
+            if(v_debug || v_zeromessage_set || v_errormessage_set) {
                 update_telemetry();
                 opMode.updateTelemetry(opMode.telemetry);
             }
@@ -1269,57 +1213,57 @@ public class CFPushBotHardware {
         }
     }
 
-    //--------------------------------------------------------------------------
-    //
-    // scale_motor_power
-    //
-    /**
-     * Scale the joystick input using a nonlinear algorithm.
-     */
-    float scale_motor_power (float p_power)
-    {
-        //
-        // Assume no scaling.
-        //
-        float l_scale = 0.0f;
-
-        //
-        // Ensure the values are legal.
-        //
-        float l_power = Range.clip (p_power, -1, 1);
-
-        float[] l_array =
-                { 0.00f, 0.05f, 0.09f, 0.10f, 0.12f
-                        , 0.15f, 0.18f, 0.24f, 0.30f, 0.36f
-                        , 0.43f, 0.50f, 0.60f, 0.72f, 0.85f
-                        , 1.00f, 1.00f
-                };
-
-        //
-        // Get the corresponding index for the specified argument/parameter.
-        //
-        int l_index = (int)(l_power * 16.0);
-        if (l_index < 0)
-        {
-            l_index = -l_index;
-        }
-        else if (l_index > 16)
-        {
-            l_index = 16;
-        }
-
-        if (l_power < 0)
-        {
-            l_scale = -l_array[l_index];
-        }
-        else
-        {
-            l_scale = l_array[l_index];
-        }
-
-        return l_scale;
-
-    } // scale_motor_power
+//    //--------------------------------------------------------------------------
+//    //
+//    // scale_motor_power
+//    //
+//    /**
+//     * Scale the joystick input using a nonlinear algorithm.
+//     */
+//    float scale_motor_power (float p_power)
+//    {
+//        //
+//        // Assume no scaling.
+//        //
+//        float l_scale = 0.0f;
+//
+//        //
+//        // Ensure the values are legal.
+//        //
+//        float l_power = Range.clip (p_power, -1, 1);
+//
+//        float[] l_array =
+//                { 0.00f, 0.05f, 0.09f, 0.10f, 0.12f
+//                        , 0.15f, 0.18f, 0.24f, 0.30f, 0.36f
+//                        , 0.43f, 0.50f, 0.60f, 0.72f, 0.85f
+//                        , 1.00f, 1.00f
+//                };
+//
+//        //
+//        // Get the corresponding index for the specified argument/parameter.
+//        //
+//        int l_index = (int)(l_power * 16.0);
+//        if (l_index < 0)
+//        {
+//            l_index = -l_index;
+//        }
+//        else if (l_index > 16)
+//        {
+//            l_index = 16;
+//        }
+//
+//        if (l_power < 0)
+//        {
+//            l_scale = -l_array[l_index];
+//        }
+//        else
+//        {
+//            l_scale = l_array[l_index];
+//        }
+//
+//        return l_scale;
+//
+//    } // scale_motor_power
 
     //--------------------------------------------------------------------------
     //
@@ -1370,7 +1314,7 @@ public class CFPushBotHardware {
      */
     // float l_left_drive_power = 0.0f;
     // float l_right_drive_power = 0.0f;
-    public void set_drive_power (float p_left_power, float p_right_power)
+    public void drive_set_power (float p_left_power, float p_right_power)
     {
         try {
             float l_left_drive_power = Range.clip(p_left_power, -1, 1);
@@ -1382,6 +1326,14 @@ public class CFPushBotHardware {
             if (v_motor_right_drive != null) {
                 v_motor_right_drive.setPower(l_right_drive_power);
             }
+            if(isMechDrive){
+                if (v_motor_leftfront_drive != null) {
+                    v_motor_leftfront_drive.setPower(l_left_drive_power);
+                }
+                if (v_motor_rightfront_drive != null) {
+                    v_motor_rightfront_drive.setPower(l_right_drive_power);
+                }
+            }
         }catch(Exception ex) {
             debugLogException("robot", "set_drive_power", ex );
         }
@@ -1390,32 +1342,65 @@ public class CFPushBotHardware {
 
     //--------------------------------------------------------------------------
     //
-    // set_drive_power
+    // set_drive_strife_power
     //
     /**
      * Scale the joystick input using a nonlinear algorithm.
      */
-    // float l_left_drive_power = 0.0f;
-    // float l_right_drive_power = 0.0f;
-    public void set_drive_power_scaled (float p_left_power, float p_right_power)
+    public void drive_set_strife_power (float power)
     {
-        try{
-        float l_left_drive_power = scale_motor_power(p_left_power);
-        float l_right_drive_power = scale_motor_power(p_right_power);
+        try {
 
-        if (v_motor_left_drive != null)
-        {
-            v_motor_left_drive.setPower (l_left_drive_power);
-        }
-        if (v_motor_right_drive != null)
-        {
-            v_motor_right_drive.setPower(l_right_drive_power);
-        }
-        //set_second_message("set_drive_power " + p_left_power + ":" + p_right_power + " " + l_left_drive_power +":" + l_right_drive_power);
+            if(isMechDrive){
+                float drive_power = Range.clip(power, -1, 1);
+
+                if (v_motor_left_drive != null) {
+                    v_motor_left_drive.setPower(0-drive_power);
+                }
+                if (v_motor_right_drive != null) {
+                    v_motor_right_drive.setPower(drive_power);
+                }
+                if (v_motor_leftfront_drive != null) {
+                    v_motor_leftfront_drive.setPower(drive_power);
+                }
+                if (v_motor_rightfront_drive != null) {
+                    v_motor_rightfront_drive.setPower(0-drive_power);
+                }
+            }
         }catch(Exception ex) {
-            debugLogException("robot", "set_drive_power_scaled", ex );
+            debugLogException("robot", "set_drive_power", ex );
         }
+        //set_second_message("set_drive_power l" + p_left_power + ":r" + p_right_power + " cliped:l:" + l_left_drive_power +":r" + l_right_drive_power);
     } // set_drive_power
+
+//    //--------------------------------------------------------------------------
+//    //
+//    // set_drive_power
+//    //
+//    /**
+//     * Scale the joystick input using a nonlinear algorithm.
+//     */
+//    // float l_left_drive_power = 0.0f;
+//    // float l_right_drive_power = 0.0f;
+//    public void drive_set_power_scaled (float p_left_power, float p_right_power)
+//    {
+//        try{
+//        float l_left_drive_power = scale_motor_power(p_left_power);
+//        float l_right_drive_power = scale_motor_power(p_right_power);
+//
+//        if (v_motor_left_drive != null)
+//        {
+//            v_motor_left_drive.setPower (l_left_drive_power);
+//        }
+//        if (v_motor_right_drive != null)
+//        {
+//            v_motor_right_drive.setPower(l_right_drive_power);
+//        }
+//        //set_second_message("set_drive_power " + p_left_power + ":" + p_right_power + " " + l_left_drive_power +":" + l_right_drive_power);
+//        }catch(Exception ex) {
+//            debugLogException("robot", "set_drive_power_scaled", ex );
+//        }
+//    } // set_drive_power
 
 
 
@@ -1858,7 +1843,7 @@ public class CFPushBotHardware {
             v_motor_left_drive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             v_motor_right_drive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            set_drive_power(power, power);
+            drive_set_power(power, power);
 
             // keep looping while we are still active, and there is time left, and both motors are running.
             while (opMode.opModeIsActive() &&
@@ -1919,6 +1904,44 @@ public class CFPushBotHardware {
 
     //--------------------------------------------------------------------------
     //
+    // run_using_leftfront_drive_encoder
+    //
+    /**
+     * Set the left drive wheel encoder to run, if the mode is appropriate.
+     */
+    public void run_using_leftfront_drive_encoder ()
+
+    {
+        if (v_motor_leftfront_drive != null)
+        {
+            v_motor_leftfront_drive.setMode
+                    (DcMotor.RunMode.RUN_USING_ENCODER
+                    );
+        }
+
+    } // run_using_leftfront_drive_encoder
+
+    //--------------------------------------------------------------------------
+    //
+    // run_using_rightfront_drive_encoder
+    //
+    /**
+     * Set the right front drive wheel encoder to run, if the mode is appropriate.
+     */
+    public void run_using_rightfront_drive_encoder ()
+
+    {
+        if (v_motor_rightfront_drive != null)
+        {
+            v_motor_rightfront_drive.setMode
+                    (DcMotor.RunMode.RUN_USING_ENCODER
+                    );
+        }
+
+    } // run_using_rightfront_drive_encoder
+
+    //--------------------------------------------------------------------------
+    //
     // run_using_encoders
     //
     /**
@@ -1932,6 +1955,8 @@ public class CFPushBotHardware {
         //
         run_using_left_drive_encoder ();
         run_using_right_drive_encoder ();
+        run_using_leftfront_drive_encoder ();
+        run_using_rightfront_drive_encoder ();
 
     } // run_using_encoders
 /*
@@ -2034,7 +2059,12 @@ public class CFPushBotHardware {
 
     public boolean isInDriveMode(DcMotor.RunMode RunMode){
         if (v_motor_left_drive != null && v_motor_right_drive != null){
-            if(v_motor_left_drive.getMode() == RunMode && v_motor_right_drive.getMode() == RunMode){
+            if(v_motor_left_drive.getMode() == RunMode && v_motor_right_drive.getMode() == RunMode
+                && (
+                        isMechDrive == false
+                        || (isMechDrive==true && v_motor_leftfront_drive.getMode() == RunMode && v_motor_rightfront_drive.getMode() == RunMode )
+                    )
+                ){
                 return true;
             }else{
                 return false;
@@ -2062,10 +2092,38 @@ public class CFPushBotHardware {
 
     } // reset_right_drive_encoder
 
+    //
+    /**
+     * Reset the right front drive wheel encoder.
+     */
+    public void reset_rightfront_drive_encoder ()
+
+    {
+        if (v_motor_rightfront_drive != null)
+        {
+            v_motor_rightfront_drive.setMode
+                    (DcMotor.RunMode.STOP_AND_RESET_ENCODER
+                    );
+        }
+
+    } // reset_rightfront_drive_encoder
+
+    public void reset_leftfront_drive_encoder ()
+
+    {
+        if (v_motor_leftfront_drive != null)
+        {
+            v_motor_leftfront_drive.setMode
+                    (DcMotor.RunMode.STOP_AND_RESET_ENCODER
+                    );
+        }
+
+    } // reset_leftfront_drive_encoder
+
     public void setupAutoDrive() {
 
         if(isInDriveMode(DcMotor.RunMode.RUN_USING_ENCODER) == false){
-            set_drive_power(0.0f,0.0f);
+            drive_set_power(0.0f,0.0f);
             run_using_encoders();
             int counter = 0;
 
@@ -2085,7 +2143,7 @@ public class CFPushBotHardware {
     public void setupManualDrive() {
 
         if (isInDriveMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER) == false){
-            set_drive_power(0.0f,0.0f);
+            drive_set_power(0.0f,0.0f);
             run_using_encoders();
             int counter = 0;
             while (counter < 5 && isInDriveMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER)==false){
@@ -2113,9 +2171,13 @@ public class CFPushBotHardware {
             }*/
             v_motor_left_drive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             v_motor_right_drive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            while (counter < 5 && isInDriveMode(DcMotor.RunMode.RUN_TO_POSITION)==false){
+            if(isMechDrive ){
+                v_motor_leftfront_drive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                v_motor_rightfront_drive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            }
+            while (counter < 10 && isInDriveMode(DcMotor.RunMode.RUN_TO_POSITION)==false){
                 counter++;
-                sleep(50);
+                sleep(10);
             }
             if(counter > 1){
                 debugLogException("init", "waiting on  DcMotor.RunMode.RUN_TO_POSITION) complete. Counter: " + counter, null);
@@ -2183,6 +2245,33 @@ public class CFPushBotHardware {
 
     } // a_left_encoder_count
 
+    int a_leftfront_encoder_count ()
+    {
+        int l_return = 0;
+
+        if (v_motor_leftfront_drive != null)
+        {
+            l_return = v_motor_leftfront_drive.getCurrentPosition ();
+        }
+
+        return l_return;
+
+    }
+
+    int a_rightfront_encoder_count ()
+    {
+        int r_return = 0;
+
+        if (v_motor_rightfront_drive != null)
+        {
+            r_return = v_motor_rightfront_drive.getCurrentPosition ();
+        }
+
+        return r_return;
+
+    }
+
+
     /**
      * Access the left drive mode.
      */
@@ -2215,6 +2304,38 @@ public class CFPushBotHardware {
 
     } // a_right_drive_mode
 
+
+    /**
+     * Access the leftfront drive mode.
+     */
+    DcMotor.RunMode a_leftfront_drive_mode ()
+    {
+
+
+        if (v_motor_leftfront_drive != null)
+        {
+            return v_motor_leftfront_drive.getMode();
+        }
+
+        return DcMotor.RunMode.RUN_TO_POSITION;
+
+    } // a_leftfront_drive_mode
+
+    /**
+     * Access the rightfront drive mode.
+     */
+    DcMotor.RunMode a_rightfront_drive_mode ()
+    {
+
+
+        if (v_motor_rightfront_drive != null)
+        {
+            return v_motor_rightfront_drive.getMode();
+        }
+
+        return DcMotor.RunMode.RUN_TO_POSITION;
+
+    } // a_rightfront_drive_mode
 
 /*
     public boolean neopixels_set_rgb(byte red, byte green, byte blue){
@@ -2447,7 +2568,7 @@ public class CFPushBotHardware {
         //
         // Start the drive wheel motors at full power.
         //
-        set_drive_power (p_left_power, p_right_power);
+        drive_set_power (p_left_power, p_right_power);
 
         //
         // Have the motor shafts turned the required amount?
@@ -2461,7 +2582,7 @@ public class CFPushBotHardware {
             //
             // Stop the motors.
             //
-            set_drive_power (0.0f, 0.0f);
+            drive_set_power (0.0f, 0.0f);
 
             //
             // Transition to the next state when this method is called
@@ -2541,6 +2662,72 @@ public class CFPushBotHardware {
 
     } // has_right_drive_encoder_reset
 
+
+    //--------------------------------------------------------------------------
+    //
+    // has_left_drive_encoder_reset
+    //
+    /**
+     * Indicate whether the leftfront drive encoder has been completely reset.
+     */
+    boolean has_leftfront_drive_encoder_reset ()
+    {
+        //
+        // Assume failure.
+        //
+        boolean l_return = false;
+
+        //
+        // Has the leftfront encoder reached zero?
+        //
+        if (a_leftfront_encoder_count() == 0)
+        {
+            //
+            // Set the status to a positive indication.
+            //
+            l_return = true;
+        }
+
+        //
+        // Return the status.
+        //
+        return l_return;
+
+    } // has_leftfront_drive_encoder_reset
+
+    //--------------------------------------------------------------------------
+    //
+    // has_rightfront_drive_encoder_reset
+    //
+    /**
+     * Indicate whether the right front drive encoder has been completely reset.
+     */
+    boolean has_rightfront_drive_encoder_reset ()
+    {
+        //
+        // Assume failure.
+        //
+        boolean l_return = false;
+
+        //
+        // Has the right encoder reached zero?
+        //
+        if (a_rightfront_encoder_count() == 0)
+        {
+            //
+            // Set the status to a positive indication.
+            //
+            l_return = true;
+        }
+
+        //
+        // Return the status.
+        //
+        return l_return;
+
+    } // has_rightfront_drive_encoder_reset
+
+
     //--------------------------------------------------------------------------
     //
     // have_drive_encoders_reset
@@ -2558,7 +2745,13 @@ public class CFPushBotHardware {
         //
         // Have the encoders reached zero?
         //
-        if (has_left_drive_encoder_reset() && has_right_drive_encoder_reset ())
+        if (has_left_drive_encoder_reset() && has_right_drive_encoder_reset ()
+                && (
+                    isMechDrive == false
+                    ||
+                    (isMechDrive == true && has_leftfront_drive_encoder_reset() && has_rightfront_drive_encoder_reset () )
+                )
+            )
         {
             //
             // Set the status to a positive indication.
@@ -2579,6 +2772,8 @@ public class CFPushBotHardware {
     private long v_drive_inches_ticks_target_left_stop;
     private int v_drive_inches_ticks_target_right;
     private int v_drive_inches_ticks_target_left;
+    private int v_drive_inches_ticks_target_rightfront;
+    private int v_drive_inches_ticks_target_leftfront;
     private float v_drive_inches_power;
     private boolean v_drive_inches_useGyro;
     private int v_drive_inches_state;
@@ -2603,10 +2798,79 @@ public class CFPushBotHardware {
         }
     }
 
+    public void drive_inches_strife(float inches, boolean useGyro){
+        if(inches < 0){
+            //added a reverse power as we are rear heavy need to run slower backward so not to tip over
+            drive_inches_strife(v_drive_power_reverse, inches, useGyro);
+        }else {
+            drive_inches_strife(v_drive_power, inches, useGyro);
+        }
+    }
+    //left is positive inches, //right is negitive inches
+    private void drive_inches_strife(float power,float inches, boolean useGyro){
+        try {
+
+            if (v_motor_left_drive == null || v_motor_right_drive == null){
+                return;
+            }
+            if(isMechDrive && (v_motor_leftfront_drive == null || v_motor_rightfront_drive == null)){
+                return;
+            }
+            if (power < 0 ){
+                set_second_message("Power should be positive");
+                return;
+            }
+            if(isMechDrive == false) {
+                set_second_message("IsMechDrive = false");
+                return;
+            }
+            setupDriveToPosition();
+            v_drive_inches_useGyro = useGyro;
+            v_drive_inches_state = 0;
+            v_drive_inches_power = power;
+            String msg = "drive_inches_strife: p: " + v_drive_inches_power;
+
+            int v_left_position =  a_left_encoder_count();
+            int v_right_position =  a_right_encoder_count();
+
+            v_drive_inches_ticks_target_right = v_right_position -  (int)Math.round(inches * v_drive_inches_strife_ticksPerInch);
+            v_drive_inches_ticks_target_left = v_left_position +  (int)Math.round(inches * v_drive_inches_strife_ticksPerInch);
+
+            v_motor_left_drive.setTargetPosition(v_drive_inches_ticks_target_left);
+            v_motor_right_drive.setTargetPosition(v_drive_inches_ticks_target_right);
+
+            msg = msg + ",tl:" + v_drive_inches_ticks_target_left + ",tr:" + v_drive_inches_ticks_target_right
+                    + ",l:" + v_left_position + ",r:" + v_right_position;
+
+
+            int v_leftfront_position =  a_leftfront_encoder_count();
+            int v_rightfront_position =  a_rightfront_encoder_count();
+
+            v_drive_inches_ticks_target_rightfront = v_rightfront_position +  (int)Math.round(inches * v_drive_inches_strife_ticksPerInch);
+            v_drive_inches_ticks_target_leftfront = v_leftfront_position -  (int)Math.round(inches * v_drive_inches_strife_ticksPerInch);
+            v_motor_leftfront_drive.setTargetPosition(v_drive_inches_ticks_target_leftfront);
+            v_motor_rightfront_drive.setTargetPosition(v_drive_inches_ticks_target_rightfront);
+            msg = msg + ",tlf:" + v_drive_inches_ticks_target_leftfront + ",trf:" + v_drive_inches_ticks_target_rightfront
+                    + ",lf:" + v_leftfront_position + ",rf:" + v_rightfront_position;
+
+
+            set_second_message(msg);
+
+        }catch (Exception p_exeception)
+        {
+            debugLogException("drive inches", "drive_inches_strife", p_exeception);
+
+
+        }
+    }
+
     private void drive_inches(float power,float inches, boolean useGyro){
         try {
 
             if (v_motor_left_drive == null || v_motor_right_drive == null){
+                return;
+            }
+            if(isMechDrive && (v_motor_leftfront_drive == null || v_motor_rightfront_drive == null)){
                 return;
             }
             if (power < 0 ){
@@ -2614,29 +2878,35 @@ public class CFPushBotHardware {
                 return;
             }
             setupDriveToPosition();
+            v_drive_inches_useGyro = useGyro;
+            v_drive_inches_state = 0;
             v_drive_inches_power = power;
+            String msg = "drive_inches: p: " + v_drive_inches_power;
 
             int v_left_position =  a_left_encoder_count();
             int v_right_position =  a_right_encoder_count();
-            //if (inches >= 0 ){
-            //we are going forward
+
             v_drive_inches_ticks_target_right = v_right_position +  (int)Math.round(inches * v_drive_inches_ticksPerInch);
             v_drive_inches_ticks_target_left = v_left_position +  (int)Math.round(inches * v_drive_inches_ticksPerInch);
-
-            //}else{
-            //we are going backward
-            //    v_drive_inches_ticks_target_right = v_right_position - (int) Math.round(inches * v_drive_inches_ticksPerInch);
-            //    v_drive_inches_ticks_target_left = v_left_position - (int) Math.round(inches * v_drive_inches_ticksPerInch);
-            //    v_drive_inches_power = 0 -v_drive_inches_power;  //run in reverse
-            //}
-            v_drive_inches_useGyro = useGyro;
-            v_drive_inches_state = 0;
-
             v_motor_left_drive.setTargetPosition(v_drive_inches_ticks_target_left);
             v_motor_right_drive.setTargetPosition(v_drive_inches_ticks_target_right);
-            set_second_message("drive_inches: p: " + v_drive_inches_power
-                    + ",tl:" + v_drive_inches_ticks_target_left + ",tr:" + v_drive_inches_ticks_target_right
-                    + ",l:" + v_left_position + ",r:" + v_right_position );
+
+            msg = msg + ",tl:" + v_drive_inches_ticks_target_left + ",tr:" + v_drive_inches_ticks_target_right
+                    + ",l:" + v_left_position + ",r:" + v_right_position;
+
+            if(isMechDrive){
+                int v_leftfront_position =  a_leftfront_encoder_count();
+                int v_rightfront_position =  a_rightfront_encoder_count();
+
+                v_drive_inches_ticks_target_rightfront = v_rightfront_position +  (int)Math.round(inches * v_drive_inches_ticksPerInch);
+                v_drive_inches_ticks_target_leftfront = v_leftfront_position +  (int)Math.round(inches * v_drive_inches_ticksPerInch);
+                v_motor_leftfront_drive.setTargetPosition(v_drive_inches_ticks_target_leftfront);
+                v_motor_rightfront_drive.setTargetPosition(v_drive_inches_ticks_target_rightfront);
+                msg = msg + ",tlf:" + v_drive_inches_ticks_target_leftfront + ",trf:" + v_drive_inches_ticks_target_rightfront
+                        + ",lf:" + v_leftfront_position + ",rf:" + v_rightfront_position;
+            }
+
+            set_second_message(msg);
 
         }catch (Exception p_exeception)
         {
@@ -2651,28 +2921,45 @@ public class CFPushBotHardware {
         if (v_motor_left_drive == null || v_motor_right_drive == null){
             return true;
         }
-
+        if(isMechDrive && (v_motor_leftfront_drive == null || v_motor_rightfront_drive == null)){
+            return true;
+        }
         int v_drive_inches_ticks_left = v_motor_left_drive.getCurrentPosition();
         int v_drive_inches_ticks_right = v_motor_right_drive.getCurrentPosition();
+
+        int v_drive_inches_ticks_leftfront = 0;
+        int v_drive_inches_ticks_rightfront = 0;
+        if(isMechDrive) {
+            v_drive_inches_ticks_leftfront = v_motor_leftfront_drive.getCurrentPosition();
+            v_drive_inches_ticks_rightfront = v_motor_rightfront_drive.getCurrentPosition();
+        }
 
         switch(v_drive_inches_state){
 
             case 0:
                 if (v_drive_inches_useGyro) {
-                    v_drive_inches_heading = sensor_gyro_get_heading();
+                    v_drive_inches_heading = sensor_gyro_mr_get_heading();
                 }
-                //add a delay to handle any stupid issues with the ftc dc motor controller timming
-                //Commented by Andy Add Back if needed 11/10/2016 sleep(2);
 
-                set_drive_power(v_drive_inches_power, v_drive_inches_power);
-                set_second_message("drive_inches_complete: set the drive power "
-                        +  " p: " + v_drive_inches_power
+                drive_set_power(v_drive_inches_power, v_drive_inches_power);
+                String msg = "drive_inches_complete: set the drive power "
+                        + "gyro th:" + v_drive_inches_heading
+                        + " p: " + v_drive_inches_power
                         + ",tl:" + v_drive_inches_ticks_target_left + ",tr:" + v_drive_inches_ticks_target_right
-                        + ",l:" + v_drive_inches_ticks_left + ",r:" + v_drive_inches_ticks_right);
+                        + ",l:" + v_drive_inches_ticks_left + ",r:" + v_drive_inches_ticks_right;
+                if(isMechDrive){
+                    msg = msg + ",tlf:" + v_drive_inches_ticks_target_leftfront + ",trf:" + v_drive_inches_ticks_target_rightfront
+                            + ",lf:" + v_drive_inches_ticks_leftfront + ",rf:" + v_drive_inches_ticks_rightfront;
+                }
+                set_second_message(msg);
                 v_drive_inches_state++;
                 break;
             case 1:
-                if(v_motor_left_drive.isBusy() == false && v_motor_right_drive.isBusy() == false) {
+                if(v_motor_left_drive.isBusy() == false && v_motor_right_drive.isBusy() == false
+                        && (isMechDrive == false
+                            || (isMechDrive ==true && v_motor_leftfront_drive.isBusy() == false && v_motor_rightfront_drive.isBusy() == false)
+                            )
+                        ) {
                     return true;
                 }else if(v_drive_use_slowdown == true ){
                     int v_drive_left_difference =  v_drive_inches_ticks_target_left - v_drive_inches_ticks_left;
@@ -2685,7 +2972,7 @@ public class CFPushBotHardware {
                     }
 
                     if(v_drive_left_difference <= v_drive_inches_slowdown_ticks || v_drive_right_difference <= v_drive_inches_slowdown_ticks){
-                        set_drive_power(v_drive_power_slowdown, v_drive_power_slowdown);
+                        drive_set_power(v_drive_power_slowdown, v_drive_power_slowdown);
                     }
                 }
                 /*else if(v_drive_inches_useGyro){
@@ -2719,13 +3006,17 @@ public class CFPushBotHardware {
 
                 }*/
                 if(v_loop_ticks_slow) {
-                    set_second_message("drive_inches_complete: "
+                    String slowmsg = "drive_inches_complete: "
                             + "gyro th:" + v_drive_inches_heading
                             +  " p: " + v_drive_inches_power
                             + ",tl:" + v_drive_inches_ticks_target_left + ",tr:" + v_drive_inches_ticks_target_right
                             + ",l:" + v_drive_inches_ticks_left + ",r:" + v_drive_inches_ticks_right
-                            + ",lp:" + v_motor_left_drive.getPower() + ",rp:" + v_motor_right_drive.getPower()
-                    );
+                            + ",lp:" + v_motor_left_drive.getPower() + ",rp:" + v_motor_right_drive.getPower();
+                    if(isMechDrive){
+                        slowmsg = slowmsg + ",tlf:" + v_drive_inches_ticks_target_leftfront + ",trf:" + v_drive_inches_ticks_target_rightfront
+                                + ",lf:" + v_drive_inches_ticks_leftfront + ",rf:" + v_drive_inches_ticks_rightfront;
+                    }
+                    set_second_message(slowmsg);
                 }
                 break;
             default:
@@ -2739,19 +3030,31 @@ public class CFPushBotHardware {
         if (v_motor_left_drive == null || v_motor_right_drive == null){
             return true;
         }
-        set_drive_power(0, 0);
+        if(isMechDrive && (v_motor_leftfront_drive == null || v_motor_rightfront_drive == null)){
+            return true;
+        }
+        drive_set_power(0, 0);
         int v_drive_inches_ticks_left = v_motor_left_drive.getCurrentPosition();
         int v_drive_inches_ticks_right = v_motor_right_drive.getCurrentPosition();
         v_motor_left_drive.setTargetPosition(v_drive_inches_ticks_left);
         v_motor_right_drive.setTargetPosition(v_drive_inches_ticks_right);
-        set_second_message("drive_inches_stop: "
+        String msg = "drive_inches_stop: "
                         + "gyro th:" + v_drive_inches_heading
                         +  " p: " + v_drive_inches_power
                         + ",tl:" + v_drive_inches_ticks_target_left + ",tr:" + v_drive_inches_ticks_target_right
-                        + ",l:" + v_drive_inches_ticks_left + ",r:" + v_drive_inches_ticks_right
-                        + ",lp:" + v_motor_left_drive.getPower() + ",rp:" + v_motor_right_drive.getPower()
-                );
-        return false;
+                        + ",l:" + v_drive_inches_ticks_left + ",r:" + v_drive_inches_ticks_right;
+
+        if(isMechDrive){
+            int v_drive_inches_ticks_leftfront = v_motor_leftfront_drive.getCurrentPosition();
+            int v_drive_inches_ticks_rightfront = v_motor_rightfront_drive.getCurrentPosition();
+            v_motor_leftfront_drive.setTargetPosition(v_drive_inches_ticks_leftfront);
+            v_motor_rightfront_drive.setTargetPosition(v_drive_inches_ticks_rightfront);
+            msg = msg + ",tlf:" + v_drive_inches_ticks_target_leftfront + ",trf:" + v_drive_inches_ticks_target_rightfront
+                    + ",lf:" + v_drive_inches_ticks_leftfront + ",rf:" + v_drive_inches_ticks_rightfront;
+        }
+        msg = msg  + ",lp:" + v_motor_left_drive.getPower() + ",rp:" + v_motor_right_drive.getPower();
+        set_second_message(msg);
+        return true;
     }
 
     /**
@@ -2760,7 +3063,11 @@ public class CFPushBotHardware {
      * @return
      */
     public boolean led7seg_timer_init(int seconds){
-        return false;
+        if (v_ledseg != null){
+            v_ledseg.writeSeconds(seconds);
+            return true;
+        }
+        return true;
     }
 
     private boolean isFirstButtonPress = true;
@@ -2825,41 +3132,80 @@ public class CFPushBotHardware {
 
     private int v_drive_ToPosition_ticks_target_right;
     private int v_drive_ToPosition_ticks_target_left;
-
+    private int v_drive_ToPosition_ticks_target_rightfront;
+    private int v_drive_ToPosition_ticks_target_leftfront;
     public void drive_ToPosition(int leftTicks, int rightTicks, float leftPower, float rightPower){
         setupDriveToPosition();
         if( v_motor_left_drive == null || v_motor_right_drive == null){
+            return;
+        }
+        if(isMechDrive && (v_motor_leftfront_drive == null || v_motor_rightfront_drive == null)){
             return;
         }
         int v_motor_right_position = v_motor_right_drive.getCurrentPosition();
         int v_motor_left_position = v_motor_left_drive.getCurrentPosition();
         v_drive_ToPosition_ticks_target_left = v_motor_left_position + leftTicks;
         v_drive_ToPosition_ticks_target_right = v_motor_right_position + rightTicks;
-
         v_motor_right_drive.setTargetPosition(v_drive_ToPosition_ticks_target_right);
         v_motor_left_drive.setTargetPosition(v_drive_ToPosition_ticks_target_left);
-        set_drive_power(leftPower,rightPower);
-        set_second_message("drive_ToPosition: lt:" + v_drive_ToPosition_ticks_target_left + " rt:" + v_drive_ToPosition_ticks_target_right + ", re:" + v_motor_right_position + ", le:" + v_motor_left_position );
+        String msg = "drive_ToPosition: lt:" + v_drive_ToPosition_ticks_target_left + " rt:" + v_drive_ToPosition_ticks_target_right + ", re:" + v_motor_right_position + ", le:" + v_motor_left_position;
+        if(isMechDrive){
+            int v_motor_rightfront_position = v_motor_rightfront_drive.getCurrentPosition();
+            int v_motor_leftfront_position = v_motor_leftfront_drive.getCurrentPosition();
+            v_drive_ToPosition_ticks_target_leftfront = v_motor_leftfront_position + leftTicks;
+            v_drive_ToPosition_ticks_target_rightfront = v_motor_rightfront_position + rightTicks;
+            v_motor_rightfront_drive.setTargetPosition(v_drive_ToPosition_ticks_target_rightfront);
+            v_motor_leftfront_drive.setTargetPosition(v_drive_ToPosition_ticks_target_leftfront);
+            msg = msg + "lft:" + v_drive_ToPosition_ticks_target_leftfront + " rft:" + v_drive_ToPosition_ticks_target_rightfront + ", rfe:" + v_motor_rightfront_position + ", lfe:" + v_motor_leftfront_position;
+        }
+
+        drive_set_power(leftPower,rightPower);
+
+        set_second_message(msg );
     }
 
     public boolean drive_ToPosition_Complete(){
         if( v_motor_left_drive == null || v_motor_right_drive == null){
             return true;
         }
-
+        if(isMechDrive && (v_motor_leftfront_drive == null || v_motor_rightfront_drive == null)){
+            return true;
+        }
         if (v_motor_left_drive.isBusy() == false
-                &&  v_motor_right_drive.isBusy() == false) {
-            set_drive_power(0.0f, 0.0f);
+                &&  v_motor_right_drive.isBusy() == false
+                && (
+                        isMechDrive == false
+                    ||
+                        (isMechDrive == true && v_motor_leftfront_drive.isBusy() == false && v_motor_rightfront_drive.isBusy() == false )
+                    )
+            ) {
+            drive_set_power(0.0f, 0.0f);
 
-            int v_motor_right_position = v_motor_right_drive.getCurrentPosition();
-            int v_motor_left_position = v_motor_left_drive.getCurrentPosition();
-            set_second_message("drive_ToPosition_Complete: lt:" + v_drive_ToPosition_ticks_target_left + " rt:" + v_drive_ToPosition_ticks_target_right + ", re:" + v_motor_right_position + ", le:" + v_motor_left_position);
+            if(v_debug) {
+                int v_motor_right_position = v_motor_right_drive.getCurrentPosition();
+                int v_motor_left_position = v_motor_left_drive.getCurrentPosition();
+                String msg = "drive_ToPosition_Complete: lt:" + v_drive_ToPosition_ticks_target_left + " rt:" + v_drive_ToPosition_ticks_target_right + ", re:" + v_motor_right_position + ", le:" + v_motor_left_position;
+                if (isMechDrive) {
+                    int v_motor_rightfront_position = v_motor_rightfront_drive.getCurrentPosition();
+                    int v_motor_leftfront_position = v_motor_leftfront_drive.getCurrentPosition();
+                    msg = msg + "lft:" + v_drive_ToPosition_ticks_target_leftfront + " rft:" + v_drive_ToPosition_ticks_target_rightfront + ", rfe:" + v_motor_rightfront_position + ", lfe:" + v_motor_leftfront_position;
+                }
+                set_second_message(msg);
+            }
             return true;
         }else{
             if(is_slow_tick()){
-                int v_motor_right_position = v_motor_right_drive.getCurrentPosition();
-                int v_motor_left_position = v_motor_left_drive.getCurrentPosition();
-                set_second_message("drive_ToPosition_Complete: lt:" + v_drive_ToPosition_ticks_target_left + " rt:" + v_drive_ToPosition_ticks_target_right + ", re:" + v_motor_right_position + ", le:" + v_motor_left_position);
+                if(v_debug) {
+                    int v_motor_right_position = v_motor_right_drive.getCurrentPosition();
+                    int v_motor_left_position = v_motor_left_drive.getCurrentPosition();
+                    String msg = "drive_ToPosition_Complete: lt:" + v_drive_ToPosition_ticks_target_left + " rt:" + v_drive_ToPosition_ticks_target_right + ", re:" + v_motor_right_position + ", le:" + v_motor_left_position;
+                    if (isMechDrive) {
+                        int v_motor_rightfront_position = v_motor_rightfront_drive.getCurrentPosition();
+                        int v_motor_leftfront_position = v_motor_leftfront_drive.getCurrentPosition();
+                        msg = msg + "lft:" + v_drive_ToPosition_ticks_target_leftfront + " rft:" + v_drive_ToPosition_ticks_target_rightfront + ", rfe:" + v_motor_rightfront_position + ", lfe:" + v_motor_leftfront_position;
+                    }
+                    set_second_message(msg);
+                }
             }
             return false;
         }
@@ -2868,18 +3214,8 @@ public class CFPushBotHardware {
 
     private int v_turn_degrees_ticks_target_right;
     private int v_turn_degrees_ticks_target_left;
-
-    private int v_turn_degrees_heading_target;
-    private int v_turn_degrees_heading_target_slow;
-    private int v_turn_degrees_heading_target_stop;
-    private boolean v_turn_degrees_heading_target_360round;
-    private boolean v_turn_degrees_heading_start_error_360round;
-    private boolean v_turn_degrees_heading_target_slow_360round;
-    private boolean v_turn_degrees_heading_target_stop_360round;
-    private int v_turn_degrees_heading_start;
-    private static final int v_turn_degrees_heading_overshoot_slowdown = 30;
-    private static final int v_turn_degrees_heading_overshoot_stop = 5;
-    private int v_turn_degrees_heading_start_error;
+    private int v_turn_degrees_ticks_target_rightfront;
+    private int v_turn_degrees_ticks_target_leftfront;
     private boolean v_turn_degrees_usingGyro;
     private boolean v_turn_degrees_iscwturn;
     private boolean v_turn_degrees_isSlowTurn;
@@ -2896,7 +3232,9 @@ public class CFPushBotHardware {
 
     public void turn_degrees(int degrees, boolean turnSlow, boolean useGyro){
         //Do nothing is turn is zero
-        if(degrees == 0 || v_motor_left_drive == null || v_motor_right_drive == null){
+        if(degrees == 0 || v_motor_left_drive == null || v_motor_right_drive == null
+                || (isMechDrive && (v_motor_leftfront_drive == null || v_motor_rightfront_drive == null) )
+           ){
             return;
         }
 
@@ -2911,7 +3249,6 @@ public class CFPushBotHardware {
             v_turn_degrees_iscwturn = false;
         }
 
-
         //Turn using just encoder ticks
         int ticks = Math.round(Math.abs(degrees) * v_drive_turn_ticks_per_degree);
         if (v_turn_degrees_iscwturn) {
@@ -2923,7 +3260,20 @@ public class CFPushBotHardware {
         }
         v_motor_right_drive.setTargetPosition(v_turn_degrees_ticks_target_right);
         v_motor_left_drive.setTargetPosition(v_turn_degrees_ticks_target_left);
-        set_second_message("turn_degrees: ticks:" + ticks + ", lt:" + v_turn_degrees_ticks_target_left + " rt:" + v_turn_degrees_ticks_target_right + ", re:" + v_motor_right_drive.getCurrentPosition() + ", le:" + v_motor_left_drive.getCurrentPosition() );
+        String msg = "turn_degrees: ticks:" + ticks + ", lt:" + v_turn_degrees_ticks_target_left + " rt:" + v_turn_degrees_ticks_target_right + ", re:" + v_motor_right_drive.getCurrentPosition() + ", le:" + v_motor_left_drive.getCurrentPosition();
+        if(isMechDrive) {
+            if (v_turn_degrees_iscwturn) {
+                v_turn_degrees_ticks_target_leftfront = v_motor_leftfront_drive.getCurrentPosition() + ticks;
+                v_turn_degrees_ticks_target_rightfront = v_motor_rightfront_drive.getCurrentPosition() - ticks;
+            } else {
+                v_turn_degrees_ticks_target_leftfront = v_motor_leftfront_drive.getCurrentPosition() - ticks;
+                v_turn_degrees_ticks_target_rightfront = v_motor_rightfront_drive.getCurrentPosition() + ticks;
+            }
+            v_motor_rightfront_drive.setTargetPosition(v_turn_degrees_ticks_target_rightfront);
+            v_motor_leftfront_drive.setTargetPosition(v_turn_degrees_ticks_target_leftfront);
+            msg = msg +  ", lft:" + v_turn_degrees_ticks_target_leftfront + " rft:" + v_turn_degrees_ticks_target_rightfront + ", rfe:" + v_motor_rightfront_drive.getCurrentPosition() + ", lfe:" + v_motor_leftfront_drive.getCurrentPosition();
+        }
+        set_second_message(msg );
     }
 
     public void turn_power_override(float turn_motorspeed, float turn_motorspeed_slow){
@@ -2946,6 +3296,11 @@ public class CFPushBotHardware {
                 v_turn_degrees_state = -1;
                 return true;
             }
+            if(isMechDrive && (v_motor_leftfront_drive == null || v_motor_rightfront_drive == null)){
+                set_second_message("turn_complete: no front motors");
+                v_turn_degrees_state = -1;
+                return true;
+            }
 
             switch(v_turn_degrees_state){
                 case 0:
@@ -2955,54 +3310,62 @@ public class CFPushBotHardware {
                             //turning right so turn on left motor first
                             v_motor_left_drive.setPower(v_turn_motorspeed_slow);
                             v_motor_right_drive.setPower(0 - v_turn_motorspeed_slow);
-                            //set_drive_power(v_turn_motorspeed_slow, 0-v_turn_motorspeed_slow);
-                            //sleep(2);
-                            set_second_message("turn_complete: set slow turn cw r:" + v_motor_right_drive.getPower() + "l:" + v_motor_left_drive.getPower());
-
-
+                            if(isMechDrive){
+                                v_motor_leftfront_drive.setPower(v_turn_motorspeed_slow);
+                                v_motor_rightfront_drive.setPower(0 - v_turn_motorspeed_slow);
+                            }
                         }else {
                             //turning right so turn on left motor first
                             v_motor_left_drive.setPower(v_turn_motorspeed);
                             v_motor_right_drive.setPower(0 - v_turn_motorspeed);
-                            //set_drive_power(v_turn_motorspeed, 0- v_turn_motorspeed);
-                            //sleep(2);
-                            set_second_message("turn_complete: set fast turn cw r:" + v_motor_right_drive.getPower() + "l:" + v_motor_left_drive.getPower());
-
+                            if(isMechDrive){
+                                v_motor_leftfront_drive.setPower(v_turn_motorspeed);
+                                v_motor_rightfront_drive.setPower(0 - v_turn_motorspeed);
+                            }
                         }
-                        //v_motor_left_drive.setPowerFloat();
-                        //v_motor_right_drive.setPowerFloat();
                     } else {
                         if (v_turn_degrees_isSlowTurn) {
                             //turning left so turn on right motor first
                             v_motor_right_drive.setPower(v_turn_motorspeed_slow);
                             v_motor_left_drive.setPower(0 - v_turn_motorspeed_slow);
-                            //set_drive_power(0-v_turn_motorspeed_slow,  v_turn_motorspeed_slow);
-                            //sleep(2);
-                            set_second_message("turn_complete: set slow turn ccw r:" + v_motor_right_drive.getPower() + "l:" + v_motor_left_drive.getPower());
+                            if(isMechDrive){
+                                v_motor_rightfront_drive.setPower( v_turn_motorspeed_slow);
+                                v_motor_leftfront_drive.setPower(0 - v_turn_motorspeed_slow);
+                            }
                         }else {
                             //turning left so turn on right motor first
                             v_motor_right_drive.setPower(v_turn_motorspeed);
                             v_motor_left_drive.setPower(0 - v_turn_motorspeed);
-                            set_drive_power(0-v_turn_motorspeed, v_turn_motorspeed);
-                            //sleep(2);
-                            set_second_message("turn_complete: set fast turn ccw r:" + v_motor_right_drive.getPower() + "l:" + v_motor_left_drive.getPower() );
+                            if(isMechDrive){
+                                v_motor_rightfront_drive.setPower( v_turn_motorspeed);
+                                v_motor_leftfront_drive.setPower(0 - v_turn_motorspeed);
+                            }
                         }
-                        //v_motor_right_drive.setPowerFloat();
-                        //v_motor_left_drive.setPowerFloat();
                     }
-
                     v_turn_degrees_state++;
                     break;
                 case 1:
-                    if (v_motor_left_drive.isBusy() == false
-                            &&  v_motor_right_drive.isBusy() == false) {
-                        set_drive_power(0.0f, 0.0f);
-                        set_second_message("turn_complete: encoders reached value lt:" + v_turn_degrees_ticks_target_left + " rt:" + v_turn_degrees_ticks_target_right + ", re:" + v_motor_right_drive.getCurrentPosition() + ", le:" + v_motor_left_drive.getCurrentPosition() + ", rp:" + v_motor_right_drive.getPower() + ", lp:" + v_motor_left_drive.getPower());
+                    if (v_motor_left_drive.isBusy() == false &&  v_motor_right_drive.isBusy() == false
+                            && (isMechDrive == false
+                                ||
+                                (isMechDrive == true && v_motor_leftfront_drive.isBusy() == false &&  v_motor_rightfront_drive.isBusy() == false)
+                                )
+                        ) {
+                        drive_set_power(0.0f, 0.0f);
+                        String msg = "turn_complete: encoders reached value lt:" + v_turn_degrees_ticks_target_left + " rt:" + v_turn_degrees_ticks_target_right + ", re:" + v_motor_right_drive.getCurrentPosition() + ", le:" + v_motor_left_drive.getCurrentPosition();
+                        if(isMechDrive){
+                            msg = msg + " lft:" + v_turn_degrees_ticks_target_leftfront + " rft:" + v_turn_degrees_ticks_target_rightfront + ", rfe:" + v_motor_rightfront_drive.getCurrentPosition() + ", lfe:" + v_motor_leftfront_drive.getCurrentPosition();
+                        }
+                        set_second_message(msg);
                         v_turn_degrees_state++;
                         return true;
                     }else {
-                        if (is_slow_tick()){
-                            set_second_message("turn_complete: Waiting on encoders lt:" + v_turn_degrees_ticks_target_left + " rt:" + v_turn_degrees_ticks_target_right + ", re:" + v_motor_right_drive.getCurrentPosition() + ", le:" + v_motor_left_drive.getCurrentPosition() + ", rp:" + v_motor_right_drive.getPower() + ", lp:" + v_motor_left_drive.getPower() );
+                        if (v_debug && is_slow_tick()){
+                            String msg = "turn_complete: Waiting on encoders lt:" + v_turn_degrees_ticks_target_left + " rt:" + v_turn_degrees_ticks_target_right + ", re:" + v_motor_right_drive.getCurrentPosition() + ", le:" + v_motor_left_drive.getCurrentPosition() + ", rp:" + v_motor_right_drive.getPower() + ", lp:" + v_motor_left_drive.getPower();
+                            if(isMechDrive){
+                                msg = msg + "turn_complete: Waiting on encoders lft:" + v_turn_degrees_ticks_target_leftfront + " rft:" + v_turn_degrees_ticks_target_rightfront + ", rfe:" + v_motor_rightfront_drive.getCurrentPosition() + ", lfe:" + v_motor_leftfront_drive.getCurrentPosition() + ", rfp:" + v_motor_rightfront_drive.getPower() + ", lfp:" + v_motor_leftfront_drive.getPower();
+                            }
+                            set_second_message(msg );
                         }
                     }
 
@@ -3016,7 +3379,6 @@ public class CFPushBotHardware {
         {
             debugLogException("turn_complete:", "error " + p_exeception.getMessage() , p_exeception);
             return false;
-
         }
     }
 
@@ -3761,23 +4123,13 @@ public class CFPushBotHardware {
         }
         return false;
     }
-    //static final private float v_vuforia_driveToTarget_power_fast = .8f;
-    //AndyMark 40 Worked in Coloma
-    //static final private float v_vuforia_driveToTarget_power = .5f;   //.4f
-    //static final private float v_vuforia_driveToTarget_power_slow = .2f; //.1
-
-    private float v_vuforia_driveToTarget_power = .5f;   //.4f
-    private float v_vuforia_driveToTarget_power_slow = .2f; //.1
 
 
-    public void setup_am20(){
-        //am20 run in reverse as am40 so swap reversed motor
-        /*if(v_motor_right_drive != null) {
-            v_motor_right_drive.setDirection(DcMotor.Direction.FORWARD);
-        }
-        if(v_motor_left_drive != null) {
-            v_motor_left_drive.setDirection(DcMotor.Direction.REVERSE);
-        }*/
+    private float v_vuforia_driveToTarget_power;
+    private float v_vuforia_driveToTarget_power_slow;
+
+
+    private void drive_setup_am20(){
         v_drive_power = 0.8f;
         //we have to move slower backing up to prevent a wheely
         v_drive_power_reverse = 0.5f;
@@ -3785,6 +4137,7 @@ public class CFPushBotHardware {
         v_turn_motorspeed = .3f;
         v_turn_motorspeed_slow = .25f;
         v_drive_inches_ticksPerInch = 45d;
+        v_drive_inches_strife_ticksPerInch = 45.00d;
         v_drive_turn_ticks_per_degree = 5.5f;
         v_vuforia_driveToTarget_power = .35f; //was .5f 12/16/2016
         v_vuforia_driveToTarget_power_slow = .15f;
@@ -3795,6 +4148,26 @@ public class CFPushBotHardware {
         v_drive_inches_slowdown = 24;
         v_drive_inches_slowdown_ticks = (int)Math.round(v_drive_inches_slowdown * v_drive_inches_ticksPerInch);
     }
+
+    private void drive_setup_am40(){
+        v_drive_power = 1.0f;
+        v_drive_power_reverse = 1.0f;
+        v_drive_power_slowdown = .5f;
+        v_turn_motorspeed = .1f;
+        v_turn_motorspeed_slow = .5f;
+        v_drive_inches_ticksPerInch = 88.00d;
+        v_drive_inches_strife_ticksPerInch = 88.00d;
+        v_drive_turn_ticks_per_degree = 10.83f;
+        v_vuforia_driveToTarget_power = .5f;
+        v_vuforia_driveToTarget_power_slow = .2f;
+        v_vuforia_driveToTarget_slowDownFactorClose = .009f;
+        v_vuforia_driveToTarget_slowDownFactor = .020f;
+        v_vuforia_findTargetSpeed = -.07f;
+        v_drive_use_slowdown = false;
+        v_drive_inches_slowdown = 12;
+        v_drive_inches_slowdown_ticks = (int)Math.round(v_drive_inches_slowdown * v_drive_inches_ticksPerInch);
+    }
+
     private int v_vuforia_driveToTarget_Index = -1;
     private ElapsedTime v_vuforia_driveToTarget_elapsedtime;
     public boolean vuforia_driveToTarget(int targetIndex){
@@ -3809,7 +4182,7 @@ public class CFPushBotHardware {
                     return false;
                 }else{
 
-                    set_drive_power(v_vuforia_driveToTarget_power,v_vuforia_driveToTarget_power);
+                    drive_set_power(v_vuforia_driveToTarget_power,v_vuforia_driveToTarget_power);
                     return true;
                 }
             }
@@ -3858,7 +4231,7 @@ public class CFPushBotHardware {
                     v_motor_right_drive.setPower(0);
                     v_motor_left_drive.setPower(v_vuforia_findTargetSpeed);
                 }else {
-                    set_drive_power(0f, 0f);
+                    drive_set_power(0f, 0f);
                 }
                 //set_first_message("Target Not Visable stoping");
             }else{
@@ -3872,7 +4245,7 @@ public class CFPushBotHardware {
                     float v_motorpower_slowDownFactor;
                     float distanceX = translation.get(2);
                     if(distanceX > v_vuforia_driveToTarget_xmin){
-                        set_drive_power(0.0f,0.0f);
+                        drive_set_power(0.0f,0.0f);
                         //set_first_message("Target: " + trackable.getName() + ":" + distanceX  + ":" + degreesToTurn + ":" + translation.toString());
                         return true;
                     }
@@ -3898,7 +4271,7 @@ public class CFPushBotHardware {
                             }*/
                         v_motorpower_left = (v_motorpower_left - leftPowerAdjust);
                     }
-                    set_drive_power ( v_motorpower_left,v_motorpower_right);
+                    drive_set_power ( v_motorpower_left,v_motorpower_right);
                     //set_first_message("searching: " + trackable.getName() + ":" + distanceX  + ":" + degreesToTurn + ":" + translation.toString() );
                 }
             }
@@ -4110,12 +4483,12 @@ public class CFPushBotHardware {
     /**
      * reset the gyro heading to zero
      */
-    private boolean sensor_gyro_resetHeading(){
+    private boolean sensor_gyro_mr_resetHeading(){
         try{
-            if(v_sensor_gyro != null){
+            if(v_sensor_gyro_mr != null){
                 // get the x, y, and z values (rate of change of angle).
 
-                v_sensor_gyro.resetZAxisIntegrator();
+                v_sensor_gyro_mr.resetZAxisIntegrator();
                 return true;
             }
             return false;
@@ -4321,10 +4694,10 @@ public class CFPushBotHardware {
      *
      * @return gyro heading in degrees since reset
      */
-    public int sensor_gyro_get_heading(){
+    public int sensor_gyro_mr_get_heading(){
         try{
-            if(v_sensor_gyro != null) {
-                return v_sensor_gyro.getHeading();
+            if(v_sensor_gyro_mr != null) {
+                return v_sensor_gyro_mr.getHeading();
             }else{
                 return 0;
             }
@@ -4361,11 +4734,11 @@ public class CFPushBotHardware {
      * return the rawX rate
      * @return gyro heading in degrees since reset
      */
-    public int sensor_gyro_get_rawX(){
+    public int sensor_gyro_mr_get_rawX(){
         try{
             // get the x info.
-            if(v_sensor_gyro != null) {
-                return v_sensor_gyro.rawX();
+            if(v_sensor_gyro_mr != null) {
+                return v_sensor_gyro_mr.rawX();
             }else{
                 return 0;
             }
@@ -4381,13 +4754,13 @@ public class CFPushBotHardware {
      * return the rawX rate
      * @return gyro heading in degrees since reset
      */
-    public int sensor_gyro_get_rawY(){
+    public int sensor_gyro_mr_get_rawY(){
         try{
             // get the heading info.
             // the Modern Robotics' gyro sensor keeps
             // track of the current heading for the Z axis only.
-            if(v_sensor_gyro != null) {
-                return v_sensor_gyro.rawY();
+            if(v_sensor_gyro_mr != null) {
+                return v_sensor_gyro_mr.rawY();
             }
             else{
                 return 0;
@@ -4403,13 +4776,13 @@ public class CFPushBotHardware {
      * return the rawX rate
      * @return gyro heading in degrees since reset
      */
-    public int sensor_gyro_get_rawZ(){
+    public int sensor_gyro_mr_get_rawZ(){
         try{
             // get the heading info.
             // the Modern Robotics' gyro sensor keeps
             // track of the current heading for the Z axis only.
-            if(v_sensor_gyro != null) {
-                return v_sensor_gyro.rawZ();
+            if(v_sensor_gyro_mr != null) {
+                return v_sensor_gyro_mr.rawZ();
             }
             else{
                 return 0;
@@ -4640,9 +5013,10 @@ public class CFPushBotHardware {
     {
         try {
             opMode.telemetry.addData("00", loopCounter() + ":" + hardware_loop_slowtime_milliseconds() + ":"+ a_warning_message());
+            opMode.telemetry.addData("EE", v_errormessage);
             opMode.telemetry.addData("01", zeroMessage);
-
             v_zeromessage_set = false;
+            v_errormessage_set = false;
             if (v_debug) {
                 opMode.telemetry.addData("02", firstMessage);
                 opMode.telemetry.addData("03", secondMessage);
@@ -4650,7 +5024,7 @@ public class CFPushBotHardware {
                 //
                 // Send telemetry data to the driver station.
                 //
-                opMode.telemetry.addData("05", "Gyro: H:" + sensor_gyro_get_heading() + ",X:" + sensor_gyro_get_rawX() + ",Y:" + sensor_gyro_get_rawY() + ",Z:" + sensor_gyro_get_rawZ());
+                opMode.telemetry.addData("05", "Gyro: H:" + sensor_gyro_mr_get_heading() + ",X:" + sensor_gyro_mr_get_rawX() + ",Y:" + sensor_gyro_mr_get_rawY() + ",Z:" + sensor_gyro_mr_get_rawZ());
 
                 opMode.telemetry.addData
                         ("06"
@@ -4783,11 +5157,14 @@ public class CFPushBotHardware {
     {
         v_zeromessage_set = true;
         zeroMessage = p_message;
-        if (v_debug) {
+        //if (v_debug) {
             //DbgLog.msg(loopCounter() + ":0:" + p_message);
             android.util.Log.d("CFPushBotHardware",loopCounter() + ":0:" + p_message);
-        }
-    } // set_first_message
+        //}
+    }
+
+
+    // set_first_message
     //--------------------------------------------------------------------------
     //
     // set_first_message
@@ -4850,10 +5227,16 @@ public class CFPushBotHardware {
     /**
      * Update the telemetry's first message to indicate an error.
      */
+    String v_errormessage = "";
+    boolean v_errormessage_set = false;
     public void set_error_message (String p_message)
 
     {
-        set_first_message ("ERROR: " + p_message);
+        v_errormessage_set = true;
+        v_errormessage = "ERROR: " + p_message;
+
+        android.util.Log.e("CFPushBotHardware",loopCounter() + ":set_error_message:" + p_message);
+
 
     } // set_error_message
 

@@ -11,9 +11,9 @@ import org.firstinspires.ftc.teamcode.ControlFreaks.CFPushBotHardware;
 /**
  * Created by adevries on 11/6/2015.
  */
-@TeleOp(name="TestBot", group="Manual")  // @Autonomous(...) is the other common choice
-@Disabled
-public class CFTestBotManual extends LinearOpMode {
+@TeleOp(name="MechBot", group="Manual")  // @Autonomous(...) is the other common choice
+//@Disabled
+public class CFMechBotManual extends LinearOpMode {
 
     /* Declare OpMode members. */
     CFPushBotHardware robot;   // Use a Pushbot's hardware
@@ -64,6 +64,8 @@ public class CFTestBotManual extends LinearOpMode {
         try {
             /* Declare OpMode members. */
             robot           = new CFPushBotHardware();   // Use a Pushbot's hardware
+            robot.isMechDrive = true;
+            robot.isDriveAndyMark20 = false;
             robot.init(this);
 
             robot.setupManualDrive();
@@ -72,37 +74,24 @@ public class CFTestBotManual extends LinearOpMode {
             robot.led7seg_timer_init(120);
             robot.run_using_encoders();
             robot.lifter_testbot_reverse();
-            //robot.lifter_step(-500); //reset the min on lifter as automonmouse moved us up and reinit reset min
+
             robot.blockgrabber_open();
             waitForStart();
-            robot.debugOff();
+            //robot.debugOff();
             robot.led7seg_timer_start(120);
-            robot.blockgrabber_open();
-
             // run until the end of the match (driver presses STOP)
             while (opModeIsActive()) {
                 try {
                     robot.hardware_loop();
-//
-                    if(highspeedmode || gamepad1.left_trigger > .2 || gamepad1.right_trigger > .2 ) {
-                        robot.set_drive_power(-gamepad1.left_stick_y, -gamepad1.right_stick_y);
-                    }else{
-                        float left = -gamepad1.left_stick_y ;
-                        float right = -gamepad1.right_stick_y;
-                        if((left > 0 && right < 0)
-                                || (right > 0 && left < 0)
-                                || ((left > 0 || left < 0) && right == 0)
-                                || ((right > 0 || right < 0) && left == 0)
-                                ){
-                                //we are turning so slow down the motors
-                            left = left/4f;
-                            right = right/4f;
-                        }else{
-                            left = left/2.5f;
-                            right = right/2.5f;
-                        }
-                        robot.set_drive_power(left, right);
+
+                    if(gamepad1.left_bumper){
+                        robot.drive_set_strife_power(-1.0f);
+                    }else if(gamepad1.right_bumper){
+                        robot.drive_set_strife_power(1.0f);
+                    }else {
+                        robot.drive_set_power(-gamepad1.left_stick_y, -gamepad1.right_stick_y);
                     }
+
 
                     if(gamepad2.left_stick_y > .2 ) {
                         robot.shoulder_step(-.001);
@@ -258,7 +247,7 @@ public class CFTestBotManual extends LinearOpMode {
 
                     if(gamepad2.a){
                             if(buttonG2AReleased == true) {
-                                robot.blockgrabbers_toggle();
+                                //robot.blockgrabbers_toggle();
                                 buttonG2AReleased = false;
                             }
                     }else{

@@ -252,6 +252,10 @@ public class AdafruitLEDBackpack7Seg {
        }
     }
 
+    public boolean writeSeconds(int seconds){
+        return writeDigits(secondsToMinutesSeconds(seconds), true);
+    }
+
     public boolean writeDigits(String number, boolean displayColon){
        try{
             if(v_ledseg != null) {

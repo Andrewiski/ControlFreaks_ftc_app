@@ -354,9 +354,9 @@ public class ConceptVuforiaNavigation extends LinearOpMode {
 
             robot.hardware_loop();
             if(gamepad1.left_trigger > .2 || gamepad1.right_trigger > .2 ) {
-                robot.set_drive_power(-gamepad1.left_stick_y, -gamepad1.right_stick_y);
+                robot.drive_set_power(-gamepad1.left_stick_y, -gamepad1.right_stick_y);
             }else{
-                robot.set_drive_power(-gamepad1.left_stick_y/1.5f, -gamepad1.right_stick_y/1.5f);
+                robot.drive_set_power(-gamepad1.left_stick_y/1.5f, -gamepad1.right_stick_y/1.5f);
             }
 
             for (VuforiaTrackable trackable : allTrackables) {

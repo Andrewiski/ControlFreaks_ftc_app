@@ -41,7 +41,6 @@ public class CFPushBotAuto_Pixy extends LinearOpMode
         robot.init(this);
         robot.blueled_on();
         robot.setupAutoDrive();
-        robot.setup_am20();
         robot.sensor_range_init();
         robot.sensor_pixy_init();
         waitForStart();
@@ -73,7 +72,7 @@ public class CFPushBotAuto_Pixy extends LinearOpMode
                     break;
                 case 2:
                     robot.set_message("Pixy Enabled");
-                    robot.sensor_pixy_led_external(true);
+                    //robot.sensor_pixy_led_external(true);
                     //enable Largest Object
                     //robot.sensor_pixy_signature_enable(0,true);
                     //Enable Signature 1
