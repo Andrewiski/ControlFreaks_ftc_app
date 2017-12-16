@@ -566,12 +566,12 @@ void loop() {
   //delay(200);
   getFTCLargestSignatureBlocks(); //Get top 5 Area block with Signature 1-7
   delay(delaytime);
-  getFTCLargestSignatureBlocks(1);  //Get top 6 Area block with Signature 1
-  delay(delaytime);
-  getFTCLargestSignatureBlocks(2);  //Get top 6 Area block with Signature 2
-  delay(delaytime);
-  getFTCLargestCCSignatureBlocks(); //Get top 4 Area block with Signature 2
-  delay(delaytime);
+  //getFTCLargestSignatureBlocks(1);  //Get top 6 Area block with Signature 1
+  //delay(delaytime);
+  //getFTCLargestSignatureBlocks(2);  //Get top 6 Area block with Signature 2
+  //delay(delaytime);
+  //getFTCLargestCCSignatureBlocks(); //Get top 4 Area block with Signature 2
+  //delay(delaytime);
   delay(3000);  
 }
 

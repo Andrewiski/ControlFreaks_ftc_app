@@ -37,8 +37,9 @@ public class CFPushBotSensorTest extends LinearOpMode {
             robot           = new CFPushBotHardware();   // Use a Pushbot's hardware
 
             robot.init(this);
+            robot.debugOn();
             robot.sensor_range_init();
-            //robot.sensor_color_init(true);
+
             robot.sensor_color_enable(true);
             robot.sensor_color_led(true);
             robot.sensor_range_enable(true);
@@ -62,9 +63,8 @@ public class CFPushBotSensorTest extends LinearOpMode {
                     if (tempBlockcolor > 0){
                         blockcolor = tempBlockcolor;
                     }
-
                     robot.set_message(msg);
-                    sleep(5);
+                    sleep(10);
                 }catch(Exception ex){
                     robot.set_error_message("Fatal Error "  + ex.toString());
                 }

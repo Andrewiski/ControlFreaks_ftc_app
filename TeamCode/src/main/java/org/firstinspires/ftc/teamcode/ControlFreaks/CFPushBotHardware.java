@@ -122,7 +122,7 @@ public class CFPushBotHardware {
     //We Increment the v_loop_ticks each time through our loop
     private long v_loop_ticks = 0;
     // each time through the loop we check to see if v_loop_ticks % v_loop_ticks_slow_count == 0 is so then slow loop = true
-    private int v_loop_ticks_slow_count = 60;  //20
+    private int v_loop_ticks_slow_count = 20;  //20
     private boolean v_loop_ticks_slow = false;
     private boolean v_drive_use_slowdown;
     private int v_drive_inches_slowdown;  //slowdown inches before target
@@ -1037,7 +1037,7 @@ public class CFPushBotHardware {
                     dbg = dbg + sigMaxBlockList_All.print();
                 }
             }
-            set_message(dbg);
+            set_second_message(dbg);
         }catch(Exception ex){
             debugLogException("robot","sensor_pixy_getjewelcolor",ex );
             set_error_message("sensor_pixy_getjewelcolor: " + ex.getMessage());
@@ -1201,13 +1201,16 @@ public class CFPushBotHardware {
         }
 
 
+        if(v_pixy != null){
+            v_pixy.loop();
+        }
 
-
+        if(v_sensor_rangeSensor != null && v_sensor_rangeSensor_enabled == true){
+            v_sensor_rangeSensor_distance = v_sensor_rangeSensor.getDistance(DistanceUnit.INCH);
+        }
 
         if(v_loop_ticks_slow){
-            if(v_pixy != null){
-                v_pixy.loop();
-            }
+
             //heartbeat_tick();
             if(v_ledseg != null){
                 v_ledseg.loop();
@@ -1231,9 +1234,7 @@ public class CFPushBotHardware {
             //the i2c color sensor uses a memory lock that is taxing so we only do this if we are using the color sensor and ever slow loop count
 
 
-            if(v_sensor_rangeSensor != null && v_sensor_rangeSensor_enabled == true){
-                v_sensor_rangeSensor_distance = v_sensor_rangeSensor.getDistance(DistanceUnit.INCH);
-            }
+
 
             //jewel ease so not to hard hit ground
             if(v_servo_jewel_is_retracting){
