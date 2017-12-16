@@ -22,7 +22,7 @@ public class PixyBlockList {
         public String print() {
             try {
                 String retval = "blockCount: " + BlockCount;
-                for (int i = 0; i < Blocks.length; i++) {
+                for (int i = 0; i < Blocks.length && i < BlockCount ; i++) {
                     retval = retval + "\n" + Blocks[i].print();
                 }
                 return retval + "\n";

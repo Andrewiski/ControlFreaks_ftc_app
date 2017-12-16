@@ -225,7 +225,7 @@ public class CFPushBotHardware {
     private int v_sensor_color_i2c_rgbaValues[]= {0,0,0,0};
     //we read the values in the loop only if the sensor is enabled as they take resourses
     private boolean v_sensor_color_i2c_enabled = false;
-    private int v_sensor_color_min_value = 100;
+    private int v_sensor_color_min_value = 200;
 
     private boolean v_sensor_rangeSensor_enabled = false;
     private double v_sensor_rangeSensor_distance = 0.0;
@@ -1014,7 +1014,7 @@ public class CFPushBotHardware {
                     //we assume the largest blue and red are the balls so will come first
                     if(sigMaxBlockList_All.Blocks[i].signature == 1 && Sig1X == -1){
                         //avoid left 50 x so not to read red in vuforia pictures with red in them
-                        if(sigMaxBlockList_All.Blocks[i].x > 35) {
+                        if(sigMaxBlockList_All.Blocks[i].x > 5) {
                             Sig1X = sigMaxBlockList_All.Blocks[i].x;
                         }
                     }else if(sigMaxBlockList_All.Blocks[i].signature == 2 && Sig2X == -1){
@@ -1205,9 +1205,7 @@ public class CFPushBotHardware {
             v_pixy.loop();
         }
 
-        if(v_sensor_rangeSensor != null && v_sensor_rangeSensor_enabled == true){
-            v_sensor_rangeSensor_distance = v_sensor_rangeSensor.getDistance(DistanceUnit.INCH);
-        }
+
 
         if(v_loop_ticks_slow){
 
@@ -1215,13 +1213,7 @@ public class CFPushBotHardware {
             if(v_ledseg != null){
                 v_ledseg.loop();
             }
-            if(v_sensor_color_i2c != null && v_sensor_color_i2c_enabled == true){
-                v_sensor_color_i2c_rgbaValues[0] = v_sensor_color_i2c.red();
-                v_sensor_color_i2c_rgbaValues[1] = v_sensor_color_i2c.green();
-                v_sensor_color_i2c_rgbaValues[2] = v_sensor_color_i2c.blue();
-                v_sensor_color_i2c_rgbaValues[3] = v_sensor_color_i2c.alpha();
-                set_first_message("color:" + v_sensor_color_i2c_rgbaValues[0] + ":" + v_sensor_color_i2c_rgbaValues[1] + ":" + v_sensor_color_i2c_rgbaValues[2] + ":" + v_sensor_color_i2c_rgbaValues[3]);
-            }
+
             // get the heading info.
             // the Modern Robotics' gyro sensor keeps
             // track of the current heading for the Z axis only.
@@ -1232,7 +1224,13 @@ public class CFPushBotHardware {
 //                v_sensor_gyro_z = v_sensor_gyro.rawZ();
 //            }
             //the i2c color sensor uses a memory lock that is taxing so we only do this if we are using the color sensor and ever slow loop count
-
+            if(v_sensor_color_i2c != null && v_sensor_color_i2c_enabled == true){
+                v_sensor_color_i2c_rgbaValues[0] = v_sensor_color_i2c.red();
+                v_sensor_color_i2c_rgbaValues[1] = v_sensor_color_i2c.green();
+                v_sensor_color_i2c_rgbaValues[2] = v_sensor_color_i2c.blue();
+                v_sensor_color_i2c_rgbaValues[3] = v_sensor_color_i2c.alpha();
+                set_first_message("color:" + v_sensor_color_i2c_rgbaValues[0] + ":" + v_sensor_color_i2c_rgbaValues[1] + ":" + v_sensor_color_i2c_rgbaValues[2] + ":" + v_sensor_color_i2c_rgbaValues[3]);
+            }
 
 
 

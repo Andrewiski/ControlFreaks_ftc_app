@@ -20,7 +20,7 @@ import java.util.List;
  */
 public class PixyCamera {
     static final String logId = "Pixy:";       // Tag identifier in FtcRobotController.LogCat
-    private Boolean debug = true;
+    private Boolean debug = false;
     private String v_deviceName = "Not Set";
     //Put the Pixy in Lego Mode running my special firmware
     private byte I2CAddress = 0x54;

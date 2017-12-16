@@ -97,7 +97,7 @@ public class CFPushBotAuto_Blue1 extends LinearOpMode
                 case 2:
                     if(usePixy ){
                         int tempBlockcolor = robot.sensor_pixy_getjewelcolor(false);
-                        if (tempBlockcolor > 0){
+                        if (tempBlockcolor >= 0){
                             blockcolor = tempBlockcolor;
                         }
                     }
@@ -119,7 +119,7 @@ public class CFPushBotAuto_Blue1 extends LinearOpMode
                      }else{
                          if(robot.timewait_Complete()){
                              robot.set_message("Color Timeout , BlockColor " + blockcolor);
-                             v_state = v_state+ 3;
+                             v_state++;
                          }
                      }
                     break;
@@ -137,6 +137,9 @@ public class CFPushBotAuto_Blue1 extends LinearOpMode
                         robot.drive_inches(jewelKnockDistance,  v_useGyro);
                         robot.timewait(2);
                         v_state++;
+                    }else{
+                        robot.set_error_message("No Color detected " + color + ", BlockColor " + blockcolor);
+                        v_state= v_state+2;
                     }
                     break;
                 case 5:
