@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.ControlFreaks.CFPushBotHardware;
  * Created by adevries on 11/6/2015.
  */
 @TeleOp(name="Mech Test Run To Position", group="Manual")  // @Autonomous(...) is the other common choice
-//@Disabled
+@Disabled
 public class CFTestDriveTurnRates extends LinearOpMode {
 
     /* Declare OpMode members. */

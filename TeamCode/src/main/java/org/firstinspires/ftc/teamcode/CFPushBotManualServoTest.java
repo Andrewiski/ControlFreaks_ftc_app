@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.ControlFreaks.CFPushBotHardware;
  * Created by adevries on 10/7/2017.
  */
 @TeleOp(name="Servo Color Y Test", group="Manual" )  // @Autonomous(...) is the other common choice
-//@Disabled
+@Disabled
 public class CFPushBotManualServoTest extends LinearOpMode {
 
     /* Declare OpMode members. */

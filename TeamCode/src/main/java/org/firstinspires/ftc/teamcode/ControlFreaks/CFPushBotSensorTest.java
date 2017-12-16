@@ -57,43 +57,10 @@ public class CFPushBotSensorTest extends LinearOpMode {
                     String msg = "";
                     msg = msg + "range: " + robot.sensor_range_get_distance() + "\n";
                     msg = msg + "Color " +  robot.sensor_color_GreatestColor() + "\n";
-                    PixyBlockList sigMaxBlockList_All;
                     int blockcolor = -1;
-                    int Sig1X = -1;//Sig 1 is red
-                    int Sig2X = -1; //Sig 2 is Blue
-                    sigMaxBlockList_All = robot.sensor_pixy_maxSignatureBlocks(0);
-                    msg = msg + "Pixy Blocks: " + sigMaxBlockList_All.BlockCount;
-                    if(sigMaxBlockList_All.BlockCount > 0) {
-
-                        for (int i = 0; i < sigMaxBlockList_All.BlockCount; i++) {
-                            //we assume the largest blue and red are the balls so will come first
-                            if (sigMaxBlockList_All.Blocks[i].signature == 1 && Sig1X == -1) {
-                                Sig1X = sigMaxBlockList_All.Blocks[i].x;
-                            } else if (sigMaxBlockList_All.Blocks[i].signature == 2 && Sig2X == -1) {
-                                Sig2X = sigMaxBlockList_All.Blocks[i].x;
-                            }
-                            if (Sig1X > 0 && Sig2X > 0) {
-                                break; //exit the 4 loop we already found the largest Red and Blue
-                            }
-
-                        }
-                        //The Block we care abount is always on the Left so lowest X value
-                        if(Sig1X > 0 && Sig2X > 0) {
-                            if (Sig1X < Sig2X) {
-                                blockcolor = 0;  //Ball on Left is Signature 1 Red
-                            } else {
-                                blockcolor = 2;  //Ball on Left is Signature 2 Blue
-                            }
-                        }
-                        msg = msg + "pixy jewel is ";
-                        if(blockcolor == 0){
-                            msg= msg + "red\n";
-                        }else if(blockcolor == 2){
-                            msg= msg + "blue\n";
-                        }else{
-                            msg= msg + "n/a\n";
-                        }
-                        msg = msg + sigMaxBlockList_All.print() + "\n";
+                    int tempBlockcolor = robot.sensor_pixy_getjewelcolor(true);
+                    if (tempBlockcolor > 0){
+                        blockcolor = tempBlockcolor;
                     }
 
                     robot.set_message(msg);

@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.ControlFreaks.Pixy.PixyBlockList;
 /**
  * Created by adevries on 11/6/2015.
  */
-@Autonomous(name="Red1 Pixy", group="PixyRed")
+@Autonomous(name="Red1 HailMary", group="ZPixyRed")
 //@Disabled
 public class CFPushBotAuto_Red1Pixy extends LinearOpMode
 {
@@ -53,10 +53,7 @@ public class CFPushBotAuto_Red1Pixy extends LinearOpMode
         int color = -1;
 
         float jewelKnockDistance=0;
-        PixyBlockList sigMaxBlockList_All;
         int blockcolor = -1;
-        int Sig1X = -1;//Sig 1 is red
-        int Sig2X = -1; //Sig 2 is Blue
         robot.init(this);
         robot.debugOn();
         robot.drive_power_override(.3F,.3F, .3F);
@@ -86,33 +83,7 @@ public class CFPushBotAuto_Red1Pixy extends LinearOpMode
                 // Synchronize the state machine and hardware.
                 //
                 case 0:
-                    sigMaxBlockList_All = robot.sensor_pixy_maxSignatureBlocks(0);
-                    String dbg = "Blocks:";
-                    if(sigMaxBlockList_All.BlockCount > 0){
 
-                        for(int i = 0; i < sigMaxBlockList_All.BlockCount; i++ ){
-                            //we assume the largest blue and red are the balls so will come first
-                            if(sigMaxBlockList_All.Blocks[i].signature == 1 && Sig1X == -1){
-                                Sig1X =  sigMaxBlockList_All.Blocks[i].x;
-                            }else if(sigMaxBlockList_All.Blocks[i].signature == 2 && Sig2X == -1){
-                                Sig2X =  sigMaxBlockList_All.Blocks[i].x;
-                            }
-                            if(Sig1X > 0 && Sig2X > 0){
-                                break; //exit the 4 loop we already found the largest Red and Blue
-                            }
-                            dbg =  dbg + sigMaxBlockList_All.Blocks[i].print() + "\n";
-                        }
-                        //The Block we care abount is always on the Left so lowest X value
-                        if(Sig1X > 0 && Sig2X > 0) {
-                            if (Sig1X < Sig2X) {
-                                blockcolor = 0;  //Ball on Left is Signature 1 Red
-                            } else {
-                                blockcolor = 2;  //Ball on Left is Signature 2 Blue
-                            }
-                        }
-                        robot.set_error_message(dbg);
-                    }
-                    robot.sensor_pixy_enable(false);
                     v_state++;
                     break;
                 case 1:
@@ -133,6 +104,10 @@ public class CFPushBotAuto_Red1Pixy extends LinearOpMode
                     v_state++;
                     break;
                 case 3:
+                    int tempBlockcolor = robot.sensor_pixy_getjewelcolor(false);
+                    if (tempBlockcolor > 0){
+                        blockcolor = tempBlockcolor;
+                    }
                     if(robot.timewait_Complete()){
                         robot.lifter_step(v_lifter_step);
                         robot.timewait(2);
@@ -141,9 +116,10 @@ public class CFPushBotAuto_Red1Pixy extends LinearOpMode
                     break;
 
                 case 4:
+                    robot.sensor_pixy_enable(false);
                     color = robot.sensor_color_GreatestColor();
 
-                    if (color == 0 || color == 2 || blockcolor >= 0)
+                    if (color == 0 || color == 2)
                     {
                         robot.set_message("Color Read " + color + " Pixy Block " + blockcolor);
                         v_state++;
@@ -157,14 +133,14 @@ public class CFPushBotAuto_Red1Pixy extends LinearOpMode
                 case 5:
                     robot.sensor_color_led(false);
                     robot.sensor_color_enable(false);
-                    if (color == 0 || blockcolor == 0) {
+                    if (color == 0 || (color==-1 && blockcolor == 0)) {
                         robot.redled_on();
                         robot.blueled_off();
                         jewelKnockDistance = -2.5f;
                         robot.drive_inches(jewelKnockDistance, v_useGyro);
                         robot.timewait(2);
                         v_state++;
-                    }else if(color==2 || blockcolor == 2){
+                    }else if(color==2 || (color==-1 && blockcolor == 2)){
                         robot.redled_off();
                         robot.blueled_on();
                         jewelKnockDistance = 2.5f;
@@ -233,7 +209,7 @@ public class CFPushBotAuto_Red1Pixy extends LinearOpMode
                     v_state++;
                     break;
                 case 16:
-                    if (robot.drive_inches_complete() || robot.timewait_Complete() || robot.sensor_range_get_distance() < 5)
+                    if (robot.drive_inches_complete() || robot.timewait_Complete() || robot.sensor_range_get_distance() < 1.3)
                     {
                         robot.sensor_range_enable(false);
                         v_state++;
@@ -309,13 +285,13 @@ public class CFPushBotAuto_Red1Pixy extends LinearOpMode
                 case 28:
                     robot.drive_power_override(.4f, .4f, .4f);
                     robot.sensor_range_enable(true);
-                    robot.drive_inches(15,v_useGyro);
+                    robot.drive_inches(25,v_useGyro);
                     robot.timewait(2);
                     v_state++;
                     break;
                 case 29:
                     double Range = robot.sensor_range_get_distance();
-                    if(robot.drive_inches_complete() || robot.timewait_Complete() || Range < 5){
+                    if(robot.drive_inches_complete() || robot.timewait_Complete() || Range < 1.5){
                         robot.set_message("Drive toward Blocks Complete Range:" + Range);
                         robot.sensor_range_enable(false);
                         v_state++;

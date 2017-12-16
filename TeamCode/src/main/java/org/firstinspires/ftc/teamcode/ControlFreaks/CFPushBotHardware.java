@@ -973,7 +973,77 @@ public class CFPushBotHardware {
             return null;
         }
     }
+    private void sensor_pixy_loop(){
+        //this is already in hardwareloop this is
+        if(v_pixy != null){
+            v_pixy.loop();
+        }
+    }
+    public void sensor_pixy_getjewelcolor_init(){
+        sensor_pixy_init();
+        sensor_pixy_maxsignature_enable(0,true);
+        //Enable Pixy witch will start the i2c queries
+        //sensor_pixy_signature_enable(2,true);
+    }
+    public int sensor_pixy_getjewelcolor(boolean debug){
+        int blockcolor = -1;
+        try{
+            sensor_pixy_enable(true);
+            String dbg = "Blocks:";
+            /*
+            PixyBlock myblueblock = sensor_pixy_signatureBlock(2);
+            if(debug){
+                dbg = dbg + myblueblock.print();
+            }
+            if(myblueblock.numBlocks > 0){
+                if(myblueblock.x < 100){
+                    return 2;
+                }else{
+                    return 0;
+                }
+            }
+            */
+            PixyBlockList sigMaxBlockList_All;
+            int Sig1X = -1;//Sig 1 is red
+            int Sig2X = -1; //Sig 2 is Blue
+            sigMaxBlockList_All = sensor_pixy_maxSignatureBlocks(0);
+            dbg = "Blocks:" + sigMaxBlockList_All.BlockCount;
+            if(sigMaxBlockList_All.BlockCount > 0){
 
+                for(int i = 0; i < sigMaxBlockList_All.Blocks.length && i < sigMaxBlockList_All.BlockCount; i++ ){
+                    //we assume the largest blue and red are the balls so will come first
+                    if(sigMaxBlockList_All.Blocks[i].signature == 1 && Sig1X == -1){
+                        //avoid left 50 x so not to read red in vuforia pictures with red in them
+                        if(sigMaxBlockList_All.Blocks[i].x > 35) {
+                            Sig1X = sigMaxBlockList_All.Blocks[i].x;
+                        }
+                    }else if(sigMaxBlockList_All.Blocks[i].signature == 2 && Sig2X == -1){
+                        Sig2X =  sigMaxBlockList_All.Blocks[i].x;
+                    }
+                    if(Sig1X > 0 && Sig2X > 0){
+                        break; //exit the 4 loop we already found the largest Red and Blue
+                    }
+
+                }
+                //The Block we care abount is always on the Left so lowest X value
+                if(Sig1X > 0 && Sig2X > 0) {
+                    if (Sig1X < Sig2X) {
+                        blockcolor = 0;  //Ball on Left is Signature 1 Red
+                    } else {
+                        blockcolor = 2;  //Ball on Left is Signature 2 Blue
+                    }
+                }
+                if(debug){
+                    dbg = dbg + sigMaxBlockList_All.print();
+                }
+            }
+            set_message(dbg);
+        }catch(Exception ex){
+            debugLogException("robot","sensor_pixy_getjewelcolor",ex );
+            set_error_message("sensor_pixy_getjewelcolor: " + ex.getMessage());
+        }
+        return blockcolor;
+    }
     public void sensor_pixy_signature_colorcode_set(int colorcode){
         try{
             if(v_pixy != null) {
