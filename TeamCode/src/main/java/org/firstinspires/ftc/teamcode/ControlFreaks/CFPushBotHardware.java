@@ -74,7 +74,7 @@ public class CFPushBotHardware {
     private String config_i2c_range = "range";
     private String config_i2c_pixy = "pixy";
     //private String config_pixy_led = "pixy_led";
-    private String config_adafruitimu = "imu";
+    private String config_i2c_adafruitimu = "imu";
     private String config_mrcolorsensor = "mrcolor";
     /*
         Motor Encoder Vars
@@ -789,6 +789,19 @@ public class CFPushBotHardware {
         }
     }
 
+    public boolean sensor_adafruitimu_init(){
+        try {
+            v_sensor_adafruitimu = new AdafruitBNO055IMU(opMode.hardwareMap.i2cDeviceSynch.get(config_i2c_adafruitimu));
+            v_sensor_mrcolor.enableLight(false);
+            set_second_message("sensor_color_mr_init");
+            return true;
+        }catch(Exception p_exeception){
+            debugLogException(config_i2c_adafruitimu,"missing",p_exeception);
+            config_i2c_adafruitimu = null;
+            return false;
+        }
+    }
+
     public boolean sensor_color_mr_init(){
         try {
             v_sensor_mrcolor = new ModernRoboticsI2cColorSensor(opMode.hardwareMap.i2cDeviceSynch.get(config_mrcolorsensor));
@@ -801,6 +814,8 @@ public class CFPushBotHardware {
             return false;
         }
     }
+
+
 
     /**
      * Used to retrive the total loop count
