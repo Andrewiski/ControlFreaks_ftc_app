@@ -24,15 +24,17 @@ Added I2C Registers for
 Steps to Use Pixy FTC Firmware
  Upload Custom Firmware to Pixy found in this Folder. 
 	Hold White Button, Plug in USB, Open PixyMon, upload Hex File in this Folder.
- Using PixyMon Set Interface to Lego I2c.  Not I2C Address will use the Address set in PixyMon not 0x01 used for Lego hack tell I get time to add FTC I2C to PixyMon.
-	Please Note that Lego/FTC I2C mode will not give valid results until pixymon is closed. 
+ Using PixyMon Set Interface to "FTC I2C".  Note I2C Address will use the Address set in PixyMon defaults to 0x54.
+	Please Note that FTC I2C mode will not give valid results until pixymon is closed. 
 	You can tell I2C is working as Pixy front LED color changes to largest detected object color.
+	Also We have bumped the Firmware Version to 2.0.20 so About in Pixy Mon will return 2.0.2 Firmware is you have correct loaded the FTC Firmware
  
-	FTC Wiring do not use 10 pin header for Power use JP1 as it has polarity protection and a protective Diod not to power Dim from Pixy Usb. 
+	FTC Wiring do not use 10 pin header for Power use JP1 as it has polarity protection and a protective Diode not to power Dim from Pixy Usb. 
 		I used an AndyMark Encoder Cable an lifted the little black tabs and pressed the silver tabs down 
 		to rearanged the colors as a quick solid cable. (See Jpg This Folder)
 		Correct part numbers for Connectors can be found on CharmLabs Wiki 
-
+	My State allowed out team to power via USB and just wire the SDA and SCL I2C pins to the DIM. This may not be acceptable to all judges as I2C sensor.
+	All communications to FTC application are via I2C to complily with rules.  
 
  Future enhancments I plan to work on are
  1. Add top 6 largest objects for a signature not just the largest. Complete 12/4/2017
@@ -42,7 +44,10 @@ Steps to Use Pixy FTC Firmware
  5. Allow setting of Pixy Params via I2C
     It has been reported that Pixy will drop its parameters in a brown out ie low voltage state
     The would also allow FTC program to set colors its looking for at run time removing the need for a pc
- 6. Add "FTC I2C" to PixyMon Interface so not to break Lego I2C as I change I2C address so it is not 0x01.
+ 6. Add "FTC I2C" to PixyMon Interface so not to break Lego I2C as I change I2C address so it is not 0x01.  Complete 12/21/2017
+ 7. Create Andriod App to use libusb to configure Pixy signatures. PixyMon is made using QT but uses libusb which appears to have some Andriod issues in marshmello. 
+	We are not very experinced ie no expreince using QT for developing Gui Apps so not sure how doable Andriod app will be, but very usefull to help visualy see what targets
+	robot is seeing and to set the brightness and signature colors.  
 
 
 To use the Color Code Querys
