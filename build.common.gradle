@@ -22,7 +22,6 @@ apply plugin: 'com.android.application'
 android {
 
     compileSdkVersion 23
-    buildToolsVersion '25.0.3'
 
     signingConfigs {
         debug {
@@ -68,6 +67,7 @@ android {
     }
 
     // Advanced user code might just want to use Vuforia directly, so we set up the libs as needed
+    // http://google.github.io/android-gradle-dsl/current/com.android.build.gradle.internal.dsl.BuildType.html
     buildTypes {
         release {
             // Disable debugging for release versions so it can be uploaded to Google Play.
@@ -78,9 +78,17 @@ android {
         }
         debug {
             debuggable true
+<<<<<<< HEAD
             //ndk {
             //    abiFilters "armeabi-v7a", "x86"
             //}
+=======
+            jniDebuggable true
+            renderscriptDebuggable true
+            ndk {
+                abiFilters "armeabi-v7a"
+            }
+>>>>>>> 612f456b1020dac06adbc24b050e2a612fc6c756
         }
     }
 
