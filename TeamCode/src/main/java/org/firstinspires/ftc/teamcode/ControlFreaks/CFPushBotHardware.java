@@ -4082,7 +4082,8 @@ public class CFPushBotHardware {
         try{
             VuforiaLocalizer.Parameters parameters;
             if(v_debug) {
-                parameters = new VuforiaLocalizer.Parameters(com.qualcomm.ftcrobotcontroller.R.id.cameraMonitorViewId);
+                //parameters = new VuforiaLocalizer.Parameters(com.qualcomm.ftcrobotcontroller.R.id.cameraMonitorViewId);
+                parameters = new VuforiaLocalizer.Parameters();
             }else{
                 parameters = new VuforiaLocalizer.Parameters();
             }

@@ -55,7 +55,10 @@ public class CFMechBotManual extends LinearOpMode {
     boolean buttonG2AReleased = true;
     boolean buttonG2BReleased = true;
     boolean button_rightstick_deadzone = true;
-
+    boolean chaseBlueBall = false;
+    int chaseBallState = -1;
+    int chaseTurnCount = 0;
+    int chaseBallSignature = -1;
     boolean highspeedmode = false;
     ElapsedTime myFliperRetractElapsedTime;
     @Override
@@ -67,13 +70,14 @@ public class CFMechBotManual extends LinearOpMode {
             robot.isMechDrive = true;
             robot.isDriveAndyMark20 = false;
             robot.init(this);
-
+            robot.sensor_pixy_init();
+            robot.sensor_range_init();
             robot.setupManualDrive();
             //robot.vuforia_Init();
             // Wait for the game to start (driver presses PLAY)
             robot.led7seg_timer_init(120);
             robot.run_using_encoders();
-            robot.lifter_testbot_reverse();
+            //robot.lifter_testbot_reverse();
 
             robot.blockgrabber_open();
             waitForStart();
@@ -171,7 +175,7 @@ public class CFMechBotManual extends LinearOpMode {
 //                    }
 
 
-                    if(gamepad2.dpad_up){
+                    /*if(gamepad2.dpad_up){
 
                         if(buttonG2DpadUpReleased == true) {
                             buttonG2DpadUpReleased = false;
@@ -213,11 +217,21 @@ public class CFMechBotManual extends LinearOpMode {
                         }
                     }else {
                         buttonG2DpadrightReleased = true;
-                    }
+                    }*/
                     if(gamepad1.x ){
                         if(buttonXReleased == true) {
-                            robot.blueled_toggle();
-                            //highspeedmode = false;
+
+                            //lets go find a blue ball
+                            if(chaseBlueBall){
+                                chaseBlueBall = false;
+                                chaseBallState = -1;
+                                robot.blueled_off();
+                            }else{
+                                chaseBlueBall = true;
+                                chaseBallState = 0;
+                                chaseBallSignature = 2;
+                                robot.blueled_on();
+                            }
                             buttonXReleased = false;
                         }
                     }else{
@@ -305,6 +319,84 @@ public class CFMechBotManual extends LinearOpMode {
                         }
                         buttonYReleased = true;
 
+                    }
+                    if(chaseBlueBall){
+                        switch(chaseBallState){
+                            case 0:
+                                if(chaseBlueBall){
+                                    for(int i = 0; i < 7; i++){
+                                        robot.sensor_pixy_maxsignature_enable(i, false);
+                                    }
+                                    robot.sensor_pixy_maxsignature_enable(chaseBallSignature, true);
+                                }
+                                robot.sensor_pixy_enable(true);
+                                robot.sensor_range_enable(true);
+                                chaseTurnCount = 0;
+                                chaseBallState++;
+                                break;
+                            case 1:
+                                if(robot.sensor_range_get_distance() > 4){
+                                    if(robot.sensor_pixy_maxSignatureBlocks(chaseBallSignature).BlockCount == 0){
+                                       robot.turn_degrees(90,false,false);
+                                        chaseTurnCount++;
+                                    }else{
+                                        //We see a target lets go get it
+                                        chaseBallState = 10;
+                                    }
+                                }
+                                chaseBallState++;
+                                break;
+                            case 2:
+                                if(robot.turn_complete() == false){
+                                    if(robot.sensor_pixy_maxSignatureBlocks(chaseBallSignature).BlockCount > 0){
+                                        robot.drive_inches_stop();
+                                        //We see a target lets go get it
+                                        chaseBallState = 10;
+                                    }
+                                }else{
+                                    if(chaseTurnCount >= 4){
+                                        chaseBallState++;
+                                    }else{
+                                        chaseBallState = 1;
+                                    }
+                                }
+
+                                break;
+                            case 3:
+                                // no ball found and we have turned 360
+                                if(robot.sensor_range_get_distance() > 4){
+                                    double inches = robot.sensor_range_get_distance();
+                                    if (inches >= 24){
+                                        inches = 24;
+                                    }else{
+                                        inches = inches -5;
+                                    }
+                                    robot.drive_inches((float)inches,false);
+                                    chaseBallState++;
+                                }else{
+                                    chaseTurnCount = 3;
+                                    chaseBallState = 1;
+                                }
+
+                                break;
+                            case 4:
+                                if(robot.drive_inches_complete() == false || robot.sensor_range_get_distance() < 5){
+                                    if(robot.sensor_pixy_maxSignatureBlocks(chaseBallSignature).BlockCount > 0){
+                                        robot.drive_inches_stop();
+                                        //We see a target lets go get it
+                                        chaseBallState = 10;
+                                    }
+                                }else{
+
+                                        chaseBallState = 1;
+
+                                }
+
+                                break;
+                            case 10:
+                                robot.drive_inches_stop();
+
+                        }
                     }
 
                     //robot.waitForTick(2);

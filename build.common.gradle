@@ -78,17 +78,11 @@ android {
         }
         debug {
             debuggable true
-<<<<<<< HEAD
-            //ndk {
-            //    abiFilters "armeabi-v7a", "x86"
-            //}
-=======
             jniDebuggable true
             renderscriptDebuggable true
             ndk {
                 abiFilters "armeabi-v7a"
             }
->>>>>>> 612f456b1020dac06adbc24b050e2a612fc6c756
         }
     }
 
