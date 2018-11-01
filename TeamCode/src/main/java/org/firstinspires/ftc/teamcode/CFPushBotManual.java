@@ -70,14 +70,14 @@ public class CFPushBotManual extends LinearOpMode {
             robot.setupManualDrive();
             //robot.vuforia_Init();
             // Wait for the game to start (driver presses PLAY)
-            robot.led7seg_timer_init(120);
+            //robot.led7seg_timer_init(120);
             robot.run_using_encoders();
            // robot.lifter_step(-500); //reset the min on lifter as automonmouse moved us up and reinit reset min
             robot.blockgrabber_open();
             waitForStart();
-            robot.debugOff();
-            robot.led7seg_timer_start(120);
-            robot.blockgrabber_open();
+            //robot.debugOff();
+            //robot.led7seg_timer_start(120);
+            //robot.blockgrabber_open();
 
             // run until the end of the match (driver presses STOP)
             while (opModeIsActive()) {
