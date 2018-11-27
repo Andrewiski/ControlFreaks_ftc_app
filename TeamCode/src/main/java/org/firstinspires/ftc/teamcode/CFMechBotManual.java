@@ -71,18 +71,16 @@ public class CFMechBotManual extends LinearOpMode {
             robot.isDriveAndyMark20 = false;
             robot.init(this);
             robot.sensor_pixy_init();
-            robot.sensor_range_init();
+
             robot.setupManualDrive();
             //robot.vuforia_Init();
             // Wait for the game to start (driver presses PLAY)
-            robot.led7seg_timer_init(120);
+            //robot.led7seg_timer_init(120);
             robot.run_using_encoders();
-            //robot.lifter_testbot_reverse();
 
-            robot.blockgrabber_open();
             waitForStart();
             //robot.debugOff();
-            robot.led7seg_timer_start(120);
+            //robot.led7seg_timer_start(120);
             // run until the end of the match (driver presses STOP)
             while (opModeIsActive()) {
                 try {
@@ -98,22 +96,22 @@ public class CFMechBotManual extends LinearOpMode {
 
 
                     if(gamepad2.left_stick_y > .2 ) {
-                        robot.shoulder_step(-.001);
+                        //robot.shoulder_step(-.001);
                     }else if(gamepad2.left_stick_y < -.2)
                     {
-                        robot.shoulder_step(.001);
+                        //robot.shoulder_step(.001);
                     }
 
                     if(gamepad2.right_stick_y > .2 ) {
-                        robot.slider_step(-100, gamepad2.left_bumper);
+                        //robot.slider_step(-100, gamepad2.left_bumper);
                         button_rightstick_deadzone = false;
                     }else if(gamepad2.right_stick_y < -.2)
                     {
-                        robot.slider_step(100,false);
+                        //robot.slider_step(100,false);
                         button_rightstick_deadzone = false;
                     }else{
                         if(button_rightstick_deadzone == false) {
-                            robot.slider_stop(gamepad2.left_bumper);
+                            //robot.slider_stop(gamepad2.left_bumper);
                             button_rightstick_deadzone = true;
                         }
                     }
@@ -122,7 +120,7 @@ public class CFMechBotManual extends LinearOpMode {
                     if(gamepad1.left_bumper){
                         if(buttonLeftBumperReleased == true) {
                             if (robot.debugMode()){
-                                robot.jewel_toggle();
+                                //robot.jewel_toggle();
                             }
 
                             buttonLeftBumperReleased = false;
@@ -225,12 +223,12 @@ public class CFMechBotManual extends LinearOpMode {
                             if(chaseBlueBall){
                                 chaseBlueBall = false;
                                 chaseBallState = -1;
-                                robot.blueled_off();
+                                //robot.blueled_off();
                             }else{
                                 chaseBlueBall = true;
                                 chaseBallState = 0;
                                 chaseBallSignature = 2;
-                                robot.blueled_on();
+                                //robot.blueled_on();
                             }
                             buttonXReleased = false;
                         }
@@ -239,7 +237,7 @@ public class CFMechBotManual extends LinearOpMode {
                     }
                     if(gamepad1.b){
                         if(buttonBReleased == true) {
-                            robot.redled_toggle();
+                            //robot.redled_toggle();
                             //highspeedmode = true;
                             buttonBReleased = false;
                         }
@@ -281,7 +279,7 @@ public class CFMechBotManual extends LinearOpMode {
                     }
                     if(gamepad2.b){
                         if(buttonG2BReleased == true) {
-                            robot.hand_toggle();
+                            //robot.hand_toggle();
                             buttonG2BReleased = false;
                         }
                     }else{
@@ -291,31 +289,31 @@ public class CFMechBotManual extends LinearOpMode {
                     }
                     if(gamepad1.y){
                         if(buttonYReleased == true) {
-                            robot.sensor_color_enable(true);
-                            robot.sensor_color_led(true);
+                            //robot.sensor_color_enable(true);
+                            //robot.sensor_color_led(true);
 
                             //myFliperRetractElapsedTime = null;
                             buttonYReleased = false;
                         }else {
-                            int myColor = robot.sensor_color_GreatestColor();
+                            int myColor = 0; // robot.sensor_color_GreatestColor();
                             if (myColor == 0) {
-                                robot.redled_on();
-                                robot.blueled_off();
+                                //robot.redled_on();
+                                //robot.blueled_off();
                             } else if (myColor == 2) {
 
-                                robot.redled_off();
-                                robot.blueled_on();
+                                //robot.redled_off();
+                                //robot.blueled_on();
                             }else {
-                                robot.redled_off();
-                                robot.blueled_off();
+                                //robot.redled_off();
+                                //robot.blueled_off();
                             }
                         }
                     }else{
                         if(buttonYReleased == false){
-                            robot.sensor_color_led(false);
-                            robot.sensor_color_enable(false);
-                            robot.redled_off();
-                            robot.blueled_off();
+                            //robot.sensor_color_led(false);
+                            //robot.sensor_color_enable(false);
+                            //robot.redled_off();
+                            //robot.blueled_off();
                         }
                         buttonYReleased = true;
 
@@ -330,7 +328,7 @@ public class CFMechBotManual extends LinearOpMode {
                                     robot.sensor_pixy_maxsignature_enable(chaseBallSignature, true);
                                 }
                                 robot.sensor_pixy_enable(true);
-                                robot.sensor_range_enable(true);
+                                //robot.sensor_range_enable(true);
                                 chaseTurnCount = 0;
                                 chaseBallState++;
                                 break;

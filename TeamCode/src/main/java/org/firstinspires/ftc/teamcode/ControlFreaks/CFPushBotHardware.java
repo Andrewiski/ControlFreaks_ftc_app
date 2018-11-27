@@ -4,15 +4,9 @@ package org.firstinspires.ftc.teamcode.ControlFreaks;
  * Created by adevries on 11/6/2015.
  */
 
-import android.media.AudioManager;
-import android.media.ToneGenerator;
+
 import android.util.Log;
-
-
-import com.qualcomm.hardware.adafruit.AdafruitBNO055IMU;
-import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cColorSensor;
-import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
-import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
+import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -51,31 +45,19 @@ public class CFPushBotHardware {
 
     private String config_motor_leftdrive = "left_drive";
     private String config_motor_rightdrive = "right_drive";
-    private String config_motor_slider = "slider";
-    private String config_motor_lifter = "lifter";
-    private String config_servo_hand = "hand";
-    private String config_servo_wrist = "wrist";
-    private String config_servo_jewel = "jewel";
-    private String config_servo_blockgrabber = "blockgrabber";
-    private String config_servo_blockslide = "blockslide";
-    //private String config_motor_bgtilt = "ssg";
+    //Only used if Mechum Wheels
     private String config_motor_leftfrontdrive = "leftfront_drive";
     private String config_motor_rightfrontdrive = "rightfront_drive";
-    public boolean isMechDrive = false;
-    public boolean isDriveAndyMark20 = true;
-
-    private String config_servo_shoulder = "shoulder";
-    private String config_dim = "dim";
-    private String config_i2c_gyro = "gyro";
-    private String config_i2c_led7seg = "ledseg";
-    private String config_i2c_colorsensor = "color";
-    private String config_i2c_colorsensor_led = "color_led";
-
-    private String config_i2c_range = "range";
+    private String config_motor_extender = "extender";
+    private String config_motor_lifter = "lifter";
+    private String config_servo_digger = "digger";
     private String config_i2c_pixy = "pixy";
-    //private String config_pixy_led = "pixy_led";
-    private String config_i2c_adafruitimu = "imu";
-    private String config_mrcolorsensor = "mrcolor";
+    private String config_range_name = "range";
+
+
+    public boolean isMechDrive = false;
+    public boolean isDriveAndyMark20 = false;
+
     /*
         Motor Encoder Vars
      */
@@ -131,13 +113,6 @@ public class CFPushBotHardware {
     //Global Vars to the class
     private static final double ServoErrorResultPosition = -0.0000000001;
 
-    private DcMotor v_motor_bgtilt;
-    private static final double v_motor_bgtilt_power = 1.0;
-    private static final DcMotor.Direction v_motor_bgtilt_direction = DcMotor.Direction.FORWARD;
-    private int v_motor_bgtilt_encoder_min = 0;
-    private static final int v_motor_bgtilt_encoder_max = 420;
-    private static final int v_motor_bgtilt_ExtendSlowdownTicks = 50;
-    private int v_motor_bgtilt_Position = 0;
 
     private DcMotor v_motor_lifter;
     private static final double v_motor_lifter_power = 1.0;
@@ -147,140 +122,21 @@ public class CFPushBotHardware {
     private static final int v_motor_lifter_ExtendSlowdownTicks = 300;
     private int v_motor_lifter_Position = 0;
 
-    //Slider is a AndyMark 20
-    private DcMotor v_motor_slider;
-    private static final double v_motor_slider_power = 1.0f;
-    private static final DcMotor.Direction v_motor_slider_direction = DcMotor.Direction.FORWARD;
-    private static final double v_motor_slider_SpeedSlowDown = 0.5f;
-    private static final int v_motor_slider_encoder_min = 30;
-    private static final int v_motor_slider_encoder_min2 = 815;
-    private static final int v_motor_slider_encoder_max =  3600; //8150; //8750;
-    private static final int v_motor_slider_ExtendSlowdownTicks = 300;
-    private int v_motor_slider_Position = 0;
+    //Extender is a AndyMark 20
+    private DcMotor v_motor_extender;
+    private static final double v_motor_extender_power = 1.0f;
+    private static final DcMotor.Direction v_motor_extender_direction = DcMotor.Direction.FORWARD;
+    private static final double v_motor_extender_SpeedSlowDown = 0.5f;
+    private static final int v_motor_extender_encoder_min = 30;
+    private static final int v_motor_extender_encoder_min2 = 815;
+    private static final int v_motor_extender_encoder_max =  3600; //8150; //8750;
+    private static final int v_motor_extender_ExtendSlowdownTicks = 300;
+    private int v_motor_extender_Position = 0;
 
-
-    private Servo v_servo_blockgrabber;
-    private static final double v_servo_blockgrabber_MinPosition = 0.45D;
-    private static final double v_servo_blockgrabber_MaxPosition = 0.97D; // 0.87;
-    private double v_servo_blockgrabber_position = 0.97D;  //init arm jewel Position
-    boolean v_servo_blockgrabber_is_extended = true;
-    private Servo.Direction v_servo_blockgrabber_direction = Servo.Direction.FORWARD;
-
-    private Servo v_servo_blockslide;
-    private static final double v_servo_blockslide_MinPosition = 0.00;
-    private static final double v_servo_blockslide_MaxPosition = 1.0D;
-    private static final double v_servo_blockslide_MiddlePosition = 0.5D;
-    private int v_servo_blockslide_position = 1;  //move to Middle
-    boolean v_servo_blockslide_is_extended = false;
-    private Servo.Direction v_servo_blockslide_direction = Servo.Direction.FORWARD;
-
-    private Servo v_servo_jewel;
-    private static final double v_servo_jewel_MinPosition = 0.0D;
-    private static final double v_servo_jewel_MaxPosition = 0.73D;
-    private double v_servo_jewel_position = 0.73D;  //init arm jewel Position
-    private Servo.Direction v_servo_jewel_direction = Servo.Direction.FORWARD;
-    boolean v_servo_jewel_is_extending = false;
-    boolean v_servo_jewel_is_retracting = false;
-    private static final double v_servo_jewel_retract_ease = .2;
-
-    private Servo v_servo_hand;
-    private static final double v_servo_hand_MinPosition = 0.00;
-    private static final double v_servo_hand_MaxPosition = 0.15;
-    private double v_servo_hand_position = 0.00D;  //init hand Position
-    private Servo.Direction v_servo_hand_direction = Servo.Direction.FORWARD;
-    boolean v_servo_hand_is_extending = false;
-
-    private Servo v_servo_wrist;
-    private static final double v_servo_wrist_MinPosition = 0.00;
-    private static final double v_servo_wrist_MaxPosition = 1.00;
-    private double v_servo_wrist_position = 0.00D;  //init hand Position
-    private Servo.Direction v_servo_wrist_direction = Servo.Direction.FORWARD;
-    boolean v_servo_wrist_is_extending = false;
-
-
-    private Servo v_servo_shoulder;
-    private static final double v_servo_shoulder_MinPosition = 0.00;
-    private static final double v_servo_shoulder_MaxPosition = 0.141; // 0.131;
-    private double v_servo_shoulder_position = 0.05D;  //init arm shoulder Position
-    private Servo.Direction v_servo_shoulder_direction = Servo.Direction.FORWARD;
-    boolean v_servo_shoulder_is_extended = false;
-
-
-    //Legecy Color Sensor
-  /*  private ColorSensor v_sensor_colorLegecy;
-    private final static String v_sensor_colorLegecy_name="color1";
-    private boolean v_sensor_colorLegecy_led_enabled = false;
-    // v_sensor_color_hsvValues is an array that will hold the hue, saturation, and value information.
-    private float v_sensor_colorLegecy_hsvValues[] = {0F,0F,0F};
-    // values is a reference to the v_sensor_color_hsvValues array.
-    private final float v_sensor_colorLegecy_values[] = v_sensor_colorLegecy_hsvValues;
-    private int v_sensor_colorLegecy_rgbValues[] = {0,0,0,0};
-*/
-    //Adafruit RGB Sensor
-    private ColorSensor v_sensor_color_i2c;
-    private DigitalChannel v_sensor_color_i2c_led;
-    // bEnabled represents the state of the LED.
-    private boolean v_sensor_color_i2c_led_enabled = false;
-    //red, green, blue, alpha
-    private int v_sensor_color_i2c_rgbaValues[]= {0,0,0,0};
-    //we read the values in the loop only if the sensor is enabled as they take resourses
-    private boolean v_sensor_color_i2c_enabled = false;
-    private int v_sensor_color_min_value = 200;
-
-    private boolean v_sensor_rangeSensor_enabled = false;
-    private double v_sensor_rangeSensor_distance = 0.0;
-    private ModernRoboticsI2cRangeSensor v_sensor_rangeSensor;
-
-    //Legecy OSD Sensor
-    //private OpticalDistanceSensor v_sensor_odsLegecy;
-    //private boolean v_sensor_odsLegecy_enabled = false;
-
-    //Legecy Light Sensor
-   /* private LightSensor v_sensor_lightLegecy;
-    private static final String v_sensor_lightLegecy_name = "light1";
-    private boolean v_sensor_lightLegecy_enabled = false;
-
-    private static final String v_sensor_ultraLegecy_name = "ultra1";
-    private UltrasonicSensor v_sensor_ultraLegecy;
-    private int v_sensor_ultraLegecy_ticksPerRead = 20;
-    private double v_sensor_ultraLegecy_distance;
-*/
-    //Modern Robotics gyro1
-    ModernRoboticsI2cGyro v_sensor_gyro_mr;
-    //GyroSensor v_sensor_gyro;
-    ModernRoboticsI2cColorSensor v_sensor_mrcolor;
-
-    AdafruitBNO055IMU v_sensor_adafruitimu;
-    //private int v_sensor_gyro_x, v_sensor_gyro_y, v_sensor_gyro_z = 0;
-    //private int v_sensor_gyro_heading = 0;
-
-    //Tone Generator to make noise
-    ToneGenerator v_tone_generator;
-    AudioEffects v_audio_effects;
-    // (tone type, tone duration in ms)
-// from a list of predefined tone types
     LinearOpMode opMode;
 
-//    private LED v_led_heartbeat;
-//    private boolean v_led_heartbeat_enabled = true;
-//    private  static final int v_led_heartbeat_tickPerToggle = 20;
-    //private int v_led_heartbeat_ticks = 0;
-
-    private DeviceInterfaceModule v_dim;
 
     private PixyCamera v_pixy;
-    private LED v_pixy_led;
-
-    private AdafruitLEDBackpack7Seg v_ledseg;
-
-    // I2C wouldn't work with Modern Robotic Controller for some reason moved to
-    // digital pins to send color and mode
-//    private static final boolean v_neopixels_use_i2c = true;
-//    private ArduinoI2CNeopixels v_neopixels;
-//    private static final int v_neopixel_modechange_pin = 7;
-//    private static final int v_neopixel_blue_pin = 6;
-//    private static final int v_neopixel_green_pin = 5;
-//    private static final int v_neopixel_red_pin = 4;
 
     private DcMotor v_motor_left_drive;
     private DcMotor v_motor_right_drive;
@@ -288,10 +144,6 @@ public class CFPushBotHardware {
     private DcMotor v_motor_leftfront_drive;
     private DcMotor v_motor_rightfront_drive;
 
-//    private DcMotor v_motor_bgleft;
-//    private DcMotor v_motor_bgright;
-//    private static final DcMotor.Direction v_drive_bgleftDirection = DcMotor.Direction.FORWARD;
-//    private static final DcMotor.Direction v_drive_bgrightDirection = DcMotor.Direction.REVERSE;
 
     /**
      * Indicate whether a message is a available to the class user.
@@ -302,6 +154,10 @@ public class CFPushBotHardware {
      * Store a message to the user if one has been generated.
      */
     private String v_warning_message = "No Errors";
+
+    private boolean v_sensor_rangeSensor_enabled = false;
+    private double v_sensor_rangeSensor_distance = 0.0;
+    private Rev2mDistanceSensor v_sensor_rangeSensor;
 
 
     public CFPushBotHardware()
@@ -333,25 +189,6 @@ public class CFPushBotHardware {
         v_warning_generated = false;
         v_warning_message = "Can't map; ";
 
-        //
-        //Connect the Core Interface Device or Dim
-        try {
-
-            // set up the hardware devices we are going to use
-            v_dim = opMode.hardwareMap.deviceInterfaceModule.get(config_dim);
-
-
-        }catch (Exception p_exeception)
-        {
-            debugLogException(config_dim,"missing",p_exeception);
-
-            v_dim = null;
-        }
-        //
-        // Connect the drive wheel motors.
-        //
-        // The direction of the right motor is reversed, so joystick inputs can
-        // be more generically applied.
         //
         try
         {
@@ -403,32 +240,7 @@ public class CFPushBotHardware {
                 v_motor_rightfront_drive = null;
             }
         }
-        /*
-        try
-        {
-            v_motor_bgleft = opMode.hardwareMap.dcMotor.get (config_motor_bgleft);
 
-            v_motor_bgleft.setDirection (v_drive_bgleftDirection);
-            v_motor_bgleft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        }
-        catch (Exception p_exeception)
-        {
-            debugLogException(config_motor_bgleft,"missing",p_exeception);
-            v_motor_bgleft = null;
-        }
-
-        try
-        {
-            v_motor_bgright = opMode.hardwareMap.dcMotor.get (config_motor_bgright);
-            v_motor_bgright.setDirection (v_drive_bgrightDirection);
-            v_motor_bgleft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        }
-        catch (Exception p_exeception)
-        {
-            debugLogException(config_motor_bgright, "missing", p_exeception);
-            v_motor_bgright = null;
-        }
-        */
         try {
             int counter = 0;
             reset_drive_encoders();
@@ -445,190 +257,25 @@ public class CFPushBotHardware {
             v_motor_right_drive = null;
         }
 
-        try{
-            v_tone_generator = new ToneGenerator(AudioManager.STREAM_RING, ToneGenerator.MAX_VOLUME);
-            /*v_tone_generator.startTone(ToneGenerator.TONE_DTMF_0, 500);
-            sleep(500);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_9, 500);
-            sleep(500);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_0, 500);
-            sleep(500);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_9, 500);
-            sleep(500);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_4, 500);
-
-            sleep(200);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_7, 500);
-            sleep(200);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_9, 500);
-            */
-        }catch (Exception p_exeception)
-        {
-            debugLogException("toneGenerator", "missing", p_exeception);
-
-            v_tone_generator = null;
-        }
-
-        try{
-            v_audio_effects = null;
-            //v_audio_effects = new AudioEffects();
-        }catch (Exception p_exeception)
-        {
-            debugLogException("AudioEffects", "missing", p_exeception);
-
-            v_audio_effects = null;
-        }
-        try{
-            if(v_dim != null) {
-                // remember, the Adafruit sensor is actually two devices.
-                // It's an I2C sensor and it's also an LED that can be turned on or off.
-                // get a reference to our ColorSensor object.
-                v_sensor_color_i2c = opMode.hardwareMap.colorSensor.get(config_i2c_colorsensor);
-
-            }
-        } catch (Exception p_exeception)
-        {
-            debugLogException(config_i2c_colorsensor, "missing", p_exeception);
-            v_sensor_color_i2c = null;
-        }
-
-        try{
-            if(v_dim !=null){
-                v_sensor_color_i2c_led = opMode.hardwareMap.get(DigitalChannel.class, config_i2c_colorsensor_led);
-                // turn the LED on in the beginning, just so user will know that the sensor is active.
-                v_sensor_color_i2c_led.setMode(DigitalChannel.Mode.OUTPUT);
-                v_sensor_color_i2c_led.setState( v_sensor_color_i2c_led_enabled);
-
-            }
-        } catch (Exception p_exeception)
-        {
-            debugLogException(config_i2c_colorsensor_led, "missing", p_exeception);
-            v_sensor_color_i2c_led = null;
-        }
-
-        //
-        // Connect the blockgrabber servo.
-        //
-        try
-        {
-            v_servo_blockgrabber = opMode.hardwareMap.servo.get(config_servo_blockgrabber);
-            v_servo_blockgrabber.setDirection(v_servo_blockgrabber_direction);
-            v_servo_blockgrabber.setPosition (v_servo_blockgrabber_position);
-
-            //v_server_blockgrabber_is_extended = false;
-        }
-        catch (Exception p_exeception)
-        {
-            debugLogException(config_servo_blockgrabber, "missing", p_exeception);
-            v_servo_blockgrabber = null;
-        }
-
-        //
-        // Connect the blockgrabber servo.
-        //
-        try
-        {
-            v_servo_blockslide = opMode.hardwareMap.servo.get(config_servo_blockslide);
-            //v_servo_blockslide.scaleRange(v_servo_blockslide_MinPosition,v_servo_blockslide_MaxPosition);
-            v_servo_blockslide.setDirection(v_servo_blockslide_direction);
-            v_servo_blockslide.setPosition (v_servo_blockslide_MiddlePosition);  //Middle
-        }
-        catch (Exception p_exeception)
-        {
-            debugLogException(config_servo_blockslide, "missing", p_exeception);
-            v_servo_blockslide = null;
-        }
 
 
-        //
-        // Connect the jewel servo.
-        //
-        try
-        {
-            v_servo_jewel = opMode.hardwareMap.servo.get(config_servo_jewel);
-            //set the Server Direction
-            v_servo_jewel.setDirection(v_servo_jewel_direction);
-            //set the Servo ranage
-            //v_servo_jewel.scaleRange(v_servo_jewel_MinPosition, v_servo_jewel_MaxPosition );
-            //move the Servo to its init position
-            v_servo_jewel.setPosition (v_servo_jewel_position);
-        }
-        catch (Exception p_exeception)
-        {
-            debugLogException(config_servo_jewel, "missing", p_exeception);
-            v_servo_jewel = null;
-        }
-
-
-        //
-        // Connect the shoulder servo.
-        //
-        try
-        {
-            v_servo_shoulder = opMode.hardwareMap.servo.get(config_servo_shoulder);
-            v_servo_shoulder.setDirection(v_servo_shoulder_direction);
-            v_servo_shoulder.setPosition (v_servo_shoulder_position);
-        }
-        catch (Exception p_exeception)
-        {
-            debugLogException(config_servo_shoulder, "missing", p_exeception);
-            v_servo_shoulder = null;
-        }
-
-        //
-        // Connect the hand servo.
-        //
-        try
-        {
-            v_servo_hand = opMode.hardwareMap.servo.get(config_servo_hand);
-            //set the Server Direction
-            v_servo_hand.setDirection(v_servo_hand_direction);
-            //set the Servo ranage
-            //v_servo_hand.scaleRange(v_servo_hand_MinPosition, v_servo_hand_MaxPosition );
-            //move the Servo to its init position
-            v_servo_hand.setPosition (v_servo_hand_position);
-        }
-        catch (Exception p_exeception)
-        {
-            debugLogException(config_servo_hand, "missing", p_exeception);
-            v_servo_hand = null;
-        }
-
-        //
-        // Connect the hand servo.
-        //
-        try
-        {
-            v_servo_wrist = opMode.hardwareMap.servo.get(config_servo_wrist);
-            //set the Server Direction
-            v_servo_wrist.setDirection(v_servo_wrist_direction);
-            //set the Servo ranage
-            //v_servo_wrist.scaleRange(v_servo_wrist_MinPosition, v_servo_wrist_MaxPosition );
-            //move the Servo to its init position
-            v_servo_wrist.setPosition (v_servo_wrist_position);
-        }
-        catch (Exception p_exeception)
-        {
-            debugLogException(config_servo_wrist, "missing", p_exeception);
-            v_servo_wrist = null;
-        }
 
 
         try
         {
-            v_motor_slider = opMode.hardwareMap.dcMotor.get (config_motor_slider);
-            v_motor_slider.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            v_motor_slider.setDirection(v_motor_slider_direction);
-            v_motor_slider.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            v_motor_extender = opMode.hardwareMap.dcMotor.get (config_motor_extender);
+            v_motor_extender.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            v_motor_extender.setDirection(v_motor_extender_direction);
+            v_motor_extender.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             int counter = 0;
-            while (counter < 5 && v_motor_slider.getMode() != DcMotor.RunMode.STOP_AND_RESET_ENCODER){
+            while (counter < 5 && v_motor_extender.getMode() != DcMotor.RunMode.STOP_AND_RESET_ENCODER){
                 counter++;
                 sleep(10);
                 //debugLogException("init", "waiting on slider motor Stop_and_rest complete",null);
             }
-            v_motor_slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            v_motor_extender.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             counter = 0;
-            while (counter < 5 && v_motor_slider.getMode() != DcMotor.RunMode.RUN_TO_POSITION){
+            while (counter < 5 && v_motor_extender.getMode() != DcMotor.RunMode.RUN_TO_POSITION){
                 counter++;
                 sleep(10);
                 //debugLogException("init", "waiting on slider motor RUN_TO_POSITION complete",null);
@@ -637,37 +284,10 @@ public class CFPushBotHardware {
         }
         catch (Exception p_exeception)
         {
-            debugLogException(config_motor_slider,"missing",p_exeception);
-            v_motor_slider = null;
+            debugLogException(config_motor_extender,"missing",p_exeception);
+            v_motor_extender = null;
         }
 
-        //v_motor_bgtilt
-
-//        try
-//        {
-//            v_motor_bgtilt = opMode.hardwareMap.dcMotor.get (config_motor_bgtilt);
-//            v_motor_bgtilt.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-//            v_motor_bgtilt.setDirection(v_motor_bgtilt_direction);
-//            v_motor_bgtilt.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//            int counter = 0;
-//            while (counter < 5 && v_motor_bgtilt.getMode() != DcMotor.RunMode.STOP_AND_RESET_ENCODER){
-//                counter++;
-//                sleep(10);
-//                //debugLogException("init", "waiting on lifter motor Stop_and_rest complete",null);
-//            }
-//            v_motor_bgtilt.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//            counter = 0;
-//            while (counter < 5 && v_motor_bgtilt.getMode() != DcMotor.RunMode.RUN_TO_POSITION){
-//                counter++;
-//                sleep(10);
-//                //debugLogException("init", "waiting on lifter motor RUN_TO_Position complete",null);
-//            }
-//        }
-//        catch (Exception p_exeception)
-//        {
-//            debugLogException(config_motor_bgtilt,"missing",p_exeception);
-//            v_motor_bgtilt = null;
-//        }
 
 
         try
@@ -697,6 +317,7 @@ public class CFPushBotHardware {
         }
 
 
+/*
         try{
 
             v_ledseg = new AdafruitLEDBackpack7Seg(opMode.hardwareMap, config_i2c_led7seg);
@@ -707,26 +328,9 @@ public class CFPushBotHardware {
             v_ledseg = null;
 
         }
+*/
 
-       /* try{
-            if (v_neopixels_use_i2c) {
-                v_neopixels = new ArduinoI2CNeopixels(opMode.hardwareMap, "neopixels");
-                debugLogException("neopixels", "inited", null);
-            }else {
-                v_dim.setDigitalChannelMode(v_neopixel_modechange_pin, DigitalChannelController.Mode.OUTPUT);
-                v_dim.setDigitalChannelMode(v_neopixel_red_pin, DigitalChannelController.Mode.OUTPUT);
-                v_dim.setDigitalChannelMode(v_neopixel_green_pin, DigitalChannelController.Mode.OUTPUT);
-                v_dim.setDigitalChannelMode(v_neopixel_blue_pin, DigitalChannelController.Mode.OUTPUT);
-                v_dim.setDigitalChannelState(v_neopixel_modechange_pin, v_neopixel_modechange_pin_state);
-                v_dim.setDigitalChannelState(v_neopixel_red_pin, true);
-                v_dim.setDigitalChannelState(v_neopixel_green_pin, true);
-                v_dim.setDigitalChannelState(v_neopixel_blue_pin, false);
-            }
-        }catch (Exception p_exeception)
-        {
-            debugLogException("neopixels", "missing", p_exeception);
-            v_neopixels = null;
-        }*/
+
 
         if(isDriveAndyMark20) {
             drive_setup_am20();
@@ -739,6 +343,146 @@ public class CFPushBotHardware {
         opMode.telemetry.update();
 
     } // init
+
+
+
+    /**
+     * Turn on the red led located in the Device Interface Module
+     * @return returns true is successfull in turning on the led returns false on error
+     */
+    public boolean redled_on () {
+        try {
+//            if (v_dim != null) {
+//                v_dim.setLED(1, true);
+//                return true;
+//            }
+            return false;
+        }catch (Exception p_exeception)
+        {
+            debugLogException("dim redled", "redled_on", p_exeception);
+            return false;
+        }
+    }
+
+    /**
+     * Turn off the red led located in the Device Interface Module
+     * @return returns true is successfull in turning on the led returns false on error
+     */
+    public boolean redled_off () {
+        try {
+//            if (v_dim != null) {
+//                v_dim.setLED(1, false);
+//                return true;
+//            }
+            return false;
+        }catch (Exception p_exeception)
+        {
+            debugLogException("dim redled", "redled_off", p_exeception);
+            return false;
+        }
+    }
+
+    /**
+     * Toggles the current state of the red led located in the Device Interface Module
+     * <p>calling the function repeataly will give a blink effect.
+     * @return returns true is successfull in turning on the led returns false on error
+     */
+
+    public boolean redled_toggle () {
+        try {
+//            if (v_dim != null) {
+//                boolean isEnabled = v_dim.getLEDState(1);
+//                if (isEnabled) {
+//                    isEnabled = false;
+//                    set_second_message("Red Led set to Off");
+//                } else {
+//                    isEnabled = true;
+//                    set_second_message("Blue Led set to On");
+//                }
+//                v_dim.setLED(1, isEnabled);
+//                return isEnabled;
+//            }else {
+//                return false;
+//            }
+            return false;
+        }catch (Exception p_exeception)
+        {
+            debugLogException("dim redled", "redled_toggle", p_exeception);
+            return false;
+        }
+    }
+
+
+
+    /**
+     * Turn on the blue led located in the Device Interface Module
+     * @return returns true is successfull in turning on the led returns false on error
+     */
+    public boolean blueled_on () {
+        try {
+
+//            if (v_dim != null) {
+//                v_dim.setLED(0, true);
+//                return true;
+//            }
+            return false;
+        }catch (Exception p_exeception)
+        {
+            debugLogException("dim blueled", "blueled_on", p_exeception);
+            return false;
+        }
+    }
+
+
+    /**
+     * Turn off the blue led located in the Device Interface Module
+     * @return returns true is successfull in turning on the led returns false on error
+     */
+    public boolean blueled_off () {
+        try {
+//            if (v_dim != null) {
+//                v_dim.setLED(0, false);
+//                return true;
+//            }
+            return false;
+        }catch (Exception p_exeception)
+        {
+            debugLogException("dim blueled", "blueled_off", p_exeception);
+            return false;
+        }
+    }
+
+
+
+    /**
+     * Toggle the blue led located in the Device Interface Module
+     * @return returns true is successfull in turning on the led returns false on error
+     */
+    public boolean blueled_toggle () {
+        try {
+//            if (v_dim != null) {
+//                boolean isEnabled = v_dim.getLEDState(0);
+//                if (isEnabled) {
+//                    isEnabled = false;
+//                    set_second_message("Blue Led set to Off");
+//                } else {
+//                    isEnabled = true;
+//                    set_second_message("Blue Led set to On");
+//                }
+//                v_dim.setLED(0, isEnabled);
+//
+//                return isEnabled;
+//            } else {
+//                return false;
+//            }
+            return false;
+        }catch (Exception p_exeception)
+        {
+            debugLogException("dim blueled", "blueled_toggle", p_exeception);
+            return false;
+        }
+    }
+
 
     //--------------------------------------------------------------------------
     //
@@ -754,66 +498,8 @@ public class CFPushBotHardware {
 
     } // a_warning_generated
 
-    public boolean play_jingle_bells(){
-        //Connect the Core Interface Device or Dim
-        if (v_audio_effects != null) {
-            v_audio_effects.play_jingle_bells();
-            return true;
-        }else{
-            return false;
-        }
-    }
 
-    public boolean sensor_gyro_mr_init(){
-        try {
-            // get a reference to our GyroSensor object.
-            v_sensor_gyro_mr = new ModernRoboticsI2cGyro(opMode.hardwareMap.i2cDeviceSynch.get(config_i2c_gyro));
-            // calibrate the gyro.
-            v_sensor_gyro_mr.calibrate();
-            // make sure the gyro is calibrated.
-            //while (v_sensor_gyro.isCalibrating())  {
-            //    sleep(50);
-            //}
-            //v_sensor_gyro_mr = (ModernRoboticsI2cGyro) v_sensor_gyro;
-            //v_sensor_gyro_mr.setHeadingMode(ModernRoboticsI2cGyro.HeadingMode.HEADING_CARDINAL);
-            //sleep(100);
-            v_sensor_gyro_mr.resetZAxisIntegrator();
-            //sleep(200);
-            //v_sensor_gyro_heading = v_sensor_gyro.getHeading();
-            set_second_message("Gyro isCalibrated H:" + v_sensor_gyro_mr.getHeading() );
-            return true;
-        }catch(Exception p_exeception){
-            debugLogException(config_i2c_gyro,"missing",p_exeception);
-            v_sensor_gyro_mr = null;
-            return false;
-        }
-    }
 
-    public boolean sensor_adafruitimu_init(){
-        try {
-            v_sensor_adafruitimu = new AdafruitBNO055IMU(opMode.hardwareMap.i2cDeviceSynch.get(config_i2c_adafruitimu));
-            v_sensor_mrcolor.enableLight(false);
-            set_second_message("sensor_color_mr_init");
-            return true;
-        }catch(Exception p_exeception){
-            debugLogException(config_i2c_adafruitimu,"missing",p_exeception);
-            config_i2c_adafruitimu = null;
-            return false;
-        }
-    }
-
-    public boolean sensor_color_mr_init(){
-        try {
-            v_sensor_mrcolor = new ModernRoboticsI2cColorSensor(opMode.hardwareMap.i2cDeviceSynch.get(config_mrcolorsensor));
-            v_sensor_mrcolor.enableLight(false);
-            set_second_message("sensor_color_mr_init");
-            return true;
-        }catch(Exception p_exeception){
-            debugLogException(config_mrcolorsensor,"missing",p_exeception);
-            v_sensor_mrcolor = null;
-            return false;
-        }
-    }
 
 
 
@@ -1211,9 +897,6 @@ public class CFPushBotHardware {
         }else{
             v_loop_ticks_slow = false;
         }
-        if(v_sensor_rangeSensor != null && v_sensor_rangeSensor_enabled == true){
-            v_sensor_rangeSensor_distance = v_sensor_rangeSensor.getDistance(DistanceUnit.INCH);
-        }
 
 
         if(v_pixy != null){
@@ -1224,42 +907,9 @@ public class CFPushBotHardware {
 
         if(v_loop_ticks_slow){
 
-            //heartbeat_tick();
-            if(v_ledseg != null){
-                v_ledseg.loop();
+            if(v_sensor_rangeSensor != null && v_sensor_rangeSensor_enabled == true){
+                v_sensor_rangeSensor_distance = v_sensor_rangeSensor.getDistance(DistanceUnit.INCH);
             }
-
-            // get the heading info.
-            // the Modern Robotics' gyro sensor keeps
-            // track of the current heading for the Z axis only.
-//            if(v_sensor_gyro != null) {
-//                v_sensor_gyro_heading = v_sensor_gyro.getHeading();
-//                v_sensor_gyro_x = v_sensor_gyro.rawX();
-//                v_sensor_gyro_y = v_sensor_gyro.rawY();
-//                v_sensor_gyro_z = v_sensor_gyro.rawZ();
-//            }
-            //the i2c color sensor uses a memory lock that is taxing so we only do this if we are using the color sensor and ever slow loop count
-            if(v_sensor_color_i2c != null && v_sensor_color_i2c_enabled == true){
-                v_sensor_color_i2c_rgbaValues[0] = v_sensor_color_i2c.red();
-                v_sensor_color_i2c_rgbaValues[1] = v_sensor_color_i2c.green();
-                v_sensor_color_i2c_rgbaValues[2] = v_sensor_color_i2c.blue();
-                v_sensor_color_i2c_rgbaValues[3] = v_sensor_color_i2c.alpha();
-                set_first_message("color:" + v_sensor_color_i2c_rgbaValues[0] + ":" + v_sensor_color_i2c_rgbaValues[1] + ":" + v_sensor_color_i2c_rgbaValues[2] + ":" + v_sensor_color_i2c_rgbaValues[3]);
-            }
-
-
-
-            //jewel ease so not to hard hit ground
-            if(v_servo_jewel_is_retracting){
-                if( v_servo_jewel_position > v_servo_jewel_MinPosition){
-                    v_servo_jewel_position = v_servo_jewel_position - .05;
-                    v_servo_jewel.setPosition(v_servo_jewel_position);
-                }else{
-                    v_servo_jewel.setPosition(v_servo_jewel_MinPosition);
-                    v_servo_jewel_is_retracting = false;
-                }
-            }
-
 
             if(v_debug || v_zeromessage_set || v_errormessage_set) {
                 update_telemetry();
@@ -1276,12 +926,7 @@ public class CFPushBotHardware {
     }
 
     public void hardware_stop(){
-        /*if(v_led_heartbeat !=null){
-            v_led_heartbeat.enable(false);
-        }*/
-        if(v_ledseg != null){
-            v_ledseg.stop();
-        }
+
 
         if(v_motor_left_drive != null){
             v_motor_left_drive.setPower(0);
@@ -1292,8 +937,8 @@ public class CFPushBotHardware {
         if(v_motor_lifter != null){
             v_motor_lifter.setPower(0);
         }
-        if(v_motor_slider != null){
-            v_motor_slider.setPower(0);
+        if(v_motor_extender != null){
+            v_motor_extender.setPower(0);
         }
     }
 
@@ -1487,43 +1132,41 @@ public class CFPushBotHardware {
 //    } // set_drive_power
 
 
-
-
-
-    public void slider_extend () throws InterruptedException
+    public void extender_extend () throws InterruptedException
     {
-        if (v_motor_slider != null)
+        if (v_motor_extender != null)
         {
 
-            v_slider_state = 0;
-            v_motor_slider_Position = v_motor_slider_Position + v_motor_slider_encoder_max - v_motor_slider_ExtendSlowdownTicks;
+            v_extender_state = 0;
+            v_motor_extender_Position = v_motor_extender_Position + v_motor_extender_encoder_max - v_motor_extender_ExtendSlowdownTicks;
 
-            v_motor_slider.setTargetPosition(v_motor_slider_Position);
-            set_second_message("extendinging slider");
-            v_motor_slider.setPower(v_motor_slider_power);
+            v_motor_extender.setTargetPosition(v_motor_extender_Position);
+            set_second_message("extendinging extender");
+            v_motor_extender.setPower(v_motor_extender_power);
 
         }
     }
 
-    private int v_slider_state = 0;
-    public boolean slider_extend_complete () {
-        if (v_motor_slider != null) {
-            switch (v_slider_state) {
+    private int v_extender_state = 0;
+    private boolean v_extender_isExtended = false;
+    public boolean extender_extend_complete () {
+        if (v_motor_extender != null) {
+            switch (v_extender_state) {
                 case 0:
-                    if (v_motor_slider.isBusy() == false) {
-                        v_motor_slider_Position = v_motor_slider_Position + v_motor_slider_ExtendSlowdownTicks;
-                        v_motor_slider.setPower(0.0F);
-                        v_motor_slider.setTargetPosition(v_motor_slider_Position);
+                    if (v_motor_extender.isBusy() == false) {
+                        v_motor_extender_Position = v_motor_extender_Position + v_motor_extender_ExtendSlowdownTicks;
+                        v_motor_extender.setPower(0.0F);
+                        v_motor_extender.setTargetPosition(v_motor_extender_Position);
                         set_second_message("slider almost extended");
-                        v_motor_slider.setPower(0.5F);
+                        v_motor_extender.setPower(0.5F);
 
-                        v_slider_state++;
+                        v_extender_state++;
                     }
                     break;
                 case 1:
-                    if (v_motor_slider.isBusy() == false) {
-                        v_motor_slider.setPower(0.0F);
-                        v_slider_isExtended = true;
+                    if (v_motor_extender.isBusy() == false) {
+                        v_motor_extender.setPower(0.0F);
+                        v_extender_isExtended = true;
                         set_second_message("slider loaded");
                         return true;
                     }
@@ -1535,379 +1178,6 @@ public class CFPushBotHardware {
             return true;
         }
     }
-
-
-    //Retract the slider
-
-    //--------------------------------------------------------------------------
-    //
-    // Retract_slider
-    //
-    /**
-     * Retract the slider
-     */
-    private boolean v_slider_isExtended = false;
-    public void slider_step (int stepAmount, boolean min2Override)
-    {
-        try{
-            if (v_motor_slider != null )
-            {
-                int cPosition = v_motor_slider.getCurrentPosition();
-                v_motor_slider_Position =  cPosition + stepAmount;
-                if(min2Override ==false && v_motor_slider_Position < v_motor_slider_encoder_min2 && cPosition > v_motor_slider_encoder_min2  ){
-                    v_motor_slider_Position = v_motor_slider_encoder_min2;
-
-                }else if(v_motor_slider_Position < v_motor_slider_encoder_min && min2Override ==true){
-                    v_motor_slider_Position = v_motor_slider_encoder_min;
-
-                }else if(v_motor_slider_Position > v_motor_slider_encoder_max) {
-                    v_motor_slider_Position = v_motor_slider_encoder_max;
-                }
-
-                v_motor_slider.setTargetPosition(v_motor_slider_Position);
-                v_motor_slider.setPower(v_motor_slider_power);
-            }
-            set_second_message("Slider Step " + v_motor_slider_Position + " minOverride:" + min2Override);
-        }catch (Exception p_exeception)
-        {
-            debugLogException("slider_step", "error", p_exeception);
-        }
-    }
-    public void slider_stop (boolean min2Override)
-    {
-        try{
-            if (v_motor_slider != null )
-            {
-                v_motor_slider.setPower(0);
-                v_motor_slider_Position = v_motor_slider.getCurrentPosition();
-                if(min2Override ==false && v_motor_slider_Position < v_motor_slider_encoder_min2 && v_motor_slider_Position > v_motor_slider_encoder_min2  ){
-                    v_motor_slider_Position = v_motor_slider_encoder_min2;
-
-                }else if(v_motor_slider_Position < v_motor_slider_encoder_min && min2Override ==true){
-                    v_motor_slider_Position = v_motor_slider_encoder_min;
-
-                }else if(v_motor_slider_Position > v_motor_slider_encoder_max) {
-                    v_motor_slider_Position = v_motor_slider_encoder_max;
-                }
-            }
-            set_second_message("Slider Stop " + v_motor_slider_Position);
-        }catch (Exception p_exeception)
-        {
-            debugLogException("slider_stop", "error", p_exeception);
-        }
-    }
-
-    public void slider_hold ()
-    {
-        try{
-            if (v_motor_slider != null )
-            {
-                v_motor_slider.setTargetPosition(v_motor_slider_Position);
-                v_motor_slider.setPower(.2);
-            }
-            set_second_message("Slider Stop " + v_motor_slider_Position);
-        }catch (Exception p_exeception)
-        {
-            debugLogException("slider_stop", "error", p_exeception);
-        }
-    }
-
-    public void slider_retract ()
-    {
-
-        if (v_motor_slider != null )
-        {
-
-            v_motor_slider.setTargetPosition(v_motor_slider_encoder_min);
-            set_second_message("Retracting slider");
-            v_motor_slider.setPower(v_motor_slider_power);
-        }
-
-    }
-    public boolean slider_retract_complete ()
-    {
-        if (v_motor_slider != null )
-        {
-
-            if (v_motor_slider.isBusy()== false) {
-                v_motor_slider.setPower(0.0F);
-                v_slider_isExtended = false;
-                set_second_message("Retracted slider");
-                return true;
-            }
-        }
-        return false;
-    }
-
-
-    public void lifter_extend () throws InterruptedException
-    {
-        if (v_motor_lifter != null)
-        {
-//            if (v_lifter_isExtended == true){
-//                set_second_message("lifter already extended");
-//                return;
-//            }
-            v_lifter_state = 0;
-            v_motor_lifter_Position = v_motor_lifter_Position + v_motor_lifter_encoder_max - v_motor_lifter_ExtendSlowdownTicks;
-
-            v_motor_lifter.setTargetPosition(v_motor_lifter_Position);
-            set_second_message("extendinging lifter");
-            v_motor_lifter.setPower(v_motor_lifter_power);
-
-        }
-    }
-
-    private int v_lifter_state = 0;
-    public boolean lifter_extend_complete () {
-        if (v_motor_lifter != null) {
-            switch (v_lifter_state) {
-                case 0:
-                    if (v_motor_lifter.isBusy() == false) {
-                        v_motor_lifter_Position = v_motor_lifter_Position + v_motor_lifter_ExtendSlowdownTicks;
-                        v_motor_lifter.setPower(0.0F);
-                        v_motor_lifter.setTargetPosition(v_motor_lifter_Position);
-                        set_second_message("lifter almost extended");
-                        v_motor_lifter.setPower(0.5F);
-
-                        v_lifter_state++;
-                    }
-                    break;
-                case 1:
-                    if (v_motor_lifter.isBusy() == false) {
-                        v_motor_lifter.setPower(0.0F);
-                        v_lifter_isExtended = true;
-                        set_second_message("lifter loaded");
-                        return true;
-                    }
-                    break;
-            }
-            return false;
-
-        }else{
-            return true;
-        }
-    }
-
-
-
-    /**
-     * Retract the slider
-     */
-    private boolean v_lifter_isExtended = false;
-    public void lifter_step (int stepAmount)
-    {
-        try{
-            if (v_motor_lifter != null )
-            {
-                v_motor_lifter_Position = v_motor_lifter.getCurrentPosition() + stepAmount;
-                if(v_motor_lifter_Position <= v_motor_lifter_encoder_min  ) {
-                    v_motor_lifter_Position = v_motor_lifter_encoder_min;
-                }
-                if(v_motor_lifter_Position >= v_motor_lifter_encoder_max  ) {
-                    v_motor_lifter_Position = v_motor_lifter_encoder_max;
-                }
-                if(v_motor_lifter_Position >= v_motor_lifter_encoder_min && v_motor_lifter_Position <= v_motor_lifter_encoder_max ) {
-                    v_motor_lifter.setTargetPosition(v_motor_lifter_Position);
-                    v_motor_lifter.setPower(v_motor_lifter_power);
-                }
-            }
-            set_second_message("lifter Step " + v_motor_lifter_Position);
-        }catch (Exception p_exeception)
-        {
-            debugLogException("lifter_step", "error", p_exeception);
-        }
-    }
-
-    public void lifter_stop ()
-    {
-        try{
-            if (v_motor_lifter != null )
-            {
-                v_motor_lifter.setPower(0);
-                v_motor_lifter_Position = v_motor_lifter.getCurrentPosition();
-                v_motor_lifter.setTargetPosition(v_motor_lifter_Position);
-            }
-            set_second_message("lifter Stop " + v_motor_lifter_Position);
-        }catch (Exception p_exeception)
-        {
-            debugLogException("lifter_stop", "error", p_exeception);
-        }
-    }
-
-    public void lifter_testbot_reverse(){
-        try{
-            if (v_motor_lifter != null )
-            {
-                v_motor_lifter.setDirection(DcMotorSimple.Direction.REVERSE);
-
-            }
-            set_second_message("lifter testbot Reverse ");
-        }catch (Exception p_exeception)
-        {
-            debugLogException("lifter_testbot_reverse", "error", p_exeception);
-        }
-    }
-
-    public void lifter_stepmin(int steps){
-        v_motor_lifter_encoder_min = v_motor_lifter_encoder_min + steps;
-    }
-
-    public void lifter_retract ()
-    {
-
-        if (v_motor_lifter != null )
-        {
-//            if (v_lifter_isExtended == false){
-//                set_second_message("lifter not loaded");
-//                return;
-//            }
-            v_motor_lifter.setTargetPosition(v_motor_lifter_encoder_min);
-            set_second_message("Retracting lifter");
-            v_motor_lifter.setPower(v_motor_lifter_power);
-        }
-
-    }
-    public boolean lifter_retract_complete ()
-    {
-        if (v_motor_lifter != null )
-        {
-
-            if (v_motor_lifter.isBusy()== false) {
-                v_motor_lifter.setPower(0.0F);
-                v_lifter_isExtended = false;
-                set_second_message("Retracted lifter");
-                return true;
-            }
-        }
-        return false;
-    }
-
-
-    //BGTilt Begin
-
-    public void bgtilt_extend () throws InterruptedException
-    {
-        if (v_motor_bgtilt != null)
-        {
-
-            v_bgtilt_state = 0;
-            v_motor_bgtilt_Position = v_motor_bgtilt_Position + v_motor_bgtilt_encoder_max - v_motor_bgtilt_ExtendSlowdownTicks;
-
-            v_motor_bgtilt.setTargetPosition(v_motor_bgtilt_Position);
-            set_second_message("extendinging bgtilt");
-            v_motor_bgtilt.setPower(v_motor_bgtilt_power);
-
-        }
-    }
-
-    private int v_bgtilt_state = 0;
-    public boolean bgtilt_extend_complete () {
-        if (v_motor_bgtilt != null) {
-            switch (v_bgtilt_state) {
-                case 0:
-                    if (v_motor_bgtilt.isBusy() == false) {
-                        v_motor_bgtilt_Position = v_motor_bgtilt_Position + v_motor_bgtilt_ExtendSlowdownTicks;
-                        v_motor_bgtilt.setPower(0.0F);
-                        v_motor_bgtilt.setTargetPosition(v_motor_bgtilt_Position);
-                        set_second_message("bgtilt almost extended");
-                        v_motor_bgtilt.setPower(0.5F);
-
-                        v_lifter_state++;
-                    }
-                    break;
-                case 1:
-                    if (v_motor_bgtilt.isBusy() == false) {
-                        v_motor_bgtilt.setPower(0.0F);
-                        v_bgtilt_isExtended = true;
-                        set_second_message("bgtilt loaded");
-                        return true;
-                    }
-                    break;
-            }
-            return false;
-
-        }else{
-            return true;
-        }
-    }
-
-
-
-    private boolean v_bgtilt_isExtended = false;
-    public void bgtilt_step (int stepAmount)
-    {
-        try{
-            if (v_motor_bgtilt != null )
-            {
-                v_motor_bgtilt_Position = v_motor_bgtilt.getCurrentPosition() + stepAmount;
-                if(v_motor_bgtilt_Position <= v_motor_bgtilt_encoder_min  ) {
-                    v_motor_bgtilt_Position = v_motor_bgtilt_encoder_min;
-                }
-                if(v_motor_bgtilt_Position >= v_motor_bgtilt_encoder_max  ) {
-                    v_motor_bgtilt_Position = v_motor_bgtilt_encoder_max;
-                }
-                if(v_motor_bgtilt_Position >= v_motor_bgtilt_encoder_min && v_motor_bgtilt_Position <= v_motor_bgtilt_encoder_max ) {
-                    v_motor_bgtilt.setTargetPosition(v_motor_bgtilt_Position);
-                    v_motor_bgtilt.setPower(v_motor_bgtilt_power);
-                }
-            }
-            set_second_message("bgtilt Step " + v_motor_bgtilt_Position);
-        }catch (Exception p_exeception)
-        {
-            debugLogException("bgtilt_step", "error", p_exeception);
-        }
-    }
-
-    public void bgtilt_stop ()
-    {
-        try{
-            if (v_motor_bgtilt != null )
-            {
-                v_motor_bgtilt.setPower(0);
-                v_motor_bgtilt_Position = v_motor_bgtilt.getCurrentPosition();
-                v_motor_bgtilt.setTargetPosition(v_motor_bgtilt_Position);
-            }
-            set_second_message("bgtilt Stop " + v_motor_bgtilt_Position);
-        }catch (Exception p_exeception)
-        {
-            debugLogException("bgtilt_stop", "error", p_exeception);
-        }
-    }
-
-
-
-    public void bgtilt_stepmin(int steps){
-        v_motor_bgtilt_encoder_min = v_motor_bgtilt_encoder_min + steps;
-    }
-
-    public void bgtilt_retract ()
-    {
-
-        if (v_motor_bgtilt != null )
-        {
-            v_motor_bgtilt.setTargetPosition(v_motor_bgtilt_encoder_min);
-            set_second_message("Retracting bgtilt");
-            v_motor_bgtilt.setPower(v_motor_bgtilt_power);
-        }
-
-    }
-    public boolean bgtilt_retract_complete ()
-    {
-        if (v_motor_bgtilt != null )
-        {
-
-            if (v_motor_bgtilt.isBusy()== false) {
-                v_motor_bgtilt.setPower(0.0F);
-                v_bgtilt_isExtended = false;
-                set_second_message("Retracted bgtilt");
-                return true;
-            }
-        }
-        return false;
-    }
-
-    //BGTilt End
 
     public void run_to_position(float power, float inches ) throws InterruptedException{
         //setupDriveToPosition();
@@ -2071,14 +1341,6 @@ public class CFPushBotHardware {
     } // run_without_left_drive_encoder
 */
 
-    public boolean sound_play_dtmf(int tone, int duration){
-        if (v_tone_generator != null) {
-            v_tone_generator.startTone(tone, duration);
-            return true;
-        }else{
-            return false;
-        }
-    }
 
     /*//--------------------------------------------------------------------------
     //
@@ -3022,7 +2284,7 @@ public class CFPushBotHardware {
 
             case 0:
                 if (v_drive_inches_useGyro) {
-                    v_drive_inches_heading = sensor_gyro_mr_get_heading();
+                    v_drive_inches_heading = 0; //sensor_gyro_mr_get_heading();
                 }
 
                 drive_set_power(v_drive_inches_power, v_drive_inches_power);
@@ -3141,78 +2403,11 @@ public class CFPushBotHardware {
         return true;
     }
 
-    /**
-     * Inits the led 7 segment counter to start a count down in seconds
-     * @param seconds
-     * @return
-     */
-    public boolean led7seg_timer_init(int seconds){
-        if (v_ledseg != null){
-            v_ledseg.writeSeconds(seconds);
-            return true;
-        }
-        return true;
-    }
 
-    private boolean isFirstButtonPress = true;
 
-    public boolean manualModeButtonPress(){
-        if (isFirstButtonPress){
-            isFirstButtonPress = false;
-            v_ledseg.startTimer(120);
-        }
-        return true;
-    }
 
-    /**
-     * Inits the led 7 segment counter to start a count down in seconds
-     * @return
-     */
 
-    public boolean led7seg_test(){
-        if (v_ledseg != null){
 
-            v_ledseg.writetest();
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * starts led 7 segment counter to to count down in seconds
-     * @param seconds
-     * @return
-     */
-    int v_led7seg_timer_seconds = 0;
-    boolean v_led7seg_timer_running = false;
-    public boolean led7seg_timer_start(int seconds){
-        if (v_ledseg != null){
-
-            v_ledseg.startTimer(seconds);
-            return true;
-        }
-        return false;
-    }
-
-    public boolean led7seg_timer_complete(){
-        if (v_ledseg != null) {
-            return v_ledseg.is_timer_complete();
-        }else{
-            return true;
-        }
-    }
-    public boolean led7seg_is_enabled(){
-        if (v_ledseg != null){
-            return v_ledseg.isEnabled();
-        }
-        return false;
-    }
-    public boolean led7seg_enabled(boolean enabled){
-        if (v_ledseg != null){
-            return v_ledseg.enabled(enabled);
-        }
-        return false;
-    }
 
     private int v_drive_ToPosition_ticks_target_right;
     private int v_drive_ToPosition_ticks_target_left;
@@ -3466,469 +2661,6 @@ public class CFPushBotHardware {
         }
     }
 
-
-
-
-//    //lifter On
-//    boolean lifter_On ()
-//    {
-//        m_winch_power(v_motor_winch_Speed);
-//        return true;
-//
-//    } // rpaarm_moveUp
-//    //--------------------------------------------------------------------------
-//    //
-//    // m_winch_power
-//    //
-//    /**
-//     * Access the winch motor's power level.
-//     */
-//    void m_lifter_power (double p_level)
-//    {
-//        if (v_motor_winch != null)
-//        {
-//            if(p_level > 0){
-//                //move the rpa base arm down at same time so not to fight the winch with the servo
-//                rpabase_moveDown(true);
-//                v_motor_winch.setPower(p_level);
-//            }
-//            else{
-//                v_motor_winch.setPower(0);
-//            }
-//        }
-//
-//    } // m_winch_power
-//
-//    private boolean v_motors_blockgrabbers_on = false;
-//    public void blockgrabbers_start ()
-//    {
-//        try {
-//            if (v_motor_bgleft != null && v_motor_bgright != null ) {
-//                v_motor_bgleft.setPower(1.0f);
-//                v_motor_bgright.setPower(1.0f);
-//                v_motors_blockgrabbers_on = true;
-//            }
-//            set_third_message("blockgrabbers_start");
-//        }catch (Exception p_exeception)
-//        {
-//            debugLogException("blockgrabbers_start", "error", p_exeception);
-//        }
-//    }
-//
-//    public void blockgrabbers_stop ()
-//    {
-//        try {
-//            if (v_motor_bgleft != null && v_motor_bgright != null ) {
-//                v_motor_bgleft.setPower(0.0f);
-//                v_motor_bgright.setPower(0.0f);
-//                v_motors_blockgrabbers_on = false;
-//            }
-//            set_third_message("blockgrabbers_start");
-//        }catch (Exception p_exeception)
-//        {
-//            debugLogException("blockgrabbers_start", "error", p_exeception);
-//        }
-//    }
-//
-//    public void blockgrabbers_toggle()
-//    {
-//        try {
-//            if (v_motors_blockgrabbers_on) {
-//                blockgrabbers_stop();
-//            }else{
-//                blockgrabbers_start();
-//            }
-//        }catch (Exception p_exeception)
-//        {
-//            debugLogException("blockgrabbers_toggle", "error", p_exeception);
-//        }
-//    }
-
-    public void blockgrabber_toggle ()
-    {
-        try {
-            if (v_servo_blockgrabber_is_extended == true){
-                blockgrabber_close();
-            }else{
-                blockgrabber_open();
-            }
-        }catch (Exception p_exeception)
-        {
-            debugLogException("blockgrabber_toggle", "error", p_exeception);
-        }
-    }
-    public void blockgrabber_open ()
-    {
-        try {
-            if (v_servo_blockgrabber != null) {
-                v_servo_blockgrabber.setPosition(v_servo_blockgrabber_MinPosition);
-                v_servo_blockgrabber_is_extended = true;
-            }
-            set_third_message("blockgrabber_open " + v_servo_blockgrabber_MinPosition);
-        }catch (Exception p_exeception)
-        {
-            debugLogException("blockgrabber_extend", "error", p_exeception);
-        }
-    }
-
-    public void blockgrabber_close ()
-    {
-        try {
-            if (v_servo_blockgrabber != null) {
-                v_servo_blockgrabber_is_extended = false;
-                v_servo_blockgrabber.setPosition(v_servo_blockgrabber_MaxPosition);
-            }
-            set_third_message("blockgrabber_close " + v_servo_blockgrabber_MaxPosition);
-        }catch (Exception p_exeception)
-        {
-            debugLogException("blockgrabber_retract", "error", p_exeception);
-        }
-    }
-    ///Pass in 1 2 3
-    public void blockslide_position( int position)
-    {
-        try {
-            if (v_servo_blockslide != null) {
-                v_servo_blockslide_position = position;
-                switch(position){
-                    case 0:
-                        v_servo_blockslide.setPosition(v_servo_blockslide_MinPosition);
-                        break;
-                    case 1:
-                        v_servo_blockslide.setPosition(v_servo_blockslide_MiddlePosition);
-                        break;
-                    case 2:
-                        v_servo_blockslide.setPosition(v_servo_blockslide_MaxPosition);
-                        break;
-
-                }
-                set_first_message("block_slide " + v_servo_blockslide_position);
-                v_servo_blockslide_is_extended = true;
-            }
-        }catch (Exception p_exeception)
-        {
-            debugLogException("blockslide_left", "error", p_exeception);
-        }
-    }
-
-    public void blockslide_left ()
-    {
-        try {
-            if (v_servo_blockslide != null) {
-                if(v_servo_blockslide_position > 0){
-                    v_servo_blockslide_position--;
-                }
-                blockslide_position(v_servo_blockslide_position);
-                set_first_message("blockslide_left " + v_servo_blockslide_position);
-            }
-        }catch (Exception p_exeception)
-        {
-            debugLogException("blockslide_left", "error", p_exeception);
-        }
-    }
-
-    public void blockslide_right ()
-    {
-        try {
-            if (v_servo_blockslide != null) {
-                if(v_servo_blockslide_position < 2){
-                    v_servo_blockslide_position++;
-                    blockslide_position(v_servo_blockslide_position);
-                }
-
-                set_first_message("blockslide_right " + v_servo_blockslide_position);
-            }
-        }catch (Exception p_exeception)
-        {
-            debugLogException("blockslide_right", "error", p_exeception);
-        }
-    }
-
-    public void blockslide_stop ()
-    {
-        try {
-            if (v_servo_blockslide != null) {
-                v_servo_blockslide_is_extended = false;
-                v_servo_blockslide.setPosition(v_servo_blockslide_MiddlePosition);
-            }
-        }catch (Exception p_exeception)
-        {
-            debugLogException("blockslide_stop", "error", p_exeception);
-        }
-    }
-
-
-
-
-    public void jewel_toggle ()
-    {
-        try {
-            if (v_servo_jewel_is_extending == true){
-                jewel_lower();
-            }else{
-                jewel_raise();
-            }
-        }catch (Exception p_exeception)
-        {
-            debugLogException("jewel_toggle", "error", p_exeception);
-        }
-    }
-    public void jewel_raise ()
-    {
-        try {
-            if (v_servo_jewel != null) {
-                v_servo_jewel.setPosition(v_servo_jewel_MaxPosition);
-                set_second_message("jewel extend " + v_servo_jewel_MaxPosition);
-                v_servo_jewel_is_extending = true;
-                v_servo_jewel_is_retracting = false;
-            }
-        }catch (Exception p_exeception)
-        {
-            debugLogException("jewel_extend", "error", p_exeception);
-        }
-    }
-
-    public void jewel_lower ()
-    {
-        try {
-            if (v_servo_jewel != null) {
-                v_servo_jewel_position = v_servo_jewel_MinPosition + v_servo_jewel_retract_ease;
-                v_servo_jewel.setPosition(v_servo_jewel_position);
-                set_second_message("jewel retract " + (v_servo_jewel_position));
-
-                v_servo_jewel_is_extending = false;
-                v_servo_jewel_is_retracting = true;
-            }
-        }catch (Exception p_exeception)
-        {
-            debugLogException("jewel_retract", "error", p_exeception);
-        }
-    }
-
-    //Warning there is no way to read the servos current position ie there is no feed back
-    // to the electronics So calling this function a hundred times while a button is down will make it hard to control
-    public void jewel_step(double stepAmount)
-    {
-        try {
-            if (v_servo_jewel != null) {
-                double position= v_servo_jewel.getPosition() + stepAmount;
-                if(position >= v_servo_jewel_MinPosition && position <= v_servo_jewel_MaxPosition) {
-                    v_servo_jewel.setPosition(position);
-                    set_second_message("jewel step " + position);
-                }
-
-            }
-        }catch (Exception p_exeception)
-        {
-            debugLogException("jewel_step", "error", p_exeception);
-        }
-    }
-    public void jewel_setposition (double position)
-    {
-        try {
-            if (v_servo_jewel != null) {
-                v_servo_jewel.setPosition(position);
-                set_second_message("jewel setposition " + position);
-            }
-        }catch (Exception p_exeception)
-        {
-            debugLogException("jewel_setposition", "error", p_exeception);
-        }
-    }
-
-///////wrist
-
-
-
-    public void wrist_toggle ()
-    {
-        try {
-            if (v_servo_wrist_is_extending == true){
-                wrist_retract();
-            }else{
-                wrist_extend();
-            }
-        }catch (Exception p_exeception)
-        {
-            debugLogException("wrist_toggle", "error", p_exeception);
-        }
-    }
-    public void wrist_extend ()
-    {
-        try {
-            if (v_servo_wrist != null) {
-                v_servo_wrist.setPosition(v_servo_wrist_MaxPosition);
-                v_servo_wrist_is_extending = true;
-            }
-            set_third_message(config_servo_wrist + " " + v_servo_wrist.getPosition());
-        }catch (Exception p_exeception)
-        {
-            debugLogException("wrist_extend", "error", p_exeception);
-        }
-    }
-
-    public void wrist_retract ()
-    {
-        try {
-            if (v_servo_wrist != null) {
-                //v_servo_wrist.setPosition(v_servo_wrist_MinPosition-.2);
-                //wait(300);
-                v_servo_wrist.setPosition(v_servo_wrist_MinPosition);
-                v_servo_wrist_is_extending = false;
-            }
-            set_third_message(config_servo_wrist + " " + v_servo_wrist.getPosition());
-        }catch (Exception p_exeception)
-        {
-            debugLogException("wrist_retract", "error", p_exeception);
-        }
-    }
-
-    //Warning there is no way to read the servos current position ie there is no feed back
-    // to the electronics So calling this function a hundred times while a button is down will make it hard to control
-    public void wrist_step(double stepAmount)
-    {
-        try {
-            if (v_servo_wrist != null) {
-                v_servo_wrist.setPosition(v_servo_wrist.getPosition() + stepAmount);
-
-            }
-            set_third_message(config_servo_wrist + " " + v_servo_wrist.getPosition());
-        }catch (Exception p_exeception)
-        {
-            debugLogException("wrist_step", "error", p_exeception);
-        }
-    }
-    public void wrist_setposition (double position)
-    {
-        try {
-            if (v_servo_wrist != null) {
-                v_servo_wrist.setPosition(position);
-            }
-            set_third_message(config_servo_wrist + " " + v_servo_wrist.getPosition());
-        }catch (Exception p_exeception)
-        {
-            debugLogException("wrist_setposition", "error", p_exeception);
-        }
-    }
-
-
-
-
-
-    public void hand_toggle ()
-    {
-        try {
-            if (v_servo_hand_is_extending == true){
-                hand_close();
-            }else{
-                hand_open();
-            }
-        }catch (Exception p_exeception)
-        {
-            debugLogException("hand_toggle", "error", p_exeception);
-        }
-    }
-    public void hand_open ()
-    {
-        try {
-            if (v_servo_hand != null) {
-                v_servo_hand.setPosition(v_servo_hand_MaxPosition);
-                v_servo_hand_is_extending = true;
-            }
-        }catch (Exception p_exeception)
-        {
-            debugLogException("hand_open", "error", p_exeception);
-        }
-    }
-
-    public void hand_close ()
-    {
-        try {
-            if (v_servo_hand != null) {
-                v_servo_hand.setPosition(v_servo_hand_MinPosition);
-                v_servo_hand_is_extending = false;
-            }
-        }catch (Exception p_exeception)
-        {
-            debugLogException("hand_retract", "error", p_exeception);
-        }
-    }
-
-
-    public void shoulder_toggle ()
-    {
-        try {
-            if (v_servo_shoulder_is_extended == true){
-                shoulder_retract();
-            }else{
-                shoulder_extend();
-            }
-        }catch (Exception p_exeception)
-        {
-            debugLogException("shoulder_toggle", "error", p_exeception);
-        }
-    }
-    public void shoulder_extend ()
-    {
-        try {
-            if (v_servo_shoulder != null) {
-                v_servo_shoulder.setPosition(v_servo_shoulder_MaxPosition);
-                set_second_message("shoulder_extend " + v_servo_shoulder_MaxPosition);
-                v_servo_shoulder_is_extended = true;
-            }
-        }catch (Exception p_exeception)
-        {
-            debugLogException("shoulder_extend", "error", p_exeception);
-        }
-    }
-
-    public void shoulder_retract ()
-    {
-        try {
-            if (v_servo_shoulder != null) {
-                v_servo_shoulder_is_extended = false;
-                v_servo_shoulder.setPosition(v_servo_shoulder_MinPosition);
-                set_second_message("shoulder_retract " + v_servo_shoulder_MinPosition);
-            }
-        }catch (Exception p_exeception)
-        {
-            debugLogException("shoulder_retract", "error", p_exeception);
-        }
-    }
-
-    //Warning there is no way to read the servos current position ie there is no feed back
-    // to the electronics So calling this function a hundred times while a button is down will make it hard to control
-    public void shoulder_step(double stepAmount)
-    {
-        try {
-            double v_servo_shoulderPosition = 0;
-            if (v_servo_shoulder != null) {
-
-                v_servo_shoulderPosition = v_servo_shoulder.getPosition() + stepAmount;
-                if (v_servo_shoulderPosition >= v_servo_shoulder_MinPosition && v_servo_shoulderPosition <= v_servo_shoulder_MaxPosition ) {
-                    v_servo_shoulder.setPosition(v_servo_shoulderPosition);
-                }
-            }
-            set_second_message("shoulder_step " + v_servo_shoulderPosition);
-        }catch (Exception p_exeception)
-        {
-            debugLogException("shoulder_step", "error", p_exeception);
-        }
-    }
-    public void shoulder_setposition (double position)
-    {
-        try {
-            if (v_servo_shoulder != null) {
-
-                v_servo_shoulder.setPosition(position);
-            }
-            set_second_message("shoulder_setposition " + position);
-        }catch (Exception p_exeception)
-        {
-            debugLogException("shoulder_setposition", "error", p_exeception);
-        }
-    }
-
     public void debugOff(){
         v_debug = false;
         set_second_message("Debug is Off no Telemetry Enabled");
@@ -3946,86 +2678,6 @@ public class CFPushBotHardware {
         update_telemetry();
         opMode.updateTelemetry(opMode.telemetry);
     }
-
-    //--------------------------------------------------------------------------
-    //
-    // arm_wrist_moveRight
-    //
-    /**
-     * move the arm_wrist servo to the Right.
-     */
-  /*  double arm_wrist_moveRight (boolean fast)
-    {
-        double l_temptarget;
-        if (fast) {
-            l_temptarget = a_arm_wrist_position() - ArmWristServo_Delta_Fast;
-        }else{
-            l_temptarget = a_arm_wrist_position() - ArmWristServo_Delta;
-        }
-        return m_arm_wrist_position(l_temptarget);
-    } // arm_wrist_moveRight
-
-    //--------------------------------------------------------------------------
-    //
-    // m_arm_wrist_position
-    //
-    /**
-     * Mutate the arm wrist position.
-     */
-  /*  double m_arm_wrist_position (double p_position)
-    {
-        //
-        // Ensure the specific value is legal.
-        //
-        l_arm_wrist_position = Range.clip
-                ( p_position
-                        , ArmWristServo_MinPosition
-                        , ArmWristServo_MaxPosition
-                );
-        try {
-            if (v_servo_arm_wrist != null) {
-                v_servo_arm_wrist.setPosition(l_arm_wrist_position);
-                return l_arm_wrist_position;
-            } else {
-                return ServoErrorResultPosition;
-            }
-        }catch (Exception p_exeception)
-        {
-            debugLogException("arm_wrist", "missing", p_exeception);
-            return ServoErrorResultPosition;
-        }
-
-
-    } // m_arm_jewel_position
-
-*/
-
-    /**
-     * Mutate the flip right position.
-     */
-    /*double m_flip_right_position (double p_position)
-    {
-        //
-        // Ensure the specific value is legal.
-        //
-        l_flip_right_position = Range.clip
-                ( p_position
-                        , FlipRightServo_MinPosition
-                        , FlipRightServo_MaxPosition
-                );
-        try {
-            if (v_servo_flip_right != null) {
-                v_servo_flip_right.setPosition(l_flip_right_position);
-                return l_flip_right_position;
-            } else {
-                return ServoErrorResultPosition;
-            }
-        }catch (Exception p_exeception)
-        {
-            debugLogException("flip_right", "m_flip_right_position", p_exeception);
-            return ServoErrorResultPosition;
-        }
-    }*/ // m_flip_right_position
 
     /**
      * Access the flip_right position.
@@ -4430,648 +3082,6 @@ public class CFPushBotHardware {
 */
 
 
-
-    /**
-     * Turn on the red led located in the Device Interface Module
-     * @return returns true is successfull in turning on the led returns false on error
-     */
-    public boolean redled_on () {
-        try {
-            if (v_dim != null) {
-                v_dim.setLED(1, true);
-                return true;
-            }
-            return false;
-        }catch (Exception p_exeception)
-        {
-            debugLogException("dim redled", "redled_on", p_exeception);
-            return false;
-        }
-    }
-
-    /**
-     * Turn off the red led located in the Device Interface Module
-     * @return returns true is successfull in turning on the led returns false on error
-     */
-    public boolean redled_off () {
-        try {
-            if (v_dim != null) {
-                v_dim.setLED(1, false);
-                return true;
-            }
-            return false;
-        }catch (Exception p_exeception)
-        {
-            debugLogException("dim redled", "redled_off", p_exeception);
-            return false;
-        }
-    }
-
-    /**
-     * Toggles the current state of the red led located in the Device Interface Module
-     * <p>calling the function repeataly will give a blink effect.
-     * @return returns true is successfull in turning on the led returns false on error
-     */
-
-    public boolean redled_toggle () {
-        try {
-            if (v_dim != null) {
-                boolean isEnabled = v_dim.getLEDState(1);
-                if (isEnabled) {
-                    isEnabled = false;
-                    set_second_message("Red Led set to Off");
-                } else {
-                    isEnabled = true;
-                    set_second_message("Blue Led set to On");
-                }
-                v_dim.setLED(1, isEnabled);
-                return isEnabled;
-            }else {
-                return false;
-            }
-        }catch (Exception p_exeception)
-        {
-            debugLogException("dim redled", "redled_toggle", p_exeception);
-            return false;
-        }
-    }
-
-    /**
-     * Turn on the blue led located in the Device Interface Module
-     * @return returns true is successfull in turning on the led returns false on error
-     */
-    public boolean blueled_on () {
-        try {
-            if (v_dim != null) {
-                v_dim.setLED(0, true);
-                return true;
-            }
-            return false;
-        }catch (Exception p_exeception)
-        {
-            debugLogException("dim blueled", "blueled_on", p_exeception);
-            return false;
-        }
-    }
-
-
-    /**
-     * Turn off the blue led located in the Device Interface Module
-     * @return returns true is successfull in turning on the led returns false on error
-     */
-    public boolean blueled_off () {
-        try {
-            if (v_dim != null) {
-                v_dim.setLED(0, false);
-                return true;
-            }
-            return false;
-        }catch (Exception p_exeception)
-        {
-            debugLogException("dim blueled", "blueled_off", p_exeception);
-            return false;
-        }
-    }
-
-
-
-    /**
-     * Toggle the blue led located in the Device Interface Module
-     * @return returns true is successfull in turning on the led returns false on error
-     */
-    public boolean blueled_toggle () {
-        try {
-            if (v_dim != null) {
-                boolean isEnabled = v_dim.getLEDState(0);
-                if (isEnabled) {
-                    isEnabled = false;
-                    set_second_message("Blue Led set to Off");
-                } else {
-                    isEnabled = true;
-                    set_second_message("Blue Led set to On");
-                }
-                v_dim.setLED(0, isEnabled);
-
-                return isEnabled;
-            } else {
-                return false;
-            }
-        }catch (Exception p_exeception)
-        {
-            debugLogException("dim blueled", "blueled_toggle", p_exeception);
-            return false;
-        }
-    }
-
-
-
-    /**
-     * reset the gyro heading to zero
-     */
-    private boolean sensor_gyro_mr_resetHeading(){
-        try{
-            if(v_sensor_gyro_mr != null){
-                // get the x, y, and z values (rate of change of angle).
-
-                v_sensor_gyro_mr.resetZAxisIntegrator();
-                return true;
-            }
-            return false;
-        }catch(Exception p_exeception)
-        {
-            debugLogException("sensor_gyro", "sensor_gyro_resetHeading", p_exeception);
-            return false;
-        }
-    }
-
-//    public boolean beacon_make_red() throws InterruptedException{
-//        //the sensor is on the right side so the logic is  to read the
-//        //rgb sensor value if Red is higher then 1000 extend the right side pushing the button to make it
-//        //blue  else if Blue is over 1000 then extend the left button
-//        if(v_sensor_color_i2c_enabled){
-//            int v_detectedColor = sensor_color_GreatestColor();
-//            if(v_detectedColor == 0){
-//                set_second_message("Red Detected on Right Pushing Right Side");
-//                pushbutton_right_extend();
-//                ////////pushbutton_left_extend();
-//                timewait2Milliseconds(700);
-//                while (timewait2Milliseconds_Complete()==false){
-//                    hardware_loop();
-//                }
-//                pushbutton_right_retract();
-//                return true;
-//            }else if (v_detectedColor == 2){
-//                set_second_message("Blue Detected on Right Pushing Left Side");
-//                pushbutton_left_extend();
-//                /////////////pushbutton_right_extend();
-//                timewait2Milliseconds(700);
-//                while (timewait2Milliseconds_Complete()==false){
-//                    hardware_loop();
-//                }
-//                pushbutton_left_retract();
-//                return true;
-//            }else{
-//                //
-//                set_second_message("No Red or Blue Detected nothing to push");
-//            }
-//        }
-//        return false;
-//    }
-//
-
-
-    //returns -1 if neither detected, 0 if red detected, 2 if blue detected higher
-    public int sensor_color_GreatestColor(){
-        if(v_sensor_color_i2c_enabled) {
-            int[] myRGBA = sensor_color_get_rgba();
-            //make sure at least one of them is over the min threshold else return -1
-            int cRed = myRGBA[0];
-            int cBlue = myRGBA[2];
-
-            if (cRed < v_sensor_color_min_value && cBlue < v_sensor_color_min_value) {
-                set_third_message("Both Red and Blue Under Min " + myRGBA[0] + ":" + myRGBA[1] + ":" + myRGBA[2]);
-                return -1;
-            }
-
-            if (cRed > cBlue && ((cRed - cBlue) > 50)) {
-                set_third_message("Red is Greater then Blue");
-                return 0;
-            } else if(cBlue > cRed && ((cBlue - cRed) > 50))  {
-                set_third_message("Blue is Greater then Red");
-                return 2;
-            }else{
-                set_third_message("Difference Under Min " + myRGBA[0] + ":" + myRGBA[1] + ":" + myRGBA[2]);
-                return -1;
-            }
-
-        }
-        return -1;
-    }
-
-
-
-//    public boolean beacon_make_blue() throws InterruptedException{
-//        //the sensor is on the right side so the logic is  to read the
-//        //rgb sensor value if Red is higher then 1000 extend the right side pushing the button to make it
-//        //blue  else if Blue is over 1000 then extend the left button
-//        if(v_sensor_color_i2c_enabled){
-//            int v_detectedColor = sensor_color_GreatestColor();
-//            if(v_detectedColor == 0){
-//                set_second_message("Red Detected on Right Pushing Left Side");
-//                pushbutton_left_extend();
-//                //////////pushbutton_right_extend();
-//                timewait2Milliseconds(700); //.7f
-//                while (timewait2Milliseconds_Complete()==false){
-//                    hardware_loop();
-//                }
-//                pushbutton_left_retract();
-//                return true;
-//            }else if (v_detectedColor == 2){
-//                set_second_message("Blue Detected on Right Pushing Right Side");
-//                pushbutton_right_extend();
-//                /////////////pushbutton_left_extend();
-//                timewait2Milliseconds(700); //.7
-//                while (timewait2Milliseconds_Complete()==false){
-//                    hardware_loop();
-//                }
-//                pushbutton_right_retract();
-//                return true;
-//            }else{
-//                //-1 returned so no color of threshold
-//                //
-//                set_second_message("No Red or Blue Detected nothing to push");
-//            }
-//        }
-//        return false;
-//    }
-
-    /**
-     * Enable the Color Sensor Led
-     * @return returns true is successfull returns false on error
-     */
-    public boolean sensor_color_led(boolean enable){
-        try{
-
-            if(v_sensor_color_i2c_led !=null) {
-                v_sensor_color_i2c_led_enabled = enable;
-                v_sensor_color_i2c_led.setState( v_sensor_color_i2c_led_enabled);
-                //v_sensor_color_i2c.enableLed(enable);
-                return true;
-            }
-            set_first_message("color led " + enable);
-            return false;
-        }catch (Exception p_exeception)
-        {
-            debugLogException("sensor_color", "sensor_color_led", p_exeception);
-            return false;
-        }
-    }
-
-    /**
-     * Enable the Legecy Color Sensor
-     * @return returns true is successfull returns false on error
-     */
-    public boolean sensor_color_enable(boolean enable){
-        try{
-            // convert the RGB values to HSV values.
-            if(v_sensor_color_i2c !=null) {
-                //turn on the led this is the only way legecy color will detect anything
-                v_sensor_color_i2c_enabled = enable;
-                set_second_message("sensor_color_enable " + enable );
-                return true;
-            }
-            return false;
-        }catch (Exception p_exeception)
-        {
-            debugLogException("sensor_color", "sensor_color_enable", p_exeception);
-            return false;
-        }
-    }
-
-    public boolean sensor_range_init(){
-        try {
-            // get a reference to our Rangesensor object.
-            //v_sensor_rangeSensor
-            v_sensor_rangeSensor = opMode.hardwareMap.get(ModernRoboticsI2cRangeSensor.class, config_i2c_range);
-            // calibrate the gyro.
-            set_third_message("Range Sensor Found" + v_sensor_rangeSensor.getDistance(DistanceUnit.INCH));
-            return true;
-        }catch(Exception p_exeception){
-            debugLogException(config_i2c_range,"missing",p_exeception);
-            v_sensor_rangeSensor = null;
-            return false;
-        }
-    }
-
-    /**
-     * Enable the Range Sensor
-     * @return returns true is successfull returns false on error
-     */
-    public boolean sensor_range_enable(boolean enable){
-        try{
-            if(v_sensor_rangeSensor != null) {
-                v_sensor_rangeSensor_enabled = enable;
-                set_third_message("sensor range enable " + enable);
-                return true;
-            }
-            return false;
-        }catch (Exception p_exeception)
-        {
-            debugLogException("sensor_ranger", "sensor_color_enable", p_exeception);
-            return false;
-        }
-    }
-
-    public int[] sensor_color_get_rgba(){
-        try{
-            return v_sensor_color_i2c_rgbaValues;
-
-        }catch (Exception p_exeception)
-        {
-            debugLogException("sensor_color", "sensor_color_read_rgb", p_exeception);
-            return v_sensor_color_i2c_rgbaValues;
-        }
-    }
-
-
-
-    /**
-     *
-     * @return gyro heading in degrees since reset
-     */
-    public int sensor_gyro_mr_get_heading(){
-        try{
-            if(v_sensor_gyro_mr != null) {
-                return v_sensor_gyro_mr.getHeading();
-            }else{
-                return 0;
-            }
-        }catch (Exception p_exeception)
-        {
-            debugLogException("sensor_gyro", "sensor_gyro_get_heading", p_exeception);
-            return 0;
-        }
-
-
-    }
-
-    /**
-     *
-     * @return sensor_range
-     */
-    public double sensor_range_get_distance(){
-        try{
-            if(v_sensor_rangeSensor != null) {
-                return v_sensor_rangeSensor_distance;
-            }else{
-                return 0;
-            }
-        }catch (Exception p_exeception)
-        {
-            debugLogException("sensor_range", "sensor_range", p_exeception);
-            return 0;
-        }
-
-
-    }
-
-    /**
-     * return the rawX rate
-     * @return gyro heading in degrees since reset
-     */
-    public int sensor_gyro_mr_get_rawX(){
-        try{
-            // get the x info.
-            if(v_sensor_gyro_mr != null) {
-                return v_sensor_gyro_mr.rawX();
-            }else{
-                return 0;
-            }
-        }catch (Exception p_exeception)
-        {
-            debugLogException("sensor_gyro", "sensor_gyro_get_rawX", p_exeception);
-            return 0;
-        }
-
-    }
-
-    /**
-     * return the rawX rate
-     * @return gyro heading in degrees since reset
-     */
-    public int sensor_gyro_mr_get_rawY(){
-        try{
-            // get the heading info.
-            // the Modern Robotics' gyro sensor keeps
-            // track of the current heading for the Z axis only.
-            if(v_sensor_gyro_mr != null) {
-                return v_sensor_gyro_mr.rawY();
-            }
-            else{
-                return 0;
-            }
-        }catch (Exception p_exeception)
-        {
-            debugLogException("sensor_gyro", "sensor_gyro_get_rawY", p_exeception);
-            return 0;
-        }
-    }
-
-    /**
-     * return the rawX rate
-     * @return gyro heading in degrees since reset
-     */
-    public int sensor_gyro_mr_get_rawZ(){
-        try{
-            // get the heading info.
-            // the Modern Robotics' gyro sensor keeps
-            // track of the current heading for the Z axis only.
-            if(v_sensor_gyro_mr != null) {
-                return v_sensor_gyro_mr.rawZ();
-            }
-            else{
-                return 0;
-            }
-        }catch (Exception p_exeception)
-        {
-            debugLogException("sensor_gyro", "sensor_gyro_get_rawZ", p_exeception);
-            return 0;
-        }
-    }
-
-
-
-
-    /**
-     * Enable the Legecy Color Sensor
-     * @return returns true is successfull returns false on error
-     */
-/*
-    public boolean sensor_colorLegecy_start(){
-        try{
-            // convert the RGB values to HSV values.
-            if(v_sensor_colorLegecy_rgbValues !=null) {
-                //turn on the led this is the only way legecy color will detect anything
-                sensor_colorLegecy_led(true);
-                return true;
-            }
-            return false;
-        }catch (Exception p_exeception)
-        {
-            debugLogException("sensor_colorLegecy", "sensor_colorLegecy_start", p_exeception);
-            return false;
-        }
-    }
-*/
-    /*public int[] sensor_colorLegecy_getLast_rgba(){
-        try{
-            return v_sensor_colorLegecy_rgbValues;
-
-        }catch (Exception p_exeception)
-        {
-            debugLogException("sensor_colorLegecy", "sensor_colorLegecy_getLast_rgb", p_exeception);
-            return v_sensor_colorLegecy_rgbValues;
-        }
-    }
-
-
-    public double sensor_ultraLegecy_distance(){
-        try{
-            if(v_sensor_ultraLegecy != null){
-                if ((v_loop_ticks % v_sensor_ultraLegecy_ticksPerRead) == 0) {
-                    v_sensor_ultraLegecy_distance = v_sensor_ultraLegecy.getUltrasonicLevel();
-                }
-                return v_sensor_ultraLegecy_distance;
-            }else{
-                return 9999.9999;
-            }
-        }catch (Exception p_exeception)
-        {
-            debugLogException("sensor_ultraLegecy", "sensor_ultraLegecy_distance", p_exeception);
-            return 9999.9999;
-        }
-    }
-*/
-    //Lego Light Legecy Sensor Methods
-
-    //--------------------------------------------------------------------------
-
-    //
-    // a_ods_light_detected
-    /**
-     * Disables the Legecy Color Sensor
-     * @return returns true is successfull returns false on error
-     */
-/*
-    public boolean sensor_colorLegecy_stop(){
-        try{
-            // convert the RGB values to HSV values.
-            if(v_sensor_colorLegecy_rgbValues !=null) {
-                //turn on the led this is the only way legecy color will detect anything
-                sensor_colorLegecy_led(false);
-                return true;
-            }
-            return false;
-        }catch (Exception p_exeception)
-        {
-            debugLogException("sensor_colorLegecy", "sensor_colorLegecy_stop", p_exeception);
-
-            return false;
-        }
-    }
-*/
-
-/*
-    private int[] sensor_colorLegecy_read_rgba(){
-        try{
-            // convert the RGB values to HSV values.
-            if(v_sensor_colorLegecy_rgbValues !=null) {
-                //v_sensor_color.enableLed(true);
-                // wait one cycle.
-                //waitOneFullHardwareCycle();
-                v_sensor_colorLegecy_rgbValues[0] = v_sensor_colorLegecy.red();
-                v_sensor_colorLegecy_rgbValues[1] = v_sensor_colorLegecy.green();
-                v_sensor_colorLegecy_rgbValues[2] = v_sensor_colorLegecy.blue();
-                v_sensor_colorLegecy_rgbValues[3] = v_sensor_colorLegecy.alpha();
-                // wait one cycle.
-                //waitOneFullHardwareCycle();
-                // v_sensor_color.enableLed(false);
-            }
-            //Color.RGBToHSV(v_sensor_color.red(), v_sensor_color.green(), v_sensor_color.blue(), v_sensor_color_hsvValues);
-            return v_sensor_colorLegecy_rgbValues;
-
-        }catch (Exception p_exeception)
-        {
-            debugLogException("sensor_colorLegecy", "sensor_colorLegecy_read_rgb", p_exeception);
-            return v_sensor_colorLegecy_rgbValues;
-        }
-    }
-*/
-    //
-    /**
-     * Access the amount of light detected by the Optical Distance Sensor.
-     */
-/*
-    public double sensor_lightLegecy_amountDetected ()
-
-    {
-        double l_return = 0.0;
-
-        if (v_sensor_lightLegecy != null)
-        {
-            v_sensor_lightLegecy.getLightDetected ();
-        }
-
-        return l_return;
-
-    }
-    public boolean sensor_lightLegecy_led(boolean enable){
-        if(v_sensor_lightLegecy != null) {
-            v_sensor_lightLegecy_enabled = enable;
-            v_sensor_lightLegecy.enableLed(enable);
-            return true;
-        }else{
-            return false;
-        }
-    }
-
-    public boolean sensor_lightLegecy_led_status(){
-        return v_sensor_lightLegecy_enabled;
-    }
-    public boolean sensor_lightLegecy_white_tape_detected(){
-        return a_light_white_tape_detected();
-    }
-
-*/
-    //--------------------------------------------------------------------------
-    //
-    // a_light_white_tape_detected
-    //
-    /**
-     * Access whether the Light Sensor is detecting white tape.
-     */
-/*
-    private boolean a_light_white_tape_detected ()
-    {
-
-        //
-        // Assume not.
-        //
-        boolean l_return = false;
-
-        if (v_sensor_lightLegecy != null)
-        {
-            //
-            // Is the amount of light detected above the threshold for white
-            // tape?
-            //
-            if (v_sensor_lightLegecy.getLightDetected () > 0.8)
-            {
-                l_return = true;
-            }
-        }
-
-        //
-        // Return
-        //
-        return l_return;
-
-    } // a_ods_white_tape_detected
-*/
-
-    //Don't use these inless we are in linerOpMode
-//    public void waitOneFullHardwareCycle() throws InterruptedException {
-//        this.waitForNextHardwareCycle();
-//        Thread.sleep(1L);
-//        this.waitForNextHardwareCycle();
-//    }
-//
-//    public void waitForNextHardwareCycle() throws InterruptedException {
-//        synchronized(this) {
-//            this.wait();
-//        }
-//    }
-//
     public void sleep(long milliseconds) {
         try{
 
@@ -5109,7 +3119,8 @@ public class CFPushBotHardware {
                 //
                 // Send telemetry data to the driver station.
                 //
-                opMode.telemetry.addData("05", "Gyro: H:" + sensor_gyro_mr_get_heading() + ",X:" + sensor_gyro_mr_get_rawX() + ",Y:" + sensor_gyro_mr_get_rawY() + ",Z:" + sensor_gyro_mr_get_rawZ());
+                //opMode.telemetry.addData("05", "Gyro: H:" + sensor_gyro_mr_get_heading() + ",X:" + sensor_gyro_mr_get_rawX() + ",Y:" + sensor_gyro_mr_get_rawY() + ",Z:" + sensor_gyro_mr_get_rawZ());
+                opMode.telemetry.addData("05", "Gyro: H:0,X:0,Y:0,Z:0");
 
                 opMode.telemetry.addData
                         ("06"
@@ -5129,55 +3140,14 @@ public class CFPushBotHardware {
                                         + ", "
                                         + a_right_drive_mode()
                         );
-                if(v_motor_slider != null) {
-                    opMode.telemetry.addData("slider", " to %7d at %7d",
-                            v_motor_slider_Position,
-                            v_motor_slider.getCurrentPosition());
+                if(v_motor_extender != null) {
+                    opMode.telemetry.addData("extender", " to %7d at %7d",
+                            v_motor_extender_Position,
+                            v_motor_extender.getCurrentPosition());
                 }
-                if(v_sensor_color_i2c_enabled) {
-                    int[] v_color_rgba = sensor_color_get_rgba();
-                    opMode.telemetry.addData(
-                            "color", "Color RGBA: " + v_color_rgba[0]
-                                    + "," + v_color_rgba[1]
-                                    + "," + v_color_rgba[2]
-                                    + "," + v_color_rgba[3]
-                    );
-                }
-//                opMode.telemetry.addData
-//                        ("06"
-//                                , "RPA Base Position: " //+ a_rpabase_position()
-//                        );
-//                opMode.telemetry.addData
-//                        ("07"
-//                                , "RPA Arm Position: " //+ a_rpa_arm_power() + ":" + rpa_arm_extended() + ":" + rpa_arm_retracted()
-//                        );
-//                opMode.telemetry.addData(
-//                        "08", "Flip: Right:" //+ a_flip_right_position()
-//                );
-                /*opMode.telemetry.addData
-                        ("05"
-                                , "Arm Shoulder: " + a_arm_shoulder_position()
-                        );
-                opMode.telemetry.addData
-                        ("06"
-                                , "Arm jewel: " + a_arm_jewel_position()
-                        );
-                opMode.telemetry.addData
-                        ("07"
-                                , "Arm Wrist: " + a_arm_wrist_position()
-                        );
 
 
 
-                opMode.telemetry.addData(
-                        "1l", "Flip: Right:" + a_flip_right_position() + ", Left:" + a_flip_left_position()
-                );
-                opMode.telemetry.addData(
-                        "12", "Ultra: " + sensor_ultraLegecy_distance()
-                );
-                opMode.telemetry.addData(
-                        "13", "Light: tape:" + sensor_lightLegecy_white_tape_detected() + "," + sensor_lightLegecy_amountDetected()
-                );*/
                 if(v_vuforia_inited == true){
                     int position = 0;
                     for (VuforiaTrackable trackable : v_vuforia_allTrackables) {
@@ -5347,4 +3317,59 @@ public class CFPushBotHardware {
         // Reset the cycle clock for the next pass.
         period.reset();
     }*/
+
+    /**
+     *
+     * @return sensor_range
+     */
+    public double sensor_range_get_distance(){
+        try{
+            if(v_sensor_rangeSensor != null) {
+                return v_sensor_rangeSensor_distance;
+            }else{
+                return 0;
+            }
+        }catch (Exception p_exeception)
+        {
+            debugLogException("sensor_range", "sensor_range", p_exeception);
+            return 0;
+        }
+
+
+    }
+
+    public boolean sensor_range_init(){
+        try {
+            // get a reference to our Rangesensor object.
+            //v_sensor_rangeSensor
+            v_sensor_rangeSensor = opMode.hardwareMap.get(Rev2mDistanceSensor.class, config_range_name);
+            // calibrate the gyro.
+            set_third_message("Range Sensor Found" + v_sensor_rangeSensor.getDistance(DistanceUnit.INCH));
+            return true;
+        }catch(Exception p_exeception){
+            debugLogException(config_range_name,"missing",p_exeception);
+            v_sensor_rangeSensor = null;
+            return false;
+        }
+    }
+
+    /**
+     * Enable the Range Sensor
+     * @return returns true is successfull returns false on error
+     */
+    public boolean sensor_range_enable(boolean enable){
+        try{
+            if(v_sensor_rangeSensor != null) {
+                v_sensor_rangeSensor_enabled = enable;
+                set_third_message("sensor range enable " + enable);
+                return true;
+            }
+            return false;
+        }catch (Exception p_exeception)
+        {
+            debugLogException("sensor_ranger", "sensor_color_enable", p_exeception);
+            return false;
+        }
+    }
+
 }

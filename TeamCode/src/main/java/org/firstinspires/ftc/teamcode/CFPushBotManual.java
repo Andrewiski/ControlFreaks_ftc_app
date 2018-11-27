@@ -73,7 +73,7 @@ public class CFPushBotManual extends LinearOpMode {
             //robot.led7seg_timer_init(120);
             robot.run_using_encoders();
            // robot.lifter_step(-500); //reset the min on lifter as automonmouse moved us up and reinit reset min
-            robot.blockgrabber_open();
+
             waitForStart();
             //robot.debugOff();
             //robot.led7seg_timer_start(120);
@@ -106,25 +106,25 @@ public class CFPushBotManual extends LinearOpMode {
                     }
 
                     if(gamepad2.left_stick_y > .2 ) {
-                        robot.shoulder_step(-.001);
+                        //robot.shoulder_step(-.001);
                     }else if(gamepad2.left_stick_y < -.2)
                     {
-                        robot.shoulder_step(.001);
+                        //robot.shoulder_step(.001);
                     }
 
                     if(gamepad2.right_stick_y > .2 ) {
-                        robot.slider_step(-100, gamepad2.left_bumper);
+                        //robot.slider_step(-100, gamepad2.left_bumper);
                         button_rightstick_deadzone = false;
                     }else if(gamepad2.right_stick_y < -.2)
                     {
-                        robot.slider_step(100, false);
+                        //robot.slider_step(100, false);
                         button_rightstick_deadzone = false;
                     }else{
                         if(button_rightstick_deadzone == false) {
-                            robot.slider_stop(gamepad2.left_bumper);
+                            //robot.slider_stop(gamepad2.left_bumper);
                             button_rightstick_deadzone = true;
                         }else{
-                            robot.slider_hold();
+                            //robot.slider_hold();
                         }
                     }
 
@@ -132,7 +132,7 @@ public class CFPushBotManual extends LinearOpMode {
                     if(gamepad1.left_bumper){
                         if(buttonLeftBumperReleased == true) {
                             if (robot.debugMode()){
-                                robot.jewel_toggle();
+                                //robot.jewel_toggle();
                             }
 
                             buttonLeftBumperReleased = false;
@@ -190,10 +190,10 @@ public class CFPushBotManual extends LinearOpMode {
                         if(buttonG2DpadUpReleased == true) {
                             buttonG2DpadUpReleased = false;
                         }
-                        robot.lifter_step(100);
+                        //robot.lifter_step(100);
                     }else{
                         if(buttonG2DpadUpReleased == false){
-                            robot.lifter_stop();
+                            //robot.lifter_stop();
                         }
                         buttonG2DpadUpReleased = true;
 
@@ -204,17 +204,17 @@ public class CFPushBotManual extends LinearOpMode {
 
                             buttonG2DpadDownReleased = false;
                         }
-                        robot.lifter_step(-100);
+                        //robot.lifter_step(-100);
                     }else{
                         if(buttonG2DpadDownReleased == false){
-                            robot.lifter_stop();
+                            //robot.lifter_stop();
                         }
                         buttonG2DpadDownReleased = true;
                     }
 
                     if(gamepad2.dpad_left){
                         if(buttonG2DpadleftReleased == true) {
-                            robot.blockslide_left();
+                            //robot.blockslide_left();
                             buttonG2DpadleftReleased = false;
                         }
                     }else {
@@ -222,7 +222,7 @@ public class CFPushBotManual extends LinearOpMode {
                     }
                     if(gamepad2.dpad_right){
                         if(buttonG2DpadrightReleased == true) {
-                            robot.blockslide_right();
+                            //robot.blockslide_right();
                             buttonG2DpadrightReleased = false;
                         }
                     }else {
@@ -260,19 +260,19 @@ public class CFPushBotManual extends LinearOpMode {
                     }
 
                     if(gamepad2.left_trigger > .2 ){
-                            robot.bgtilt_step(30);
+                            //robot.bgtilt_step(30);
 
                     }else if(gamepad2.right_trigger > .2 ){
-                        robot.bgtilt_step(-30);
+                        //robot.bgtilt_step(-30);
 
                     }else if(gamepad2.left_trigger > .1 || gamepad2.left_trigger > .1  ){
-                        robot.bgtilt_stop();
+                        //robot.bgtilt_stop();
 
                     }
 
                     if(gamepad2.a){
                             if(buttonG2AReleased == true) {
-                                robot.blockgrabber_toggle();
+                                //robot.blockgrabber_toggle();
                                 buttonG2AReleased = false;
                             }
                     }else{
@@ -292,7 +292,7 @@ public class CFPushBotManual extends LinearOpMode {
                     }
                     if(gamepad2.b){
                         if(buttonG2BReleased == true) {
-                            robot.hand_toggle();
+                            //robot.hand_toggle();
                             buttonG2BReleased = false;
                         }
                     }else{
@@ -302,13 +302,13 @@ public class CFPushBotManual extends LinearOpMode {
                     }
                     if(gamepad1.y){
                         if(buttonYReleased == true) {
-                            robot.sensor_color_enable(true);
-                            robot.sensor_color_led(true);
+                            //robot.sensor_color_enable(true);
+                            //robot.sensor_color_led(true);
 
                             //myFliperRetractElapsedTime = null;
                             buttonYReleased = false;
                         }else {
-                            int myColor = robot.sensor_color_GreatestColor();
+                            int myColor = 0; //robot.sensor_color_GreatestColor();
                             if (myColor == 0) {
                                 robot.redled_on();
                                 robot.blueled_off();
@@ -323,8 +323,8 @@ public class CFPushBotManual extends LinearOpMode {
                         }
                     }else{
                         if(buttonYReleased == false){
-                            robot.sensor_color_led(false);
-                            robot.sensor_color_enable(false);
+                            //robot.sensor_color_led(false);
+                            //robot.sensor_color_enable(false);
                             robot.redled_off();
                             robot.blueled_off();
                         }

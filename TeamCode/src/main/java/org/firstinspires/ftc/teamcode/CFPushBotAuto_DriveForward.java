@@ -51,8 +51,7 @@ public class CFPushBotAuto_DriveForward extends LinearOpMode
     public void runOpMode() throws InterruptedException {
 
         robot.init(this);
-        robot.blueled_on();
-        robot.redled_on();
+
         //robot.led7seg_timer_init(30);
         waitForStart();
         // run until the end of the match (driver presses STOP)
